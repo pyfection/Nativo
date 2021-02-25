@@ -18,24 +18,25 @@ Builder.load_file('widgets/docedit.kv')
 
 
 class Raw(CodeInput):
+    word_select = StringProperty('')
+
     def __init__(self, **kwargs):
         super().__init__(lexer=SentenceLexer(), **kwargs)
         self.lexer.links_positions = []
+        self.links_uids = []  # Hast to always match len of lexer.link_positions, as they use the same indices
         self.bind(text=self._process)
         self.bind(cursor=self.check_cursor)
         self.last_cursor = (0, 0)
         # ToDo: do same for del key as for backspace
-        # ToDo: open side panel with word, if caret is to the right of it
         # ToDo: open side panel with selection with button to add it as a word
         # ToDo: add option for adding new word to extend selection (ignore leading and trailing whitespace and select remaining word characters
 
     def open(self, text):
         self.lexer.links_positions.clear()
+        self.links_uids.clear()
         self.process(text)
 
     def keyboard_on_key_down(self, window, keycode, text, modifiers):
-        print(window, keycode, text, modifiers)
-        print(len(self.selection_text), self.selection_from)
         if keycode[1] == 'backspace':
             index = self.selection_from
             delete = max(1, len(self.selection_text))
@@ -45,6 +46,7 @@ class Raw(CodeInput):
             if link_pos:
                 i, start, end = link_pos
                 self.lexer.links_positions.pop(i)
+                self.links_uids.pop(i)
                 self.select_text(start, end)
                 self.delete_selection()
                 return
@@ -56,6 +58,7 @@ class Raw(CodeInput):
         return super().insert_text(substring, from_undo=from_undo)
 
     def check_cursor(self, inst, cursor):
+        # Make sure that cursor is not inside a linked word
         link_pos = self._cursor_in_link()
         if link_pos:
             index = self.cursor_index()
@@ -66,6 +69,15 @@ class Raw(CodeInput):
             elif index > self.cursor_index(self.last_cursor):
                 # cursor moved right
                 self.cursor = self.get_cursor_from_index(end)
+
+        # If cursor at end of linked word, display in side panel
+        index = self.cursor_index()
+        link = (i for i, (start, end) in enumerate(self.lexer.links_positions) if index == end)
+        try:
+            self.word_select = self.links_uids[next(link)]
+        except StopIteration:
+            pass
+
         self.last_cursor = self.cursor
 
     def _cursor_in_link(self, cursor=None):
@@ -113,6 +125,7 @@ class Raw(CodeInput):
                 else:
                     l = len(word['word'])
                     self.lexer.links_positions.append((j, j+l))
+                    self.links_uids.append(uid)
                     j += l
                     text += word['word']
                     new_cursor = self.get_cursor_from_index(self.cursor_index() + (l - s) + 1)
@@ -142,9 +155,13 @@ class DocEdit(BoxLayout):
         # self.raw.bind(text=self._on_change)
         # self.raw.bind(size=self._on_change)
         self.content.add_widget(self.raw)
+        self.raw.bind(word_select=self.add_word_edit)
 
-        self.text_options = BoxLayout()
-        self.word_options = BoxLayout()
+        self.word_edit = WordEdit()
+
+    def add_word_edit(self, inst, uid):
+        self.word_edit.display_word(uid)
+        self.add_widget(self.word_edit)
 
     def on_text(self, _, text):
         self.raw.open(text)

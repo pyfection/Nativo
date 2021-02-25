@@ -4,21 +4,23 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.lang.builder import Builder
 
 
-Builder.load_file('widgets/word.kv')
+Builder.load_file('widgets/word_edit.kv')
 
 
 class WordEdit(BoxLayout):
     word_uid = None
     desc_uid = None
 
-    def display_word(self, word):
+    def display_word(self, uid):
+        self.word_uid = uid
         app = App.get_running_app()
+        word = app.db.get_word(uid)
         self.word_uid = word['uid']
         self.desc_uid = word['description']
 
         self.word.text = word['word']
         self.lang.text = word['lang']
-        self.description.text = app.db.get_document(self.desc_uid) if self.desc_uid else ''
+        self.desc.text = app.db.get_document(self.desc_uid) if self.desc_uid else ''
         self.creator.text = word['creator']
 
     def prepare_create(self):
