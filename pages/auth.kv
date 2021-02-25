@@ -1,0 +1,43 @@
+<AuthPage>:
+    login: login
+    register: register
+    email: email
+    password: password
+    BoxLayout:
+        orientation: "vertical"
+        BoxLayout:
+            ToggleButton:
+                id: login
+                state: "down"
+                on_press: self.state = "down"
+                text: "Login"
+                group: "loginregister"
+
+            ToggleButton:
+                id: register
+                on_press: self.state = "down"
+                text: "Register"
+                group: "loginregister"
+
+        TextInput:
+            id: email
+            hint_text: "Email"
+            write_tab: False
+
+        TextInput:
+            id: password
+            hint_text: "Password"
+            password: True
+            write_tab: False
+
+        Button:
+            text: "Submit"
+            height: 50
+            size_hint_y: None
+            on_press: root.submit("login" if root.login.state == "down" else "register", root.email.text, root.password.text)
+
+        Button:
+            text: "Just testing"
+            height: 30
+            size_hint_y: None
+            on_press: root.skip()

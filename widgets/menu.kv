@@ -1,0 +1,60 @@
+<Menu>
+    ActionView:
+        ActionPrevious:
+            title: 'Nativo'
+            with_previous: False
+            on_press: app.root.goto('main', 'right')
+
+        ActionGroup:
+            text: 'Word'
+            ActionButton:
+                text: 'Create'
+                on_press: app.root.create_word()
+                disabled: False if app.authenticated else True
+            ActionButton:
+                text: 'Find'
+                on_press: app.root.find_word()
+                disabled: True
+            ActionButton:
+                text: 'Random'
+                on_press: app.root.random_word()
+
+        ActionGroup:
+            text: 'Phrase'
+            ActionButton:
+                text: 'Create'
+                on_press: app.root.create_phrase()
+                disabled: True
+            ActionButton:
+                text: 'Find'
+                on_press: app.root.find_phrase()
+                disabled: True
+            ActionButton:
+                text: 'Random'
+                on_press: app.root.random_phrase()
+                disabled: True
+
+        ActionGroup:
+            text: 'Document'
+            ActionButton:
+                text: 'Create'
+                on_press: app.root.create_document()
+                disabled: True
+            ActionButton:
+                text: 'Find'
+                on_press: app.root.find_document()
+                disabled: True
+            ActionButton:
+                text: 'Random'
+                on_press: app.root.random_document()
+                disabled: True
+
+        ActionGroup:
+            # Profile
+            text: "\uf207"
+            font_name: "Material-Design-Iconic-Font.ttf"
+            font_size: 32
+            ActionButton:
+                text: 'Profile'
+                on_press: app.root.user_profile()
+                disabled: True

@@ -1,0 +1,18 @@
+#:import config config
+
+Manager:
+    id: manager
+    logged_in: False
+    on_parent: self.current = "main" if config.debug else 'auth'
+
+    AuthPage:
+        name: "auth"
+        root: manager
+
+    MainPage:
+        name: "main"
+        root: manager
+
+    WordPage:
+        name: "word"
+        root: manager

@@ -1,0 +1,38 @@
+<WordPage>:
+    word: word
+    lang: lang
+    desc: desc
+    creator: creator
+
+    BoxLayout:
+        orientation: "vertical"
+        Menu
+
+        TextInput:
+            id: word
+            hint_text: "Word"
+            write_tab: False
+            disabled: bool(app.db.token)
+
+        TextInput:  # ToDo: change to dropdown
+            id: lang
+            hint_text: "Language"
+            write_tab: False
+            disabled: bool(app.db.token)
+
+        TextInput:
+            id: desc
+            hint_text: "Description"
+            write_tab: False
+            disabled: bool(app.db.token)
+
+        BoxLayout:
+            Label:
+                text: "Creator:"
+            Label:
+                id: creator
+
+        Button:
+            text: "Create" if root.word_uid else "Update"
+            disabled: bool(app.db.token)
+            on_press: root.create(word.text, lang.text, desc.text)

@@ -1,0 +1,17 @@
+<DocEditPage>:
+    document: document
+
+    BoxLayout:
+        orientation: "vertical"
+        Menu
+
+        TextInput:
+            id: document
+            multiline: True
+            hint_text: "Enter your text here..."
+#            disabled: bool(app.db.token)
+
+        Button:
+            text: "Update"
+#            disabled: bool(app.db.token)
+            on_press: root.update()
