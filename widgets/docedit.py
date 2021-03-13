@@ -1,207 +1,208 @@
 import re
 
-from kivy.app import App
 from kivy.clock import Clock
-from kivy.properties import StringProperty
+from kivy.cache import Cache
+from kivy.metrics import sp
+from kivy.properties import StringProperty, BooleanProperty, ListProperty, BoundedNumericProperty
 from kivy.lang.builder import Builder
-from kivy.uix.behaviors import ButtonBehavior
-from kivy.uix.stacklayout import StackLayout
-from kivy.uix.floatlayout import FloatLayout
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.codeinput import CodeInput
-from kivy.uix.label import Label
+from kivy.uix.behaviors.focus import FocusBehavior
+from kivy.uix.textinput import TextInput
+from kivymd.uix.boxlayout import MDBoxLayout
+from kivymd.uix.stacklayout import MDStackLayout
+from kivymd.uix.textfield import MDTextFieldRect
+from kivymd.uix.button import MDFlatButton
 
+from db.db import db
 from widgets.word_edit import WordEdit
-from sentence_lexer import SentenceLexer
 
+Cache_get = Cache.get
+Cache_append = Cache.append
 Builder.load_file('widgets/docedit.kv')
 
+SPACE_CHARS = (' ', '.', ',', '!', '?')
+COLOR_LINKED = (0, .5, 0, .2)
+COLOR_UNLINKED = (0, 0, 1, .2)
 
-class Raw(CodeInput):
+
+class LineBreak(MDFlatButton):
+    width = BoundedNumericProperty(
+        1, min=1, max=None, errorhandler=lambda x: 1
+    )
+
+
+class WordButton(MDFlatButton):
+    linked = BooleanProperty(False)
+    highlight_color = ListProperty(COLOR_UNLINKED)
+
+    def __init__(self, text_edit, **kwargs):
+        self.text_edit = text_edit
+        # self.text_color = COLOR_UNLINKED
+        super().__init__(**kwargs)
+
+    def on_touch_down(self, touch):
+        FocusBehavior.ignored_touch.append(touch)
+        return super().on_touch_down(touch)
+
+    def on_press(self):
+        if self.linked:
+            pass  # ToDo: add opening side panel
+        else:
+            # Replacing old word_input with new word_button
+            self.text_edit.word_input.unfocus()
+
+            # Replacing self with word_input
+            index = self.text_edit.children.index(self)
+            self.text_edit.clear_widgets([self])
+            self.text_edit.word_input.text = self.text
+            self.text_edit.add_widget(self.text_edit.word_input, index=index)
+            self.text_edit.word_input.focus = True
+
+    def on_linked(self, instance, linked):
+        if linked:
+            # self.text_color = COLOR_LINKED
+            self.highlight_color = COLOR_LINKED
+        else:
+            # self.text_color = COLOR_UNLINKED
+            self.highlight_color = COLOR_UNLINKED
+
+
+class WordInput(TextInput):
+    def __init__(self, text_edit, **kwargs):
+        self.text_edit = text_edit
+        super().__init__(**kwargs)
+
+    def keyboard_on_key_down(self, window, keycode, text, modifiers):
+        print(keycode, text, modifiers)
+        if keycode[1] == 'backspace' and self.cursor_index() == 0:
+            # User wants to connect text input and the last widget
+            index = self.text_edit.children.index(self)
+            prev = self.text_edit.children[index+1]
+            if isinstance(prev, LineBreak):
+                prev.text = ''
+            self.text_edit.clear_widgets([prev])
+            self.text = prev.text + self.text
+            self.cursor = self.get_cursor_from_index(len(prev.text))
+            return
+        elif keycode[1] == 'enter':
+            index = self.text_edit.children.index(self)
+            self.text_edit.add_widget(LineBreak(), index=index)
+            self.unfocus()
+            self.text_edit.add_widget(self, index=index)
+            return
+
+        return super().keyboard_on_key_down(window, keycode, text, modifiers)
+
+    def insert_text(self, substring, from_undo=False):
+        a = substring in SPACE_CHARS
+        b = self.text and self.text[-1] in SPACE_CHARS
+        if self.text and a ^ b:  # a XOR b, to separate space characters from word characters
+            index = self.text_edit.children.index(self)
+            self.unfocus()
+            self.text = substring
+            self.text_edit.add_widget(self, index=index)
+        else:
+            return super().insert_text(substring, from_undo=from_undo)
+
+    def on_text(self, obj, text):
+        self.width = self._lines_labels[0].width + sp(self.font_size)
+
+    def unfocus(self):
+        index = self.text_edit.children.index(self)
+        self.text_edit.clear_widgets([self])
+        if self.text:
+            w = WordButton(self.text_edit, text=self.text)
+            self.text_edit.add_widget(w, index=index)
+        self.text = ''
+
+
+class TextEdit(MDStackLayout):
     word_select = StringProperty('')
 
     def __init__(self, **kwargs):
-        super().__init__(lexer=SentenceLexer(), **kwargs)
-        self.lexer.links_positions = []
-        self.links_uids = []  # Hast to always match len of lexer.link_positions, as they use the same indices
-        self.bind(text=self._process)
-        self.bind(cursor=self.check_cursor)
-        self.last_cursor = (0, 0)
-        # ToDo: do same for del key as for backspace
-        # ToDo: open side panel with selection with button to add it as a word
-        # ToDo: add option for adding new word to extend selection (ignore leading and trailing whitespace and select remaining word characters
+        super().__init__(**kwargs)
+        self.word_input = None
+
+    def on_touch_down(self, touch):
+        if self.collide_point(*touch.pos):
+            for child in self.children:
+                if child.collide_point(*touch.pos):
+                    return super().on_touch_down(touch)
+        self.word_input.unfocus()
+        self.add_widget(self.word_input)
+        FocusBehavior.ignored_touch.append(touch)
+        self.word_input.focus = True
 
     def open(self, text):
-        self.lexer.links_positions.clear()
-        self.links_uids.clear()
-        self.process(text)
+        self.clear_widgets()
 
-    def keyboard_on_key_down(self, window, keycode, text, modifiers):
-        if keycode[1] == 'backspace':
-            index = self.selection_from
-            delete = max(1, len(self.selection_text))
-            self._update_links_after(index, -delete)
-            cursor = self.get_cursor_from_index(index-1)
-            link_pos = self._cursor_in_link(cursor)
-            if link_pos:
-                i, start, end = link_pos
-                self.lexer.links_positions.pop(i)
-                self.links_uids.pop(i)
-                self.select_text(start, end)
-                self.delete_selection()
-                return
-        super().keyboard_on_key_down(window, keycode, text, modifiers)
-
-    def insert_text(self, substring, from_undo=False):
-        add = len(substring)
-        self._update_links_after(self.cursor_index(), add)
-        return super().insert_text(substring, from_undo=from_undo)
-
-    def check_cursor(self, inst, cursor):
-        # Make sure that cursor is not inside a linked word
-        link_pos = self._cursor_in_link()
-        if link_pos:
-            index = self.cursor_index()
-            i, start, end = link_pos
-            if index < self.cursor_index(self.last_cursor):
-                # cursor moved to left
-                self.cursor = self.get_cursor_from_index(start)
-            elif index > self.cursor_index(self.last_cursor):
-                # cursor moved right
-                self.cursor = self.get_cursor_from_index(end)
-
-        # If cursor at end of linked word, display in side panel
-        index = self.cursor_index()
-        link = (i for i, (start, end) in enumerate(self.lexer.links_positions) if index == end)
-        try:
-            self.word_select = self.links_uids[next(link)]
-        except StopIteration:
-            pass
-
-        self.last_cursor = self.cursor
-
-    def _cursor_in_link(self, cursor=None):
-        cursor = cursor or self.cursor
-        for i, (start, end) in enumerate(self.lexer.links_positions):
-            index = self.cursor_index(cursor)
-            if start < index < end:
-                return i, start, end
-
-    def _links_after(self, index):
-        for i, (start, end) in enumerate(self.lexer.links_positions):
-            if index < start:
-                return i
-
-    def _update_links_after(self, index, change):
-        for i, (start, end) in enumerate(self.lexer.links_positions):
-            if index < start:
-                self.lexer.links_positions[i] = (start+change, end+change)
-
-    def _process(self, inst, text):
-        self.process(text)
-
-    def process(self, raw_text):
-        def assign_cursor(dt):
-            self.cursor = new_cursor
-        new_cursor = None
-        text = ''
-        i = 0
-        j = 0
-        while raw_text:
-            match = re.search(r'\[\[[\w-]+(?::\w)?]]($)?', raw_text)
+        last_c = ''
+        last_w = None
+        last_word = ''
+        for c in text:
+            # Trying to replace uid by actual word
+            match = re.search(r'\[\[([\w-]+(?::\w)?)]]$', last_word)
             if match:
-                text += raw_text[:match.start()]
-                i += match.start()
-                j += match.start()
-                linked = re.sub(r'[\[\]]', '', match.group())
-                uid, *options = linked.split(':')
-                app = App.get_running_app()
-                word = app.db.get_word(uid)
-                s = match.end() - match.start()
+                uid = match.group(1)
+                word = db.get_word(uid)
                 if word is None:
-                    # Matching, but can't be found, so just let it be
-                    j += s
-                    text += match.group()
+                    # can't be found, let it be
+                    word = last_word
+                    linked = False
                 else:
-                    l = len(word['word'])
-                    self.lexer.links_positions.append((j, j+l))
-                    self.links_uids.append(uid)
-                    j += l
-                    text += word['word']
-                    new_cursor = self.get_cursor_from_index(self.cursor_index() + (l - s) + 1)
-                i += s
-                raw_text = raw_text[match.end():]
+                    word = word['word']
+                    linked = True
+                ph_len = len(match.group())
+                if ph_len == len(last_word):
+                    # button was already added
+                    last_w.text = word
+                    last_w.linked = linked
+                else:
+                    # split to add new button
+                    last_w.text = last_w.text[:-ph_len]
+                    last_w = WordButton(self, linked=linked, text=word)
+                    self.add_widget(last_w)
+                last_word = ''
+                last_c = ''
+
+            if c in SPACE_CHARS:
+                # Add button to represent space
+                last_word = ''
+                if last_c in SPACE_CHARS:
+                    last_w.text += c
+                else:
+                    last_w = WordButton(self, text=c)
+                    self.add_widget(last_w)
+                last_c = c
+
             else:
-                # No more links
-                text += raw_text
-                break
+                # Add button to represent a word
+                last_word += c
+                if not last_c or last_c in SPACE_CHARS:
+                    last_w = WordButton(self, text=c)
+                    self.add_widget(last_w)
+                else:
+                    last_w.text += c
+                last_c = c
 
-        self.unbind(text=self._process)
-        self.text = text
-        self.bind(text=self._process)
-        if new_cursor is not None:
-            Clock.schedule_once(assign_cursor)
+        self.word_input = WordInput(self)
+        self.add_widget(self.word_input)
 
 
-class DocEdit(BoxLayout):
+class DocEdit(MDBoxLayout):
     text = StringProperty('')
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        self.content = FloatLayout()
-        self.add_widget(self.content)
-        self.raw = Raw()
-        # self.raw.bind(text=self._on_change)
-        # self.raw.bind(size=self._on_change)
-        self.content.add_widget(self.raw)
-        self.raw.bind(word_select=self.add_word_edit)
+        self.text_edit = TextEdit()
+        self.text_edit.bind(word_select=self.word_edit)
+        self.add_widget(self.text_edit)
 
         self.word_edit = WordEdit()
 
-    def add_word_edit(self, inst, uid):
+    def word_edit(self, inst, uid):
         self.word_edit.display_word(uid)
         self.add_widget(self.word_edit)
 
     def on_text(self, _, text):
-        self.raw.open(text)
-
-    def _on_change(self, *args):
-        return
-        print("on change")
-        children = [c for c in self.content.children if c is not self.raw]
-        if children:
-            self.content.clear_widgets(children)
-        text = self.raw.text
-        i = 0
-        while text:
-            match = re.search(r'\[\[[\w-]+(?::\w)?]]($)?', text)
-            print('match', match, text)
-            if match:
-                i += match.start()
-                self.raw.cursor = self.raw.get_cursor_from_index(i)
-                linked = re.sub(r'[\[\]]', '', match.group())
-                uid, *options = linked.split(':')
-                app = App.get_running_app()
-                word = app.db.get_word(uid)
-                if word is None:
-                    link = Link(
-                        uid=uid,
-                        text=match.group(),
-                        x=self.raw.cursor_pos[0],
-                        y=self.raw.cursor_pos[1]-24
-                    )
-                else:
-                    link = Link(
-                        uid=uid,
-                        text=word['word'],
-                        word_info=word,
-                        x=self.raw.cursor_pos[0],
-                        y=self.raw.cursor_pos[1]-24
-                    )
-                self.content.add_widget(link)
-                i += match.end() - match.start()
-                text = text[match.end():]
-            else:
-                # No more links
-                break
+        self.text_edit.open(text)

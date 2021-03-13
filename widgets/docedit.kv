@@ -1,3 +1,27 @@
-<Link>:
+<LineBreak>:
     size_hint: None, None
-    size: self.texture_size[0], 30
+    height: 30
+    text: "\uf300"
+    font_name: "Material-Design-Iconic-Font.ttf"
+    on_pos: self.width = self.parent.width - self.parent.children[self.parent.children.index(self)+1].right if self.parent else 0
+    on_press: self.parent.clear_widgets([self])
+
+<WordButton>:
+    size_hint: None, None
+    size: self.lbl_txt.texture_size[0] + 4, 30
+    canvas.before:
+        Color:
+            rgba: self.highlight_color
+        Line:
+            width: 1
+            rectangle: self.x, self.y, self.width, self.height
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+<WordInput>:
+    pos_hint: {"center_x": 0.5, "center_y": 0.5}
+    size_hint: None, None
+    height: 30
+    multiline: False
+    root_color: 0, 0, 0, 0

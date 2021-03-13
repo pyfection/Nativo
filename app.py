@@ -1,12 +1,12 @@
 
-from kivy.app import App
+from kivymd.app import MDApp
 from kivy.factory import Factory
 from kivy.properties import BooleanProperty
 from kivy.uix.screenmanager import ScreenManager
 from kivy.uix.actionbar import ActionGroup
 
 import config
-from db.db import DB
+from db.db import db
 
 
 Factory.register('Manager', module='app')
@@ -25,22 +25,22 @@ class Manager(ScreenManager):
         self.current = screen_name
 
     def create_word(self):
-        if not App.get_running_app().db.token:
+        if not db.token:
             raise ValueError("User not logged in!")
         word_screen = self.get_screen('word')
         word_screen.prefill()
         self.goto('word')
 
     def random_word(self):
-        word = App.get_running_app().db.random_word()
+        word = db.random_word()
         word_screen = self.get_screen('word')
         word_screen.view_word(word)
         self.goto('word')
 
 
-class NativoApp(App):
+class NativoApp(MDApp):
     title = 'Nativo'
-    db = DB()
+    db = db
     authenticated = BooleanProperty(config.debug)
     if config.debug:
         db.verify_user('me@mail.com', 'aoue')
