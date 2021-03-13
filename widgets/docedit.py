@@ -7,10 +7,12 @@ from kivy.properties import StringProperty, BooleanProperty, ListProperty, Bound
 from kivy.lang.builder import Builder
 from kivy.uix.behaviors.focus import FocusBehavior
 from kivy.uix.textinput import TextInput
+from kivymd.app import MDApp
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.stacklayout import MDStackLayout
 from kivymd.uix.textfield import MDTextFieldRect
 from kivymd.uix.button import MDFlatButton, MDRaisedButton
+from kivymd.uix.dialog import MDDialog
 
 from db.db import db
 from widgets.word_edit import WordEdit
@@ -205,25 +207,32 @@ class DocEdit(MDBoxLayout):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.orientation = 'vertical'
-
-        self.text_edit = TextEdit()
-        self.text_edit.bind(active_widget=self.on_active_widget)
-        self.add_widget(self.text_edit)
-
+        app = MDApp.get_running_app()
         self.word_edit = WordEdit()
-        self.link_word = MDRaisedButton(text="Link Word")
+        self.word_edit.size_hint_y = None
+        self.word_edit.height = sum(c.height for c in self.word_edit.children)
+        self.word_edit_dialog = MDDialog(
+            title="Edit Word",
+            type="custom",
+            content_cls=self.word_edit,
+            buttons=[
+                MDFlatButton(
+                    text="CANCEL", text_color=app.theme_cls.primary_color,
+                    on_release=lambda *args: self.word_edit_dialog.dismiss()
+                ),
+                MDFlatButton(
+                    text="UPDATE", text_color=app.theme_cls.primary_color
+                ),
+            ],
+        )
 
-    def on_active_widget(self, inst, widget):
-        children = self.children[1:]
-        if children:
-            self.clear_widgets(children)
-        index = len(self.children)
+    def on_active_widget(self, widget):
         if isinstance(widget, WordInput):
-            self.add_widget(self.link_word, index=index)
+            self.link_word.disabled = False
         elif isinstance(widget, WordButton):
+            self.link_word.disabled = True
             self.word_edit.display_word(widget.linked)
-            self.add_widget(self.word_edit, index=index)
+            self.word_edit_dialog.open()
         else:
             raise ValueError("Active widget has to be either WordInput or WordButton")
 
