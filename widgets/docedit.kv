@@ -12,12 +12,14 @@
     canvas.before:
         Color:
             rgba: self.highlight_color
-        Line:
-            width: 1
-            rectangle: self.x, self.y, self.width, self.height
         Rectangle:
             pos: self.pos
             size: self.size
+        Color:
+            rgba: (1, 1, 1, .2)
+        Line:
+            width: 1
+            rectangle: self.x, self.y, self.width, self.height
 
 <WordInput>:
     pos_hint: {"center_x": 0.5, "center_y": 0.5}

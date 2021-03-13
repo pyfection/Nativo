@@ -41,3 +41,8 @@ class NativoApp(MDApp):
     title = 'Nativo'
     db = db
     authenticated = BooleanProperty(config.debug)
+
+    def build(self):
+        self.theme_cls.primary_palette = "Teal"
+        self.theme_cls.accent_palette = "Indigo"
+        self.theme_cls.theme_style = "Dark"

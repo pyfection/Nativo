@@ -22,8 +22,9 @@ Cache_append = Cache.append
 Builder.load_file('widgets/docedit.kv')
 
 SPACE_CHARS = (' ', '.', ',', '!', '?')
-COLOR_LINKED = (0, .5, 0, .2)
-COLOR_UNLINKED = (0, 0, 1, .2)
+COLOR_LINKED = (0, .6, .1, 1)
+COLOR_UNLINKED = (0, .42, .8, 1)
+COLOR_BROKEN_LINK = (.66, .18, .1, 1)
 
 
 class LineBreak(MDFlatButton):
@@ -33,12 +34,12 @@ class LineBreak(MDFlatButton):
 
 
 class WordButton(MDFlatButton):
-    linked = StringProperty(None)
+    linked = BooleanProperty(None)
+    link = StringProperty(None)
     highlight_color = ListProperty(COLOR_UNLINKED)
 
     def __init__(self, text_edit, **kwargs):
         self.text_edit = text_edit
-        # self.text_color = COLOR_UNLINKED
         super().__init__(**kwargs)
 
     def on_touch_down(self, touch):
@@ -62,9 +63,17 @@ class WordButton(MDFlatButton):
             self.text_edit.word_input.focus = True
 
     def on_linked(self, instance, linked):
-        if linked:
+        self.check_color()
+
+    def on_link(self, instance, link):
+        self.check_color()
+
+    def check_color(self):
+        if self.linked and self.link:
             # self.text_color = COLOR_LINKED
             self.highlight_color = COLOR_LINKED
+        elif self.linked and not self.link:
+            self.highlight_color = COLOR_BROKEN_LINK
         else:
             # self.text_color = COLOR_UNLINKED
             self.highlight_color = COLOR_UNLINKED
@@ -158,22 +167,24 @@ class TextEdit(MDStackLayout):
             if match:
                 uid = match.group(1)
                 word = db.get_word(uid)
+                linked = True
                 if word is None:
                     # can't be found, let it be
                     word = last_word
-                    linked = None
+                    link = None
                 else:
                     word = word['word']
-                    linked = uid
+                    link = uid
                 ph_len = len(match.group())
                 if ph_len == len(last_word):
                     # button was already added
                     last_w.text = word
                     last_w.linked = linked
+                    last_w.link = link
                 else:
                     # split to add new button
                     last_w.text = last_w.text[:-ph_len]
-                    last_w = WordButton(self, linked=linked, text=word)
+                    last_w = WordButton(self, linked=linked, link=link, text=word)
                     self.add_widget(last_w)
                 last_word = ''
                 last_c = ''
@@ -206,12 +217,13 @@ class DocEdit(MDBoxLayout):
     text = StringProperty('')
 
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
         app = MDApp.get_running_app()
+        super().__init__(md_bg_color=app.theme_cls.bg_light, **kwargs)
         self.word_edit = WordEdit()
         self.word_edit.size_hint_y = None
         self.word_edit.height = sum(c.height for c in self.word_edit.children)
         self.word_edit_dialog = MDDialog(
+            md_bg_color=(1, 1, 1, 1),  # app.theme_cls.bg_dark,  # For some reason keeps light color
             title="Edit Word",
             type="custom",
             content_cls=self.word_edit,
@@ -225,13 +237,14 @@ class DocEdit(MDBoxLayout):
                 ),
             ],
         )
+        print(self.word_edit_dialog.theme_cls.bg_dark, self.word_edit_dialog.md_bg_color)
 
     def on_active_widget(self, widget):
         if isinstance(widget, WordInput):
             self.link_word.disabled = False
-        elif isinstance(widget, WordButton):
+        elif isinstance(widget, WordButton) and widget.link:
             self.link_word.disabled = True
-            self.word_edit.display_word(widget.linked)
+            self.word_edit.display_word(widget.link)
             self.word_edit_dialog.open()
         else:
             raise ValueError("Active widget has to be either WordInput or WordButton")
