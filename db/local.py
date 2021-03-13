@@ -5,10 +5,13 @@ from tinydb import TinyDB, Query
 
 
 class DB(TinyDB):
-    def __init__(self):
-        super().__init__('db/localdb.json')
+    def __init__(self, path='db/localdb.json'):
+        super().__init__(path)
         self.token = ''
         self.user = ''
+        self.languages_buffer = {}
+        self.lang_name_trans = {}
+        self.lang_trans_name = {}
 
     # - Auth - #
     def create_user(self, email, password):
@@ -48,6 +51,19 @@ class DB(TinyDB):
         Lang = Query()
         return table.upsert(data, Lang.uid == uid)
 
+    def get_lang(self, uid):
+        Lang = Query()
+        table = self.table('lang')
+        return table.get(Lang.uid == uid)
+
+    def get_langs(self):
+        if not self.languages_buffer:
+            table = self.table('lang')
+            self.languages_buffer = table.all()
+            self.lang_name_trans = {data['name']: self.get_word(data['name'])['word'] for data in self.languages_buffer}
+            self.lang_trans_name = {val: key for key, val in self.lang_name_trans.items()}
+        return self.languages_buffer
+
     # - Word - #
     def upsert_word(self, uid, word, lang, creator, description='', phrases=None):
         # ToDo: add decorator to check if word is valid
@@ -63,13 +79,23 @@ class DB(TinyDB):
         Word = Query()
         return table.upsert(data, Word.uid == uid)
 
-    def get_word(self, uid):
+    def get_word(self, uid, lang=None):
         Word = Query()
+        query = [
+            Word.uid == uid,
+        ]
+        if lang:
+            query.append(Word.lang == lang)
         table = self.table('word')
-        return table.get(Word.uid == uid)
+        return table.get(*query)
 
     def random_word(self):
         table = self.table('word')
         return random.choice(table.all())
 
     # - Document - #
+
+
+if __name__ == '__main__':
+    db = DB(path='localdb.json')
+    print(db.get_word('BAR-BAR'))

@@ -6,31 +6,34 @@
 
     orientation: "vertical"
 
-    TextInput:
+    MDTextField:
         id: word
         hint_text: "Word"
         write_tab: False
-        disabled: bool(app.db.token)
+        disabled: not app.authenticated
 
-    TextInput:  # ToDo: change to dropdown
+    MDTextField:
         id: lang
+        size_hint_x: 1
         hint_text: "Language"
-        write_tab: False
-        disabled: bool(app.db.token)
+        on_center: self.parent.lang_selector.pos = self.center
+        on_focus: if self.focus: self.parent.lang_selector.open()
+        disabled: not app.authenticated
 
-    TextInput:
+    MDTextField:
         id: desc
         hint_text: "Description"
         write_tab: False
-        disabled: bool(app.db.token)
+        disabled: not app.authenticated
 
-    BoxLayout:
-        Label:
+    MDBoxLayout:
+        MDLabel:
             text: "Creator:"
-        Label:
+        MDLabel:
             id: creator
 
-    Button:
+    MDRaisedButton:
+        size_hint_x: 1
         text: "Create" if root.word_uid else "Update"
-        disabled: bool(app.db.token)
+        disabled: not app.authenticated
         on_press: root.create(word.text, lang.text, desc.text)

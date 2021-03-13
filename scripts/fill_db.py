@@ -11,6 +11,7 @@ def fill_languages(db: DB = None):
 def fill_words(db: DB = None):
     db = db or DB()
     db.upsert_word('BAR-BAR', 'Boaric', 'BAR', '<script>')
+    db.upsert_word('BAR-GUG', 'Bávaro', 'GUG', '<script>')
     db.upsert_word('GUG-GUG', 'Guaraní', 'GUG', '<script>')
 
     db.upsert_word(None, 'huad', 'BAR', '<script>')

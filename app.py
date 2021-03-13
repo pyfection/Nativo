@@ -3,7 +3,6 @@ from kivymd.app import MDApp
 from kivy.factory import Factory
 from kivy.properties import BooleanProperty
 from kivy.uix.screenmanager import ScreenManager
-from kivy.uix.actionbar import ActionGroup
 
 import config
 from db.db import db
@@ -42,5 +41,3 @@ class NativoApp(MDApp):
     title = 'Nativo'
     db = db
     authenticated = BooleanProperty(config.debug)
-    if config.debug:
-        db.verify_user('me@mail.com', 'aoue')
