@@ -3,14 +3,14 @@ import re
 from kivy.clock import Clock
 from kivy.cache import Cache
 from kivy.metrics import sp
-from kivy.properties import StringProperty, BooleanProperty, ListProperty, BoundedNumericProperty
+from kivy.properties import StringProperty, BooleanProperty, ListProperty, BoundedNumericProperty, ObjectProperty
 from kivy.lang.builder import Builder
 from kivy.uix.behaviors.focus import FocusBehavior
 from kivy.uix.textinput import TextInput
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.stacklayout import MDStackLayout
 from kivymd.uix.textfield import MDTextFieldRect
-from kivymd.uix.button import MDFlatButton
+from kivymd.uix.button import MDFlatButton, MDRaisedButton
 
 from db.db import db
 from widgets.word_edit import WordEdit
@@ -31,7 +31,7 @@ class LineBreak(MDFlatButton):
 
 
 class WordButton(MDFlatButton):
-    linked = BooleanProperty(False)
+    linked = StringProperty(None)
     highlight_color = ListProperty(COLOR_UNLINKED)
 
     def __init__(self, text_edit, **kwargs):
@@ -45,13 +45,15 @@ class WordButton(MDFlatButton):
 
     def on_press(self):
         if self.linked:
-            pass  # ToDo: add opening side panel
+            self.text_edit.active_widget = self
+            self.text_edit.word_input.focus = False
         else:
             # Replacing old word_input with new word_button
             self.text_edit.word_input.unfocus()
 
             # Replacing self with word_input
             index = self.text_edit.children.index(self)
+            # self.text_edit.active_widget = self.text_edit.word_input
             self.text_edit.clear_widgets([self])
             self.text_edit.word_input.text = self.text
             self.text_edit.add_widget(self.text_edit.word_input, index=index)
@@ -103,20 +105,30 @@ class WordInput(TextInput):
         else:
             return super().insert_text(substring, from_undo=from_undo)
 
-    def on_text(self, obj, text):
+    def on_text(self, instance, text):
         self.width = self._lines_labels[0].width + sp(self.font_size)
 
+    def on_focus(self, instance, focus):
+        if focus:
+            self.text_edit.active_widget = self
+        else:
+            self.unfocus()
+
     def unfocus(self):
-        index = self.text_edit.children.index(self)
+        try:
+            index = self.text_edit.children.index(self)
+        except ValueError:
+            return False
         self.text_edit.clear_widgets([self])
         if self.text:
             w = WordButton(self.text_edit, text=self.text)
             self.text_edit.add_widget(w, index=index)
         self.text = ''
+        return True
 
 
 class TextEdit(MDStackLayout):
-    word_select = StringProperty('')
+    active_widget = ObjectProperty()
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -127,10 +139,10 @@ class TextEdit(MDStackLayout):
             for child in self.children:
                 if child.collide_point(*touch.pos):
                     return super().on_touch_down(touch)
-        self.word_input.unfocus()
-        self.add_widget(self.word_input)
-        FocusBehavior.ignored_touch.append(touch)
-        self.word_input.focus = True
+            self.word_input.unfocus()
+            self.add_widget(self.word_input)
+            FocusBehavior.ignored_touch.append(touch)
+            self.word_input.focus = True
 
     def open(self, text):
         self.clear_widgets()
@@ -147,10 +159,10 @@ class TextEdit(MDStackLayout):
                 if word is None:
                     # can't be found, let it be
                     word = last_word
-                    linked = False
+                    linked = None
                 else:
                     word = word['word']
-                    linked = True
+                    linked = uid
                 ph_len = len(match.group())
                 if ph_len == len(last_word):
                     # button was already added
@@ -193,16 +205,27 @@ class DocEdit(MDBoxLayout):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.orientation = 'vertical'
 
         self.text_edit = TextEdit()
-        self.text_edit.bind(word_select=self.word_edit)
+        self.text_edit.bind(active_widget=self.on_active_widget)
         self.add_widget(self.text_edit)
 
         self.word_edit = WordEdit()
+        self.link_word = MDRaisedButton(text="Link Word")
 
-    def word_edit(self, inst, uid):
-        self.word_edit.display_word(uid)
-        self.add_widget(self.word_edit)
+    def on_active_widget(self, inst, widget):
+        children = self.children[1:]
+        if children:
+            self.clear_widgets(children)
+        index = len(self.children)
+        if isinstance(widget, WordInput):
+            self.add_widget(self.link_word, index=index)
+        elif isinstance(widget, WordButton):
+            self.word_edit.display_word(widget.linked)
+            self.add_widget(self.word_edit, index=index)
+        else:
+            raise ValueError("Active widget has to be either WordInput or WordButton")
 
     def on_text(self, _, text):
         self.text_edit.open(text)
