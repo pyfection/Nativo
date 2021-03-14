@@ -8,6 +8,7 @@ from kivy.lang.builder import Builder
 from kivy.uix.behaviors.focus import FocusBehavior
 from kivy.uix.textinput import TextInput
 from kivymd.app import MDApp
+from kivymd.theming import ThemableBehavior
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.stacklayout import MDStackLayout
 from kivymd.uix.textfield import MDTextFieldRect
@@ -79,7 +80,7 @@ class WordButton(MDFlatButton):
             self.highlight_color = COLOR_UNLINKED
 
 
-class WordInput(TextInput):
+class WordInput(ThemableBehavior, TextInput):
     def __init__(self, text_edit, **kwargs):
         self.text_edit = text_edit
         super().__init__(**kwargs)

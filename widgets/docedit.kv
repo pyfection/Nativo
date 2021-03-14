@@ -3,6 +3,8 @@
     height: 30
     text: "\uf300"
     font_name: "Material-Design-Iconic-Font.ttf"
+    theme_text_color: "Custom"
+    text_color: 0, 0, 0, 1
     on_pos: self.width = self.parent.width - self.parent.children[self.parent.children.index(self)+1].right if self.parent else 0
     on_press: self.parent.clear_widgets([self])
 
@@ -22,6 +24,7 @@
             rectangle: self.x, self.y, self.width, self.height
 
 <WordInput>:
+    background_color: 0, 0, 0, 0
     pos_hint: {"center_x": 0.5, "center_y": 0.5}
     size_hint: None, None
     height: 30
