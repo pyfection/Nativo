@@ -9,16 +9,16 @@ Screen:
 
             id: manager
             logged_in: False
-            on_parent: self.current = "main" if config.debug else 'auth'
-
-            AuthPage:
-                name: "auth"
+            on_parent: self.current = "docedit"  # ToDo: remove this
 
             MainPage:
                 name: "main"
 
             WordPage:
                 name: "word"
+
+            DocEditPage:
+                name: "docedit"
 
 
         MDNavigationDrawer:
@@ -52,10 +52,15 @@ Screen:
                     size_hint_y: None
                     height: self.texture_size[1]
 
-#                ScrollView:
-#
-#                    DrawerList:
-#                        id: md_list
+                ScrollView:
+
+                    MDList:
+                        OneLineIconListItem:
+                            icon: "file-document-edit"  # ToDo: icons are not displayed
+                            text: "Edit Document"
+                            on_release:
+                                manager.current = 'docedit'
+                                nav_drawer.set_state("close")
 
 <NativoToolbar@MDToolbar>:
     id: toolbar

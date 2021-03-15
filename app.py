@@ -15,7 +15,7 @@ Factory.register('Manager', module='app')
 Factory.register('AuthPage', module='pages.auth')
 Factory.register('MainPage', module='pages.main')
 Factory.register('WordPage', module='pages.word')
-Factory.register('DocEdit', module='widgets.docedit')
+Factory.register('DocEditPage', module='pages.docedit')
 
 
 class Manager(ScreenManager):

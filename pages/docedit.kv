@@ -1,0 +1,25 @@
+<DocEditPage>:
+    text_edit: text_edit
+    toolbar: toolbar
+
+    text: "[[0]] there! [[BAR-BAR]] [[3:U]] is an [[1]] doc, to show [[2]][[3]] could work."  # ToDo: remove this
+
+    MDBoxLayout:
+        orientation: 'vertical'
+        text_edit: text_edit
+        canvas.before:
+            Clear:
+            Color:
+                rgba: (.9, .9, .9, 1)  # app.theme_cls.bg_light  # doesn't work
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        NativoToolbar:
+            id: toolbar
+            left_action_items: [['menu', lambda x: root.parent.nav_drawer.set_state("open")]]
+            right_action_items: [['link-variant', lambda x: root., 'Link Word']]
+
+        TextEdit:
+            id: text_edit
+            on_active_widget: root.on_active_widget(self.active_widget)

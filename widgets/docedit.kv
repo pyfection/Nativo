@@ -30,17 +30,3 @@
     height: 30
     multiline: False
     root_color: 0, 0, 0, 0
-
-<DocEdit>:
-    orientation: 'vertical'
-    text_edit: text_edit
-    link_word: link_word
-
-    MDRaisedButton:
-        id: link_word
-        text: "Link Word"
-        size_hint_x: 1
-
-    TextEdit:
-        id: text_edit
-        on_active_widget: self.parent.on_active_widget(self.active_widget)
