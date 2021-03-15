@@ -1,5 +1,6 @@
 
 from kivymd.app import MDApp
+from kivy.core.window import Window
 from kivy.factory import Factory
 from kivy.properties import BooleanProperty
 from kivy.uix.screenmanager import ScreenManager
@@ -7,12 +8,13 @@ from kivy.uix.screenmanager import ScreenManager
 import config
 from db.db import db
 
+Window.size = (480, 800)
+
 
 Factory.register('Manager', module='app')
 Factory.register('AuthPage', module='pages.auth')
 Factory.register('MainPage', module='pages.main')
 Factory.register('WordPage', module='pages.word')
-Factory.register('Menu', module='widgets.menu')
 Factory.register('DocEdit', module='widgets.docedit')
 
 
