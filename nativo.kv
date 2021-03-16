@@ -1,6 +1,8 @@
 #:import config config
 
 Screen:
+    manager: manager
+    docedit: docedit
 
     MDNavigationLayout:
 
@@ -9,7 +11,7 @@ Screen:
 
             id: manager
             logged_in: False
-            on_parent: self.current = "docedit"  # ToDo: remove this
+            on_parent: self.current = "doclist"  # ToDo: remove this
 
 
             Screen:
@@ -18,9 +20,15 @@ Screen:
                     nav_drawer: nav_drawer
 
             Screen:
+                name: "doclist"
+                DocListView:
+                    nav_drawer: nav_drawer
+
+            Screen:
                 name: "docedit"
                 DocEditView:
                     nav_drawer: nav_drawer
+                    id: docedit
 
         MDNavigationDrawer:
             id: nav_drawer
@@ -64,11 +72,18 @@ Screen:
                                 nav_drawer.set_state("close")
 
                         OneLineIconListItem:
-                            icon: "file-document-edit"  # ToDo: icons are not displayed
-                            text: "Edit Document"
+                            icon: "file-document-multiple"  # ToDo: icons are not displayed
+                            text: "Documents"
                             on_release:
-                                manager.current = 'docedit'
+                                manager.current = 'doclist'
                                 nav_drawer.set_state("close")
+
+#                        OneLineIconListItem:
+#                            icon: "file-document-edit"  # ToDo: icons are not displayed
+#                            text: "Edit Document"
+#                            on_release:
+#                                manager.current = 'docedit'
+#                                nav_drawer.set_state("close")
 
 <NativoToolbar@MDToolbar>:
     id: toolbar

@@ -14,7 +14,7 @@ Window.size = (480, 800)
 Factory.register('Manager', module='app')
 # Factory.register('AuthPage', module='pages.auth')
 Factory.register('MainView', module='views.main')
-# Factory.register('WordPage', module='pages.word')
+Factory.register('DocListView', module='views.doclist')
 Factory.register('DocEditView', module='views.docedit')
 
 
@@ -48,3 +48,7 @@ class NativoApp(MDApp):
         self.theme_cls.primary_palette = "Teal"
         self.theme_cls.accent_palette = "Indigo"
         self.theme_cls.theme_style = "Dark"
+
+    def edit_doc(self, uid):
+        self.root.manager.current = 'docedit'
+        self.root.docedit.text = db.get_doc(uid)['text']

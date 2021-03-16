@@ -25,6 +25,13 @@ def fill_words(db: DB = None):
     db.upsert_word(None, 'kuña', 'GUG', '<script>')
 
 
+def fill_documents(db: DB = None):
+    db = db or DB()
+    db.upsert_doc(None, 'Testdoc', "[[0]] there! [[BAR-BAR]] [[3:U]] is an [[1]] doc, to show [[2]][[3]] could work.", 'BAR', '<script>')
+
+
+
 if __name__ == '__main__':
-    fill_languages()
-    fill_words()
+    # fill_languages()
+    # fill_words()
+    fill_documents()

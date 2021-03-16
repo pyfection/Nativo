@@ -94,6 +94,31 @@ class DB(TinyDB):
         return random.choice(table.all())
 
     # - Document - #
+    def upsert_doc(self, uid, title, text, lang, creator):
+        # ToDo: add decorator to check if word is valid
+        table = self.table('doc')
+        data = {
+            'uid': uid or str(uuid4()),
+            'title': title,
+            'text': text,
+            'lang': lang,
+            'creator': creator,
+        }
+        Doc = Query()
+        return table.upsert(data, Doc.uid == uid)
+
+    def get_doc(self, uid):
+        Doc = Query()
+        query = [
+            Doc.uid == uid,
+        ]
+        table = self.table('doc')
+        return table.get(*query)
+
+    def get_docs_short(self):
+        table = self.table('doc')
+        docs = table.all()
+        return [{'uid': doc['uid'], 'title': doc['title'], 'desc': f'{doc["text"][:50]}...'} for doc in docs]
 
 
 if __name__ == '__main__':
