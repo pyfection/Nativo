@@ -12,9 +12,9 @@ Window.size = (480, 800)
 
 
 Factory.register('Manager', module='app')
-Factory.register('AuthPage', module='pages.auth')
-Factory.register('MainPage', module='pages.main')
-Factory.register('WordPage', module='pages.word')
+# Factory.register('AuthPage', module='pages.auth')
+Factory.register('MainView', module='views.main')
+# Factory.register('WordPage', module='pages.word')
 Factory.register('DocEditView', module='views.docedit')
 
 

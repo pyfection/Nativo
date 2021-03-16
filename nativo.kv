@@ -11,11 +11,11 @@ Screen:
             logged_in: False
             on_parent: self.current = "docedit"  # ToDo: remove this
 
-            MainPage:
-                name: "main"
 
-            WordPage:
-                name: "word"
+            Screen:
+                name: "main"
+                MainView:
+                    nav_drawer: nav_drawer
 
             Screen:
                 name: "docedit"
