@@ -5,15 +5,16 @@ from kivy.lang.builder import Builder
 from kivy.uix.screenmanager import Screen
 from kivymd.uix.button import MDFlatButton
 from kivymd.uix.dialog import MDDialog
+from kivymd.uix.boxlayout import MDBoxLayout
 
 from widgets.word_edit import WordEdit
 from widgets.docedit import WordInput, WordButton
 
 
-Builder.load_file('pages/docedit.kv')
+Builder.load_file('views/docedit.kv')
 
 
-class DocEditPage(Screen):
+class DocEditView(MDBoxLayout):
     text = StringProperty('')
 
     def __init__(self, **kwargs):
