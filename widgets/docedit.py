@@ -139,6 +139,7 @@ class TextEdit(MDStackLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.word_input = None
+        self.open('')
 
     def on_touch_down(self, touch):
         if self.collide_point(*touch.pos):

@@ -49,6 +49,9 @@ class NativoApp(MDApp):
         self.theme_cls.accent_palette = "Indigo"
         self.theme_cls.theme_style = "Dark"
 
-    def edit_doc(self, uid):
+    def edit_doc(self, uid=None):
         self.root.manager.current = 'docedit'
-        self.root.docedit.text = db.get_doc(uid)['text']
+        if uid:
+            self.root.docedit.text = db.get_doc(uid)['text']
+        else:
+            self.root.docedit.text = ''
