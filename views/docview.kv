@@ -1,0 +1,42 @@
+<DocViewView>:
+    toolbar: toolbar
+    orientation: "vertical"
+
+    NativoToolbar:
+        id: toolbar
+        left_action_items: [['menu', lambda x: root.nav_drawer.set_state("open")]]
+        right_action_items: [['link-variant', lambda x: print('Not implemented yet'), 'Link Word']]
+
+    MDLabel:
+        size_hint_y: None
+        height: 60
+        text: root.title
+        font_style: "H3"
+        padding: 10, 10
+
+    MDLabel:
+        size_hint_y: None
+        height: 30
+        text: root.lang
+        font_style: "Subtitle1"
+        padding: 10, 10
+
+    MDLabel:
+        size_hint_y: None
+        height: 30
+        text: root.creator
+        font_style: "Subtitle1"
+        padding: 10, 10
+
+    MDLabel:
+        canvas.before:
+            Color:
+                rgba: (1, 0, 0, 1)  # app.theme_cls.bg_light  # doesn't work
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        valign: "top"
+        text: root.text
+        text_size: self.size
+        padding: 10, 10

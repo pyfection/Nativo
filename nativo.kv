@@ -3,6 +3,7 @@
 Screen:
     manager: manager
     docedit: docedit
+    docview: docview
 
     MDNavigationLayout:
 
@@ -29,6 +30,12 @@ Screen:
                 DocEditView:
                     nav_drawer: nav_drawer
                     id: docedit
+
+            Screen:
+                name: "docview"
+                DocViewView:
+                    nav_drawer: nav_drawer
+                    id: docview
 
         MDNavigationDrawer:
             id: nav_drawer

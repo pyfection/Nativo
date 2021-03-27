@@ -1,5 +1,6 @@
 from uuid import uuid4
 import random
+import re
 
 from tinydb import TinyDB, Query
 
@@ -115,10 +116,28 @@ class DB(TinyDB):
         table = self.table('doc')
         return table.get(*query)
 
+    def translate_doc_text(self, text):
+        def trans(uid):
+            word = self.get_word(uid)
+            if word:
+                return word['word']
+            else:
+                return uid
+        return re.sub(r'\[\[([\w-]+(?::\w)?)]]', lambda m: trans(m.group(1)), text)
+
+    def get_doc_trans(self, uid):
+        # Gets translated doc
+        doc = self.get_doc(uid)
+        doc['text'] = self.translate_doc_text(doc['text'])
+        return doc
+
     def get_docs_short(self):
         table = self.table('doc')
         docs = table.all()
-        return [{'uid': doc['uid'], 'title': doc['title'], 'desc': f'{doc["text"][:50]}...'} for doc in docs]
+        return [
+            {'uid': doc['uid'], 'title': doc['title'], 'desc': f'{self.translate_doc_text(doc["text"])[:50]}...'}
+            for doc in docs
+        ]
 
 
 if __name__ == '__main__':

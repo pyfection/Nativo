@@ -16,6 +16,7 @@ Factory.register('Manager', module='app')
 Factory.register('MainView', module='views.main')
 Factory.register('DocListView', module='views.doclist')
 Factory.register('DocEditView', module='views.docedit')
+Factory.register('DocViewView', module='views.docview')
 
 
 class Manager(ScreenManager):
@@ -55,3 +56,11 @@ class NativoApp(MDApp):
             self.root.docedit.text = db.get_doc(uid)['text']
         else:
             self.root.docedit.text = ''
+
+    def view_doc(self, uid):
+        self.root.manager.current = 'docview'
+        doc = self.db.get_doc_trans(uid)
+        self.root.docview.title = doc['title']
+        self.root.docview.text = doc['text']
+        self.root.docview.lang = doc['lang']
+        self.root.docview.creator = doc['creator']
