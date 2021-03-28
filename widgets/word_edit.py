@@ -28,10 +28,17 @@ class WordEdit(MDBoxLayout):
         self.lang.text = instance_menu_item.text
         self.lang_selector.dismiss()
 
+    def new_word(self):
+        self.word_uid = None
+        self.desc_uid = None
+        self.word.text = ''
+        self.lang.text = ''
+        self.desc.text = ''
+        self.creator.text = App.get_running_app().db.user
+
     def display_word(self, uid):
         self.word_uid = uid
         word = db.get_word(uid)
-        self.word_uid = word['uid']
         self.desc_uid = word['description']
 
         self.word.text = word['word']
@@ -39,10 +46,8 @@ class WordEdit(MDBoxLayout):
         self.desc.text = db.get_document(self.desc_uid) if self.desc_uid else ''
         self.creator.text = word['creator']
 
-    def prepare_create(self):
-        self.word_uid = None
-        self.desc_uid = None
-        self.creator.text = App.get_running_app().db.user
+    def show_word_suggestions(self):
+        print('show word suggestions')
 
     def update(self):
         app = App.get_running_app()

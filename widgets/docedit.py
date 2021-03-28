@@ -61,10 +61,11 @@ class WordButton(MDFlatButton):
         self.check_color()
 
     def on_link(self, instance, link):
+        self.linked = link is not None
         self.check_color()
 
     def check_color(self):
-        if self.linked and self.link:
+        if self.link:
             # self.text_color = COLOR_LINKED
             self.highlight_color = COLOR_LINKED
         elif self.linked and not self.link:
@@ -129,6 +130,7 @@ class WordInput(ThemableBehavior, TextInput):
         if self.text:
             w = WordButton(self.text_edit, text=self.text)
             self.text_edit.add_widget(w, index=index)
+            self.text_edit.active_widget = w
         self.text = ''
         return True
 

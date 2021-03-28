@@ -10,6 +10,8 @@ from kivymd.uix.boxlayout import MDBoxLayout
 from widgets.word_edit import WordEdit
 from widgets.docedit import WordInput, WordButton
 
+from db.db import db
+
 
 Builder.load_file('views/docedit.kv')
 
@@ -23,6 +25,10 @@ class DocEditView(MDBoxLayout):
         self.word_edit = WordEdit()
         self.word_edit.size_hint_y = None
         self.word_edit.height = sum(c.height for c in self.word_edit.children)
+        self.dialog_confirm_button = MDFlatButton(
+            text="UPDATE", text_color=app.theme_cls.primary_color,
+            on_release=lambda *args: self.process_word()
+        )
         self.word_edit_dialog = MDDialog(
             md_bg_color=(1, 1, 1, 1),  # app.theme_cls.bg_dark,  # For some reason keeps light color
             title="Edit Word",
@@ -33,9 +39,7 @@ class DocEditView(MDBoxLayout):
                     text="CANCEL", text_color=app.theme_cls.primary_color,
                     on_release=lambda *args: self.word_edit_dialog.dismiss()
                 ),
-                MDFlatButton(
-                    text="UPDATE", text_color=app.theme_cls.primary_color
-                ),
+                self.dialog_confirm_button,
             ],
         )
 
@@ -46,12 +50,46 @@ class DocEditView(MDBoxLayout):
     def on_active_widget(self, widget):
         if isinstance(widget, WordInput):
             self.link_word.disabled = False
-        elif isinstance(widget, WordButton) and widget.link:
+        elif isinstance(widget, WordButton):
             self.link_word.disabled = True
-            self.word_edit.display_word(widget.link)
-            self.word_edit_dialog.open()
+            if widget.link:
+                self.word_edit.display_word(widget.link)
+                self.dialog_confirm_button.text = "UPDATE"
+                self.word_edit_dialog.open()
+            else:
+                pass  # Unlinked word that lost focus
         else:
             raise ValueError("Active widget has to be either WordInput or WordButton")
 
     def on_text(self, _, text):
         self.text_edit.open(text)
+
+    def open_link_word(self):
+        self.word_edit.new_word()
+        self.dialog_confirm_button.text = "LINK"
+        self.word_edit.word.text = self.text_edit.active_widget.text
+        self.word_edit_dialog.open()
+
+    def process_word(self):
+        uid = self.word_edit.word_uid
+        desc_uid = self.word_edit.desc_uid
+        word = self.word_edit.word.text
+        desc_uid = db.upsert_doc(
+            uid=desc_uid,
+            title=f"Description of [{word}]",
+            text=self.word_edit.desc.text,
+            lang=self.word_edit.lang.text,
+            creator=self.word_edit.creator.text,
+        )
+
+        uid = db.upsert_word(
+            uid=uid,
+            word=word,
+            lang=self.word_edit.lang.text,
+            creator=self.word_edit.creator.text,
+            description=desc_uid,
+        )
+
+        self.text_edit.active_widget.text = word
+        self.text_edit.active_widget.link = uid
+        self.word_edit_dialog.dismiss()

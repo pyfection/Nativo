@@ -78,7 +78,8 @@ class DB(TinyDB):
             'phrases': phrases or [],  # uid's of phrases in which it is contained
         }
         Word = Query()
-        return table.upsert(data, Word.uid == uid)
+        table.upsert(data, Word.uid == uid)
+        return data['uid']
 
     def get_word(self, uid, lang=None):
         Word = Query()
@@ -106,7 +107,8 @@ class DB(TinyDB):
             'creator': creator,
         }
         Doc = Query()
-        return table.upsert(data, Doc.uid == uid)
+        table.upsert(data, Doc.uid == uid)
+        return data['uid']
 
     def get_doc(self, uid):
         Doc = Query()
