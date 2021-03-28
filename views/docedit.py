@@ -17,7 +17,8 @@ Builder.load_file('views/docedit.kv')
 
 
 class DocEditView(MDBoxLayout):
-    text = StringProperty('')
+    uid = StringProperty('')
+    doc = None
 
     def __init__(self, **kwargs):
         app = App.get_running_app()
@@ -61,8 +62,18 @@ class DocEditView(MDBoxLayout):
         else:
             raise ValueError("Active widget has to be either WordInput or WordButton")
 
-    def on_text(self, _, text):
+    def on_uid(self, _, uid):
+        if uid:
+            self.doc = db.get_doc(uid)
+            text = self.doc['text']
+        else:
+            text = ''
         self.text_edit.open(text)
+
+    def save(self):
+        text = self.text_edit.text
+        self.doc['text'] = text
+        db.upsert_doc(**self.doc)
 
     def open_link_word(self):
         self.word_edit.new_word()
@@ -78,14 +89,14 @@ class DocEditView(MDBoxLayout):
             uid=desc_uid,
             title=f"Description of [{word}]",
             text=self.word_edit.desc.text,
-            lang=self.word_edit.lang.text,
+            lang=self.word_edit.lang.lang_uid,
             creator=self.word_edit.creator.text,
         )
 
         uid = db.upsert_word(
             uid=uid,
             word=word,
-            lang=self.word_edit.lang.text,
+            lang=self.word_edit.lang.lang_uid,
             creator=self.word_edit.creator.text,
             description=desc_uid,
         )
@@ -93,3 +104,5 @@ class DocEditView(MDBoxLayout):
         self.text_edit.active_widget.text = word
         self.text_edit.active_widget.link = uid
         self.word_edit_dialog.dismiss()
+
+        self.save()

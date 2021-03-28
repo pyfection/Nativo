@@ -43,6 +43,7 @@ class WordButton(MDFlatButton):
 
     def on_press(self):
         if self.linked:
+            self.text_edit.active_widget = None
             self.text_edit.active_widget = self
             self.text_edit.word_input.focus = False
         else:
@@ -136,7 +137,7 @@ class WordInput(ThemableBehavior, TextInput):
 
 
 class TextEdit(MDStackLayout):
-    active_widget = ObjectProperty()
+    active_widget = ObjectProperty(allownone=True)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -209,3 +210,16 @@ class TextEdit(MDStackLayout):
 
         self.word_input = WordInput(self)
         self.add_widget(self.word_input)
+
+    @property
+    def text(self):
+        text = ''
+
+        for child in reversed(self.children):
+            link = getattr(child, 'link', None)
+            if link:
+                text += f"[[{link}]]"
+            else:
+                text += child.text
+
+        return text

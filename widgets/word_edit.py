@@ -4,6 +4,7 @@ from kivy.lang.builder import Builder
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.menu import MDDropdownMenu
 
+from widgets.dropdown import DropDown
 from db.db import db
 
 
@@ -16,8 +17,8 @@ class WordEdit(MDBoxLayout):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.lang_choices = [{"text": db.lang_name_trans[lang['name']]} for lang in db.get_langs()]
-        self.lang_selector = MDDropdownMenu(
+        self.lang_choices = [{"text": db.lang_name_trans[lang['name']], "uid": lang['uid']} for lang in db.get_langs()]
+        self.lang_selector = DropDown(
             caller=self.lang,
             items=self.lang_choices,
             width_mult=4,
@@ -26,6 +27,7 @@ class WordEdit(MDBoxLayout):
 
     def _update_language(self, instance_menu, instance_menu_item):
         self.lang.text = instance_menu_item.text
+        self.lang.lang_uid = instance_menu_item.data['uid']
         self.lang_selector.dismiss()
 
     def new_word(self):
@@ -43,7 +45,8 @@ class WordEdit(MDBoxLayout):
 
         self.word.text = word['word']
         self.lang.text = db.lang_name_trans[db.get_lang(word['lang'])['name']]
-        self.desc.text = db.get_document(self.desc_uid) if self.desc_uid else ''
+        self.lang.lang_uid = word['lang']
+        self.desc.text = db.get_doc(self.desc_uid)['text'] if self.desc_uid else ''
         self.creator.text = word['creator']
 
     def show_word_suggestions(self):

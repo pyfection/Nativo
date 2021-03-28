@@ -53,9 +53,9 @@ class NativoApp(MDApp):
     def edit_doc(self, uid=None):
         self.root.manager.current = 'docedit'
         if uid:
-            self.root.docedit.text = db.get_doc(uid)['text']
+            self.root.docedit.uid = uid
         else:
-            self.root.docedit.text = ''
+            self.root.docedit.uid = None
 
     def view_doc(self, uid):
         self.root.manager.current = 'docview'
