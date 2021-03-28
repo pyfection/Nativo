@@ -8,6 +8,7 @@ Builder.load_file('views/docview.kv')
 
 
 class DocViewView(MDBoxLayout):
+    uid = StringProperty('')
     title = StringProperty('')
     text = StringProperty('')
     lang = StringProperty('')

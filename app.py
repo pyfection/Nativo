@@ -60,6 +60,7 @@ class NativoApp(MDApp):
     def view_doc(self, uid):
         self.root.manager.current = 'docview'
         doc = self.db.get_doc_trans(uid)
+        self.root.docview.uid = uid
         self.root.docview.title = doc['title']
         self.root.docview.text = doc['text']
         self.root.docview.lang = doc['lang']
