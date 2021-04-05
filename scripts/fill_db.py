@@ -2,6 +2,11 @@
 from db.db import DB
 
 
+def fill_users(db: DB = None):
+    db = db or DB()
+    db.create_user("me@example.com", "12345", "Test bio")
+
+
 def fill_languages(db: DB = None):
     db = db or DB()
     db.upsert_lang('BAR', 'BAR-BAR', None)
@@ -34,4 +39,5 @@ def fill_documents(db: DB = None):
 if __name__ == '__main__':
     # fill_languages()
     # fill_words()
-    fill_documents()
+    # fill_documents()
+    fill_users()

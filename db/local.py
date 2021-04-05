@@ -15,13 +15,13 @@ class DB(TinyDB):
         self.lang_trans_name = {}
 
     # - Auth - #
-    def create_user(self, email, password):
+    def create_user(self, email, password, bio=''):
         User = Query()
         table = self.table('user')
         users = table.search(User.email == email)
         if users:
             raise KeyError(f"User already exists with email {email}")
-        table.insert({'email': email, 'password': password})
+        table.insert({'email': email, 'password': password, 'bio': bio})
 
     def verify_user(self, email, password):
         user = self.get_user(email)
