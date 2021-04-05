@@ -72,25 +72,31 @@ Screen:
 
                     MDList:
                         OneLineIconListItem:
-                            icon: "home"  # ToDo: icons are not displayed
                             text: "Home"
                             on_release:
                                 manager.current = 'main'
                                 nav_drawer.set_state("close")
 
+                            IconLeftWidget:
+                                icon: "home"
+
                         OneLineIconListItem:
-                            icon: "file-document-multiple"  # ToDo: icons are not displayed
                             text: "Documents"
                             on_release:
                                 manager.current = 'doclist'
                                 nav_drawer.set_state("close")
 
+                            IconLeftWidget:
+                                icon: "file-document-multiple"
+
 #                        OneLineIconListItem:
-#                            icon: "file-document-edit"  # ToDo: icons are not displayed
 #                            text: "Edit Document"
 #                            on_release:
 #                                manager.current = 'docedit'
 #                                nav_drawer.set_state("close")
+
+#                            IconLeftWidget:
+#                               icon: "file-document-edit"
 
 <NativoToolbar@MDToolbar>:
     id: toolbar
