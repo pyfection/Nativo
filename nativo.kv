@@ -37,6 +37,12 @@ Screen:
                     nav_drawer: nav_drawer
                     id: docview
 
+            Screen:
+                name: "wordlist"
+                WordListView:
+                    nav_drawer: nav_drawer
+                    id: wordlist
+
         MDNavigationDrawer:
             id: nav_drawer
 
@@ -89,14 +95,14 @@ Screen:
                             IconLeftWidget:
                                 icon: "file-document-multiple"
 
-#                        OneLineIconListItem:
-#                            text: "Edit Document"
-#                            on_release:
-#                                manager.current = 'docedit'
-#                                nav_drawer.set_state("close")
+                        OneLineIconListItem:
+                            text: "Words"
+                            on_release:
+                                manager.current = 'wordlist'
+                                nav_drawer.set_state("close")
 
-#                            IconLeftWidget:
-#                               icon: "file-document-edit"
+                            IconLeftWidget:
+                                icon: "alphabetical"
 
 <NativoToolbar@MDToolbar>:
     id: toolbar

@@ -17,6 +17,7 @@ Factory.register('MainView', module='views.main')
 Factory.register('DocListView', module='views.doclist')
 Factory.register('DocEditView', module='views.docedit')
 Factory.register('DocViewView', module='views.docview')
+Factory.register('WordListView', module='views.wordlist')
 
 
 class Manager(ScreenManager):

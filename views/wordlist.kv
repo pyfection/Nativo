@@ -1,0 +1,44 @@
+<WordListView>:
+    toolbar: toolbar
+    words: words
+
+    orientation: "vertical"
+
+    NativoToolbar:
+        id: toolbar
+        left_action_items: [['menu', lambda x: root.nav_drawer.set_state("open")]]
+        right_action_items: [['plus-box', lambda x: app.edit_word(), 'Add Word']]
+
+    MDList:
+        id: words
+
+    Widget:
+
+
+<WordLine>:
+    size_hint_y: None
+    height: 50
+
+    MDIconButton:
+        size_hint_x: None
+        width: 50
+        icon: "playlist-edit"
+        on_release: app.edit_word(root.uid)
+
+    MDLabel:
+        size_hint_x: 0.3
+        text: root.word
+        bold: True
+        font_size: 17
+
+    MDLabel:
+        size_hint_x: 0.3
+        text: root.lang
+        bold: True
+        font_size: 17
+
+    MDLabel:
+        size_hint_x: 0.3
+        text: root.creator
+        bold: True
+        font_size: 17

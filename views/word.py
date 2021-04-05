@@ -1,13 +1,13 @@
 
 from kivy.app import App
-from kivy.uix.screenmanager import Screen
 from kivy.lang.builder import Builder
+from kivymd.uix.boxlayout import MDBoxLayout
 
 
-Builder.load_file('pages/word.kv')
+Builder.load_file('views/word.kv')
 
 
-class WordPage(Screen):
+class WordView(MDBoxLayout):
     word_uid = None
     desc_uid = None
 

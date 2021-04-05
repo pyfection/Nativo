@@ -91,6 +91,10 @@ class DB(TinyDB):
         table = self.table('word')
         return table.get(*query)
 
+    def get_words(self):
+        table = self.table('word')
+        return table.all()
+
     def random_word(self):
         table = self.table('word')
         return random.choice(table.all())
