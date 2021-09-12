@@ -56,7 +56,7 @@ class NativoApp(MDApp):
         if uid:
             self.root.docedit.uid = uid
         else:
-            self.root.docedit.uid = None
+            self.root.docedit.uid = ''
 
     def view_doc(self, uid):
         self.root.manager.current = 'docview'

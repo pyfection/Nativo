@@ -3,12 +3,17 @@ from kivy.app import App
 from kivy.lang.builder import Builder
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.menu import MDDropdownMenu
+from kivymd.uix.list import IRightBodyTouch, OneLineAvatarIconListItem
+from kivy.properties import StringProperty
 
-from widgets.dropdown import DropDown
 from db.db import db
 
 
 Builder.load_file('widgets/word_edit.kv')
+
+
+class LangItem(OneLineAvatarIconListItem):
+    uid = StringProperty()
 
 
 class WordEdit(MDBoxLayout):
@@ -17,8 +22,15 @@ class WordEdit(MDBoxLayout):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.lang_choices = [{"text": db.lang_name_trans[lang['name']], "uid": lang['uid']} for lang in db.get_langs()]
-        self.lang_selector = DropDown(
+        self.lang_choices = [
+            {
+                "text": db.lang_name_trans[lang['name']],
+                "viewclass": "Item",
+                "uid": lang['uid']
+            }
+            for lang in db.get_langs()
+        ]
+        self.lang_selector = MDDropdownMenu(
             caller=self.lang,
             items=self.lang_choices,
             width_mult=4,
