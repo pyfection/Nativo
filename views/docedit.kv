@@ -1,11 +1,9 @@
 <DocEditView>:
-    text_edit: text_edit
     toolbar: toolbar
 
     text: ""
 
     orientation: 'vertical'
-    text_edit: text_edit
     canvas.before:
         Clear:
         Color:
@@ -17,8 +15,6 @@
     NativoToolbar:
         id: toolbar
         left_action_items: [['menu', lambda x: root.nav_drawer.set_state("open")]]
-        right_action_items: [['link-variant', lambda x: root.open_link_word(), 'Link Word']]
 
     TextEdit:
         id: text_edit
-        on_active_widget: root.on_active_widget(self.active_widget)

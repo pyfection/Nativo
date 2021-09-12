@@ -1,5 +1,6 @@
 import re
 
+from kivymd.app import App
 from kivy.cache import Cache
 from kivy.metrics import sp
 from kivy.properties import StringProperty, BooleanProperty, ListProperty, BoundedNumericProperty, ObjectProperty
@@ -9,7 +10,9 @@ from kivy.uix.textinput import TextInput
 from kivymd.theming import ThemableBehavior
 from kivymd.uix.stacklayout import MDStackLayout
 from kivymd.uix.button import MDFlatButton
+from kivymd.uix.dialog import MDDialog
 
+from widgets.word_edit import WordEdit
 from db.db import db
 
 Cache_get = Cache.get
@@ -43,10 +46,14 @@ class WordButton(MDFlatButton):
 
     def on_press(self):
         if self.linked:
-            self.text_edit.active_widget = None
+            self.text_edit.active_widget = None  # Setting to None first to trigger update
             self.text_edit.active_widget = self
             self.text_edit.word_input.focus = False
-        else:
+
+            self.text_edit.word_edit.display_word(self.link)
+            self.text_edit.dialog_confirm_button.text = "UPDATE"
+            self.text_edit.word_edit_dialog.open()
+        elif self.text_edit.active_widget == self:  # Already active widget, but not linked
             # Replacing old word_input with new word_button
             self.text_edit.word_input.unfocus()
 
@@ -57,6 +64,12 @@ class WordButton(MDFlatButton):
             self.text_edit.word_input.text = self.text
             self.text_edit.add_widget(self.text_edit.word_input, index=index)
             self.text_edit.word_input.focus = True
+        else:  # First click, not linked
+            self.text_edit.active_widget = self
+
+            self.text_edit.word_edit.new_word(self.text)
+            self.text_edit.dialog_confirm_button.text = "SAVE"
+            self.text_edit.word_edit_dialog.open()
 
     def on_linked(self, instance, linked):
         self.check_color()
@@ -141,8 +154,29 @@ class TextEdit(MDStackLayout):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        app = App.get_running_app()
         self.word_input = None
         self.open('')
+        self.word_edit = WordEdit()
+        self.word_edit.size_hint_y = None
+        self.word_edit.height = sum(c.height for c in self.word_edit.children)
+        self.dialog_confirm_button = MDFlatButton(
+            text="UPDATE", text_color=app.theme_cls.primary_color,
+            on_release=lambda *args: self.process_word()
+        )
+        self.word_edit_dialog = MDDialog(
+            md_bg_color=(1, 1, 1, 1),  # app.theme_cls.bg_dark,  # For some reason keeps light color
+            title="Edit Word",
+            type="custom",
+            content_cls=self.word_edit,
+            buttons=[
+                MDFlatButton(
+                    text="CANCEL", text_color=app.theme_cls.primary_color,
+                    on_release=lambda *args: self.word_edit_dialog.dismiss()
+                ),
+                self.dialog_confirm_button,
+            ],
+        )
 
     def on_touch_down(self, touch):
         if self.collide_point(*touch.pos):
@@ -153,6 +187,7 @@ class TextEdit(MDStackLayout):
             self.add_widget(self.word_input)
             FocusBehavior.ignored_touch.append(touch)
             self.word_input.focus = True
+            self.active_widget = self.word_input
 
     def open(self, text):
         self.clear_widgets()
@@ -210,6 +245,32 @@ class TextEdit(MDStackLayout):
 
         self.word_input = WordInput(self)
         self.add_widget(self.word_input)
+
+    def process_word(self):
+        uid = self.word_edit.word_uid
+        desc_uid = self.word_edit.desc_uid
+        word = self.word_edit.word.text
+        desc_uid = db.upsert_doc(
+            uid=desc_uid,
+            title=f"Description of [{word}]",
+            text=self.word_edit.desc.text,
+            lang=self.word_edit.lang.lang_uid,
+            creator=self.word_edit.creator.text,
+        )
+
+        uid = db.upsert_word(
+            uid=uid,
+            word=word,
+            lang=self.word_edit.lang.lang_uid,
+            creator=self.word_edit.creator.text,
+            description=desc_uid,
+        )
+
+        self.text_edit.active_widget.text = word
+        self.text_edit.active_widget.link = uid
+        self.word_edit_dialog.dismiss()
+
+        self.save()
 
     @property
     def text(self):

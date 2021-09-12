@@ -42,10 +42,10 @@ class WordEdit(MDBoxLayout):
         self.lang.lang_uid = instance_menu_item.data['uid']
         self.lang_selector.dismiss()
 
-    def new_word(self):
+    def new_word(self, word=''):
         self.word_uid = None
         self.desc_uid = None
-        self.word.text = ''
+        self.word.text = word
         self.lang.text = ''
         self.desc.text = ''
         self.creator.text = App.get_running_app().db.user
