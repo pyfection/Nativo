@@ -4,6 +4,7 @@ Screen:
     manager: manager
     docedit: docedit
     docview: docview
+    wordedit: wordedit
 
     MDNavigationLayout:
 
@@ -42,6 +43,12 @@ Screen:
                 WordListView:
                     nav_drawer: nav_drawer
                     id: wordlist
+
+            Screen:
+                name: "wordedit"
+                WordEdit:
+                    nav_drawer: nav_drawer
+                    id: wordedit
 
         MDNavigationDrawer:
             id: nav_drawer

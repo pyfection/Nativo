@@ -6,12 +6,18 @@
 
     orientation: "vertical"
 
-    MDTextField:
-        id: word
-        hint_text: "Word"
-        write_tab: False
-        disabled: not app.authenticated
-        on_text: root.show_word_suggestions()
+    MDBoxLayout:
+        MDTextField:
+            id: word
+            hint_text: "Word"
+            write_tab: False
+            disabled: not app.authenticated
+            on_text: # find similar words and activate warn_suggestions if similar words found
+        MDIconButton:
+            id: warn_suggestions
+            icon: "" if self.disabled else "car-brake-alert"
+            disabled: True
+            on_press: root.show_word_suggestions()
 
     MDTextField:
         id: lang
@@ -34,8 +40,8 @@
         MDLabel:
             id: creator
 
-#    MDRaisedButton:
-#        size_hint_x: 1
-#        text: "Create" if root.word_uid else "Update"
-#        disabled: not app.authenticated
-#        on_press: root.create(word.text, lang.text, desc.text)
+    MDRaisedButton:
+        size_hint_x: 1
+        text: "Create" if root.word_uid else "Update"
+        disabled: not app.authenticated
+        on_press: root.update()

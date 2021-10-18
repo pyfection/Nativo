@@ -24,11 +24,11 @@ class WordEdit(MDBoxLayout):
         super().__init__(**kwargs)
         self.lang_choices = [
             {
-                "text": db.lang_name_trans[lang['name']],
-                "viewclass": "Item",
-                "uid": lang['uid']
+                "text": trans or '',
+                "viewclass": "LangItem",
+                "uid": lang
             }
-            for lang in db.get_langs()
+            for lang, trans in db.get_langs().items()
         ]
         self.lang_selector = MDDropdownMenu(
             caller=self.lang,
@@ -56,7 +56,7 @@ class WordEdit(MDBoxLayout):
         self.desc_uid = word['description']
 
         self.word.text = word['word']
-        self.lang.text = db.lang_name_trans[db.get_lang(word['lang'])['name']]
+        self.lang.text = word['lang']
         self.lang.lang_uid = word['lang']
         self.desc.text = db.get_doc(self.desc_uid)['text'] if self.desc_uid else ''
         self.creator.text = word['creator']
@@ -68,8 +68,8 @@ class WordEdit(MDBoxLayout):
         app = App.get_running_app()
         user = self.creater.text if self.creator.text else app.db.user
         desc_uid = None
-        if self.description.text:
-            desc_uid = app.db.upsert_document(self.desc_uid, self.description.text, self.lang.text, user)
+        if self.desc.text:
+            desc_uid = app.db.upsert_doc(self.desc_uid, '', self.desc.text, self.lang.text, user)
         app.db.upsert_word(
             uid=self.word_uid, word=self.word.text, lang=self.lang.text, creator=user, description=desc_uid
         )

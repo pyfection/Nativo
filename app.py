@@ -27,19 +27,6 @@ class Manager(ScreenManager):
         self.transition.direction = direction
         self.current = screen_name
 
-    def create_word(self):
-        if not db.token:
-            raise ValueError("User not logged in!")
-        word_screen = self.get_screen('word')
-        word_screen.prefill()
-        self.goto('word')
-
-    def random_word(self):
-        word = db.random_word()
-        word_screen = self.get_screen('word')
-        word_screen.view_word(word)
-        self.goto('word')
-
 
 class NativoApp(MDApp):
     title = 'Nativo'
@@ -66,3 +53,10 @@ class NativoApp(MDApp):
         self.root.docview.text = doc['text']
         self.root.docview.lang = doc['lang']
         self.root.docview.creator = doc['creator']
+
+    def edit_word(self, uid=None):
+        self.root.manager.current = 'wordedit'
+        if uid:
+            self.root.wordedit.display_word(uid)
+        else:
+            self.root.wordedit.new_word()

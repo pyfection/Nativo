@@ -1,0 +1,41 @@
+<WordSuggest>:
+    word: word
+    lang: lang
+    desc: desc
+    creator: creator
+
+    orientation: "vertical"
+
+    MDTextField:
+        id: word
+        hint_text: "Word"
+        write_tab: False
+        disabled: not app.authenticated
+        on_text: root.show_word_suggestions()
+
+    MDTextField:
+        id: lang
+        size_hint_x: 1
+        hint_text: "Language"
+        lang_uid: None
+        on_center: self.parent.lang_selector.pos = self.center
+        on_focus: if self.focus: self.parent.lang_selector.open()
+        disabled: not app.authenticated
+
+    MDTextField:
+        id: desc
+        hint_text: "Description"
+        write_tab: False
+        disabled: not app.authenticated
+
+    MDBoxLayout:
+        MDLabel:
+            text: "Creator:"
+        MDLabel:
+            id: creator
+
+#    MDRaisedButton:
+#        size_hint_x: 1
+#        text: "Create" if root.word_uid else "Update"
+#        disabled: not app.authenticated
+#        on_press: root.create(word.text, lang.text, desc.text)
