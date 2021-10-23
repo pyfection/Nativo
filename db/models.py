@@ -41,7 +41,8 @@ class Language(Base):
     documents = relationship("Document", back_populates="language")
 
     def name(self, iso_639_3=None):
-        return next((t for t in self.translations if t.language.iso_639_3 == iso_639_3), 'No translation')
+        iso_639_3 = iso_639_3 or self.iso_639_3
+        return next((t.word for t in self.translations if t.language.iso_639_3 == iso_639_3), 'No translation')
 
 
 class Word(Base):
