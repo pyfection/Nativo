@@ -1,5 +1,4 @@
 
-from kivy.app import App
 from kivy.lang.builder import Builder
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.menu import MDDropdownMenu
@@ -52,6 +51,7 @@ class WordEdit(MDBoxLayout):
             for lang in languages
         ]
         self.lang_selector.items = self.lang_choices
+        self._update_language(languages[0].id, self.lang_choices[0]['text'])
 
     def set_word(self, uid=None, word='', language='', description=''):
         client.get_languages(self.set_lang_choices, print)

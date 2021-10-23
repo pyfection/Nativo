@@ -19,13 +19,12 @@
             disabled: True
             on_press: root.show_word_suggestions()
 
-    MDTextField:
+    MDDropDownItem:
         id: lang
-        size_hint_x: 1
-        hint_text: "Language"
         lang_uid: None
-        on_center: self.parent.lang_selector.pos = self.center
-        on_focus: if self.focus: root.lang_selector.open()
+        text: "Select Language"
+        size_hint_x: 1
+        on_release: root.lang_selector.open()
         disabled: not app.authenticated
 
     MDTextField:
