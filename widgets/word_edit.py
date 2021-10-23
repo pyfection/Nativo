@@ -13,7 +13,7 @@ Builder.load_file('widgets/word_edit.kv')
 
 
 class LangItem(OneLineAvatarIconListItem):
-    uid = NumericProperty()
+    pass
 
 
 class WordEdit(MDBoxLayout):
@@ -28,6 +28,7 @@ class WordEdit(MDBoxLayout):
         self.lang_selector = MDDropdownMenu(
             caller=self.lang,
             items=self.lang_choices,
+            position="bottom",
             width_mult=4,
         )
         self.lang_selector.bind(on_release=self._update_language)
@@ -35,21 +36,22 @@ class WordEdit(MDBoxLayout):
     def on_request_failure(self, result):
         print(result)
 
-    def _update_language(self, instance_menu, instance_menu_item):
-        print('update language')
-        self.lang.text = instance_menu_item.text
-        self.lang.lang_uid = instance_menu_item.data['uid']
+    def _update_language(self, uid, name):
+        self.lang.text = name
+        self.lang.lang_uid = uid
         self.lang_selector.dismiss()
 
     def set_lang_choices(self, languages):
+        self.lang_selector.caller = self.lang
         self.lang_choices = [
             {
                 "text": lang.name() or '',
                 "viewclass": "LangItem",
-                "uid": lang.id
+                "on_release": lambda uid=lang.id, name=lang.name(): self._update_language(uid, name),
             }
             for lang in languages
         ]
+        self.lang_selector.items = self.lang_choices
 
     def set_word(self, uid=None, word='', language='', description=''):
         client.get_languages(self.set_lang_choices, print)
