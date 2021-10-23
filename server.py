@@ -54,22 +54,22 @@ async def get_words(skip: int = 0, limit: int = 100, db: Session = Depends(get_d
     return words
 
 
-@app.put('/word')
+@app.put('/word', response_model=schemas.Word)
 async def upsert_word(word: schemas.WordCreate, db: Session = Depends(get_db)):
-    db_word = db.query(models.Word).get(word.id)
-    if db_word:
+    if word.id is not None:
+        db_word = db.query(models.Word).get(word.id)
         db_word.word = word.word
-        db_word.language_id = word.language_id
-        db_word.creator_id = word.creator_id
         db_word.description.text = word.description
     else:
         db_word = models.Word(**word.dict())
-        description = models.Document(text=word.description)
+        creator_id = 1  # ToDo: should be set to user who sent the request
+        description = models.Document(text=word.description, creator_id=creator_id, language_id=word.language_id)
         db_word.description = description
+        db_word.creator_id = creator_id
         db.add(db_word)
         db.add(description)
-        db.commit()
-        db.refresh(db_word)
+    db.commit()
+    db.refresh(db_word)
 
     return db_word
 

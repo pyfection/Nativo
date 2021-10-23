@@ -40,6 +40,7 @@ Screen:
 
             Screen:
                 name: "wordlist"
+                on_pre_enter: wordlist.load()
                 WordListView:
                     nav_drawer: nav_drawer
                     id: wordlist

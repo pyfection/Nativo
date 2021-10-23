@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel, EmailStr
 
@@ -54,17 +54,17 @@ class Document(DocumentBase):
 
 
 class WordBase(Base):
-    id: int
     word: str
-    language_id: int
-    creator_id: int
 
 
 class WordCreate(WordBase):
+    id: Optional[int]
+    language_id: int
     description: str
 
 
 class Word(WordBase):
+    id: int
     description_id: int
     language: LanguageBase
     creator: UserBase

@@ -1,3 +1,6 @@
+from urllib.parse import urlencode
+import json
+
 from kivy.network.urlrequest import UrlRequest
 
 from config import api_url
@@ -106,7 +109,7 @@ def upsert_word(word: dict, on_success, on_failure):
         on_success(word_)
     url = f"{api_url}/word"
     UrlRequest(
-        url, method="PUT", req_body=word,
+        url, method="PUT", req_body=json.dumps(word),
         on_success=_on_success,
         on_failure=lambda req, result: on_error(req, result, on_failure),
         on_error=lambda req, result: on_error(req, result, on_failure))

@@ -18,10 +18,11 @@ class WordLine(MDBoxLayout):
 
 
 class WordListView(MDBoxLayout):
-    def on_kv_post(self, inst):
+    def load(self):
         client.get_words(on_success=self.display_words, on_failure=print)
 
     def display_words(self, words):
+        self.words.clear_widgets()
         for word in words:
             line = WordLine()
             line.uid = word.id

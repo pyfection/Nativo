@@ -2,7 +2,7 @@
 from kivymd.app import MDApp
 from kivy.core.window import Window
 from kivy.factory import Factory
-from kivy.properties import BooleanProperty
+from kivy.properties import BooleanProperty, ListProperty
 from kivy.uix.screenmanager import ScreenManager
 
 import config
@@ -19,11 +19,20 @@ Factory.register('WordListView', module='views.wordlist')
 
 
 class Manager(ScreenManager):
+    call_stack = ListProperty()
 
     def goto(self, screen_name, direction='left'):
         # Implemented because switch_to somehow removed the screen
         self.transition.direction = direction
+        self.call_stack.append(self.current)
         self.current = screen_name
+
+    def go_back(self, direction='right'):
+        self.transition.direction = direction
+        if self.call_stack:
+            self.current = self.call_stack.pop()
+        else:
+            self.current = 'main'
 
 
 class NativoApp(MDApp):
@@ -52,7 +61,7 @@ class NativoApp(MDApp):
         self.root.docview.creator = doc['creator']
 
     def edit_word(self, uid=None):
-        self.root.manager.current = 'wordedit'
+        self.root.manager.goto('wordedit')
         if uid:
             self.root.wordedit.display_word(uid)
         else:

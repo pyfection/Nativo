@@ -1,4 +1,4 @@
-
+from kivy.app import App
 from kivy.lang.builder import Builder
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.menu import MDDropdownMenu
@@ -17,7 +17,6 @@ class LangItem(OneLineAvatarIconListItem):
 
 class WordEdit(MDBoxLayout):
     word_uid = NumericProperty(None, allownone=True)
-    language_uid = NumericProperty(None, allownone=True)
     creator_uid = NumericProperty(None, allownone=True)
     lang_selector = ObjectProperty()
     lang_choices = ListProperty()
@@ -60,6 +59,7 @@ class WordEdit(MDBoxLayout):
         self.lang.text = language
         self.desc.text = description
         self.creator.text = creator
+        self.ids.confirm_button.text = "Create" if uid is None else "Update"
 
     def new_word(self, word=''):
         self.set_word(word=word)
@@ -67,7 +67,6 @@ class WordEdit(MDBoxLayout):
     def display_word(self, uid):
         def set_word(word):
             self.set_word(word.id, word.word, word.language.name(), word.description.text, word.creator.email)
-            self.language_uid = word.language.id
             self.creator_uid = word.creator.id
         self.word_uid = uid
         client.get_word(uid, on_success=set_word, on_failure=self.on_request_failure)
@@ -77,14 +76,13 @@ class WordEdit(MDBoxLayout):
 
     def update(self):
         def on_success(result):
-            print('update success', result)
+            app = App.get_running_app()
+            app.root.manager.go_back()
 
         word = {
             'id': self.word_uid,
             'word': self.word.text,
-            # ToDo: check what happens if language or creator not set
-            'language_id': self.language_uid,
-            'creator_id': self.creator_uid,
+            'language_id': self.lang.lang_uid,
             'description': self.desc.text,
         }
         client.upsert_word(

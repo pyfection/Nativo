@@ -40,7 +40,8 @@
             id: creator
 
     MDRaisedButton:
+        id: confirm_button
         size_hint_x: 1
-        text: "Create" if root.word_uid else "Update"
+        text: "Create"
         disabled: not app.authenticated
         on_press: root.update()
