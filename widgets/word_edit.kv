@@ -25,7 +25,7 @@
         hint_text: "Language"
         lang_uid: None
         on_center: self.parent.lang_selector.pos = self.center
-        on_focus: if self.focus: self.parent.lang_selector.open()
+        on_focus: if self.focus: root.lang_selector.open()
         disabled: not app.authenticated
 
     MDTextField:

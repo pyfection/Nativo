@@ -6,13 +6,11 @@ from kivy.properties import BooleanProperty
 from kivy.uix.screenmanager import ScreenManager
 
 import config
-from db.db import db
 
 Window.size = (480, 800)
 
 
 Factory.register('Manager', module='app')
-# Factory.register('AuthPage', module='pages.auth')
 Factory.register('MainView', module='views.main')
 Factory.register('DocListView', module='views.doclist')
 Factory.register('DocEditView', module='views.docedit')
@@ -30,7 +28,6 @@ class Manager(ScreenManager):
 
 class NativoApp(MDApp):
     title = 'Nativo'
-    db = db
     authenticated = BooleanProperty(config.debug)
 
     def build(self):
