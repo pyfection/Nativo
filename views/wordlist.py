@@ -1,16 +1,16 @@
 
-from kivy.properties import StringProperty
+from kivy.properties import StringProperty, NumericProperty
 from kivy.lang.builder import Builder
 from kivymd.uix.boxlayout import MDBoxLayout
 
-from db.db import db
+import client
 
 
 Builder.load_file('views/wordlist.kv')
 
 
 class WordLine(MDBoxLayout):
-    uid = StringProperty()
+    uid = NumericProperty()
     word = StringProperty()
     lang = StringProperty()
     creator = StringProperty()
@@ -19,9 +19,14 @@ class WordLine(MDBoxLayout):
 
 class WordListView(MDBoxLayout):
     def on_kv_post(self, inst):
-        words = db.get_words()
+        client.get_words(on_success=self.display_words, on_failure=print)
+
+    def display_words(self, words):
         for word in words:
-            word.pop('phrases')
-            word.pop('description')
-            line = WordLine(**word)
+            line = WordLine()
+            line.uid = word.id
+            line.word = word.word
+            line.lang = word.language.name()
+            line.creator = word.creator.email
+            line.description = word.description.text
             self.words.add_widget(line)

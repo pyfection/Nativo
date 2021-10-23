@@ -88,6 +88,18 @@ def get_word(id: int, on_success, on_failure):
         on_error=lambda req, result: on_error(req, result, on_failure))
 
 
+def get_words(on_success, on_failure):
+    def _on_success(req, words):
+        words = [refresh_word(word) for word in words]
+        on_success(words)
+
+    url = f"{api_url}/words"
+    UrlRequest(
+        url, on_success=_on_success,
+        on_failure=lambda req, result: on_error(req, result, on_failure),
+        on_error=lambda req, result: on_error(req, result, on_failure))
+
+
 def upsert_word(word: dict, on_success, on_failure):
     def _on_success(req, word_):
         word_ = refresh_word(word_)
