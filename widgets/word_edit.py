@@ -53,19 +53,20 @@ class WordEdit(MDBoxLayout):
         self.lang_selector.items = self.lang_choices
         self._update_language(languages[0].id, self.lang_choices[0]['text'])
 
-    def set_word(self, uid=None, word='', language='', description=''):
+    def set_word(self, uid=None, word='', language='', description='', creator=''):
         client.get_languages(self.set_lang_choices, print)
         self.word_uid = uid
         self.word.text = word
         self.lang.text = language
         self.desc.text = description
+        self.creator.text = creator
 
     def new_word(self, word=''):
         self.set_word(word=word)
 
     def display_word(self, uid):
         def set_word(word):
-            self.set_word(word.id, word.word, word.language.name(), word.description.text)
+            self.set_word(word.id, word.word, word.language.name(), word.description.text, word.creator.email)
             self.language_uid = word.language.id
             self.creator_uid = word.creator.id
         self.word_uid = uid

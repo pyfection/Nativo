@@ -81,7 +81,7 @@ def get_word(id: int, on_success, on_failure):
         word = refresh_word(word)
         on_success(word)
 
-    url = f"{api_url}/word?id={id}"
+    url = f"{api_url}/word/{id}"
     UrlRequest(
         url, on_success=_on_success,
         on_failure=lambda req, result: on_error(req, result, on_failure),
