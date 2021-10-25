@@ -124,3 +124,14 @@ def get_languages(on_success, on_failure):
         url, on_success=_on_success,
         on_failure=lambda req, result: on_error(req, result, on_failure),
         on_error=lambda req, result: on_error(req, result, on_failure))
+
+
+def get_documents(on_success, on_failure):
+    def _on_success(req, documents):
+        documents = [refresh_document(document) for document in documents]
+        on_success(documents)
+    url = f"{api_url}/documents"
+    UrlRequest(
+        url, on_success=_on_success,
+        on_failure=lambda req, result: on_error(req, result, on_failure),
+        on_error=lambda req, result: on_error(req, result, on_failure))

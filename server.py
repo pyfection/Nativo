@@ -114,3 +114,9 @@ async def get_languages(skip: int = 0, limit: int = 100, db: Session = Depends(g
     for language in languages:
         _update_language_attributes(language)
     return languages
+
+
+@app.get('/documents', response_model=List[schemas.Document])
+async def get_documents(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    documents = db.query(models.Document).offset(skip).limit(limit).all()
+    return documents
