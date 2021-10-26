@@ -116,7 +116,32 @@ async def get_languages(skip: int = 0, limit: int = 100, db: Session = Depends(g
     return languages
 
 
+@app.get('/document/{id}', response_model=schemas.Document)
+async def get_document(id: int, db: Session = Depends(get_db)):
+    document = db.query(models.Document).get(id)
+    if document is None:
+        raise HTTPException(status_code=404, detail="Document not found")
+    return document
+
+
 @app.get('/documents', response_model=List[schemas.Document])
 async def get_documents(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     documents = db.query(models.Document).offset(skip).limit(limit).all()
     return documents
+
+
+@app.put('/document', response_model=schemas.Document)
+async def upsert_document(document: schemas.DocumentCreate, db: Session = Depends(get_db)):
+    if document.id is not None:
+        db_document = db.query(models.Document).get(document.id)
+        db_document.title = document.title
+        db_document.text = document.text
+    else:  # New Document
+        db_document = models.Document(**document.dict())
+        creator_id = 1  # ToDo: should be set to user who sent the request
+        db_document.creator_id = creator_id
+        db.add(db_document)
+    db.commit()
+    db.refresh(db_document)
+
+    return db_document

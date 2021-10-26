@@ -42,15 +42,19 @@ class Language(LanguageBase):
 
 
 class DocumentBase(Base):
-    id: int
     title: str
     text: str
-    language: LanguageBase
-    creator: UserBase
+
+
+class DocumentCreate(DocumentBase):
+    id: Optional[int]
+    language_id: int
 
 
 class Document(DocumentBase):
-    pass
+    id: int
+    language: LanguageBase
+    creator: UserBase
 
 
 class WordBase(Base):
@@ -68,7 +72,7 @@ class Word(WordBase):
     description_id: int
     language: LanguageBase
     creator: UserBase
-    description: DocumentBase
+    description: Document
 
 
 Language.update_forward_refs()
