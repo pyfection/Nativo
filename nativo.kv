@@ -2,9 +2,9 @@
 
 Screen:
     manager: manager
-    doclist: doclist
-    docedit: docedit
-    docview: docview
+#    doclist: doclist
+#    docedit: docedit
+#    docview: docview
     wordedit: wordedit
 
     MDNavigationLayout:
@@ -22,24 +22,24 @@ Screen:
                 MainView:
                     nav_drawer: nav_drawer
 
-            Screen:
-                name: "doclist"
-                on_pre_enter: doclist.load()
-                DocListView:
-                    nav_drawer: nav_drawer
-                    id: doclist
-
-            Screen:
-                name: "docedit"
-                DocEditView:
-                    nav_drawer: nav_drawer
-                    id: docedit
-
-            Screen:
-                name: "docview"
-                DocViewView:
-                    nav_drawer: nav_drawer
-                    id: docview
+#            Screen:
+#                name: "doclist"
+#                on_pre_enter: doclist.load()
+#                DocListView:
+#                    nav_drawer: nav_drawer
+#                    id: doclist
+#
+#            Screen:
+#                name: "docedit"
+#                DocEditView:
+#                    nav_drawer: nav_drawer
+#                    id: docedit
+#
+#            Screen:
+#                name: "docview"
+#                DocViewView:
+#                    nav_drawer: nav_drawer
+#                    id: docview
 
             Screen:
                 name: "wordlist"
@@ -97,14 +97,14 @@ Screen:
                             IconLeftWidget:
                                 icon: "home"
 
-                        OneLineIconListItem:
-                            text: "Documents"
-                            on_release:
-                                manager.current = 'doclist'
-                                nav_drawer.set_state("close")
-
-                            IconLeftWidget:
-                                icon: "file-document-multiple"
+#                        OneLineIconListItem:
+#                            text: "Documents"
+#                            on_release:
+#                                manager.current = 'doclist'
+#                                nav_drawer.set_state("close")
+#
+#                            IconLeftWidget:
+#                                icon: "file-document-multiple"
 
                         OneLineIconListItem:
                             text: "Words"

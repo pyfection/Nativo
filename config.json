@@ -1,0 +1,9 @@
+{
+  "user": {
+    "_id": "623795759c7070f0dd4cf6c0",
+    "username": "johndoe",
+    "password": "secret",
+    "language": "bar",
+    "last_coords": [48.673695, 11.465057]
+  }
+}
