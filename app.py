@@ -44,10 +44,16 @@ class NativoApp(MDApp):
     settings = JsonStore('config.json')
 
     def build(self):
+        def fail_login(msg):
+            print("error", msg)
+
         def after_login(token):
+            print("Successfully authenticated")
             user["token"] = token
+            config.token = token
+
         user = self.settings.get("user")
-        client.login(after_login, print, user["username"], user["password"])
+        client.login(after_login, fail_login, user["username"], user["password"])
         self.theme_cls.primary_palette = "Teal"
         self.theme_cls.accent_palette = "Indigo"
         self.theme_cls.theme_style = "Dark"

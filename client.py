@@ -1,8 +1,9 @@
 import json
+from urllib.parse import urlencode, quote_plus
 
 from kivy.network.urlrequest import UrlRequest
 
-from config import api_url
+from config import api_url, token
 
 
 def on_error(req, result, callback):
@@ -19,15 +20,16 @@ def login(on_success, on_failure, username, password):
         url,
         method="POST",
         req_headers={
-            'content-type': "multipart/form-data",
+            'content-type': 'application/x-www-form-urlencoded',
         },
-        req_body={"username": username, "password": password},
+        debug=True,
+        req_body=urlencode({"username": username, "password": password}, quote_via=quote_plus),
         on_success=_on_success,
         on_failure=lambda req, result: on_error(req, result, on_failure),
         on_error=lambda req, result: on_error(req, result, on_failure))
 
 
-def get_multiples(keyword, on_success, on_failure, options=None):
+def get_multiples(keyword, on_success, on_failure, options=None, limit=10):
     def _on_success(req, words):
         on_success(words)
 
@@ -36,6 +38,7 @@ def get_multiples(keyword, on_success, on_failure, options=None):
     UrlRequest(
         url,
         method="POST",
+        req_headers={'Authorization': f"Bearer {token}"},
         req_body=json.dumps(options),
         on_success=_on_success,
         on_failure=lambda req, result: on_error(req, result, on_failure),
@@ -55,7 +58,7 @@ def get_word(on_success, on_failure, id: int):
 
 
 def get_words(on_success, on_failure, options=None, limit=10):
-    get_multiples("words", on_success, on_failure, options)
+    get_multiples("words", on_success, on_failure, options, limit)
 
 
 def upsert_word(on_success, on_failure, word: dict):
