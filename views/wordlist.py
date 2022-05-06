@@ -17,7 +17,7 @@ class WordLine(MDBoxLayout):
     description = StringProperty()
 
 
-class WordListView(MDBoxLayout):
+class WordList(MDBoxLayout):
     def load(self):
         client.get_words(on_success=self.display_words, on_failure=print)  # ToDo: proper fail handling
 

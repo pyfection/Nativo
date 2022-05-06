@@ -6,19 +6,14 @@ from kivy.properties import BooleanProperty, ListProperty
 from kivy.uix.screenmanager import ScreenManager
 from kivy.storage.jsonstore import JsonStore
 
+# They are just imported to register them as widget in KV files
+from views.main import Main
+from views.wordlist import WordList
+from views.wordedit import WordEdit
 import config
 import client
 
 Window.size = (480, 800)
-
-
-Factory.register('Manager', module='app')
-Factory.register('MainView', module='views.main')
-# Factory.register('DocListView', module='views.doclist')
-# Factory.register('DocEditView', module='views.docedit')
-# Factory.register('DocViewView', module='views.docview')
-Factory.register('WordListView', module='views.wordlist')
-Factory.register('WordEdit', module='widgets.word_edit')
 
 
 class Manager(ScreenManager):

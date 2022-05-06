@@ -11,7 +11,7 @@ from kivy.properties import NumericProperty, ObjectProperty, ListProperty
 import client
 from localization import localization as _
 
-Builder.load_file('widgets/word_edit.kv')
+Builder.load_file('views/wordedit.kv')
 
 
 class LangItem(OneLineAvatarIconListItem):
@@ -52,7 +52,8 @@ class WordEdit(MDBoxLayout):
             "_id": self.word_uid,
             "word": self.word.text,
             "creator": user_id,
-            "description": self.desc.text,
+            "native_description": self.desc.text,
+            # "other_descriptions": # ToDo: implement descriptions in other languages
             "language":  app.settings.get("user")["language"],
             "locations": [
                 {

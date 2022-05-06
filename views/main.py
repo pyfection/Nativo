@@ -6,5 +6,5 @@ from kivy.lang.builder import Builder
 Builder.load_file('views/main.kv')
 
 
-class MainView(BoxLayout):
+class Main(BoxLayout):
     pass

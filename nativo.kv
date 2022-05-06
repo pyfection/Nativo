@@ -14,12 +14,12 @@ Screen:
 
             id: manager
             logged_in: False
-            on_parent: self.current = "wordlist"  # ToDo: remove this
+#            on_parent: self.current = "wordlist"  # ToDo: remove this
 
 
             Screen:
                 name: "main"
-                MainView:
+                Main:
                     nav_drawer: nav_drawer
 
 #            Screen:
@@ -44,7 +44,7 @@ Screen:
             Screen:
                 name: "wordlist"
                 on_pre_enter: wordlist.load()
-                WordListView:
+                WordList:
                     nav_drawer: nav_drawer
                     id: wordlist
 
