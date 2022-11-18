@@ -26,7 +26,7 @@ class Model(ABC):
 
     @classmethod
     def all(cls):
-        return db.table(cls.Meta.table_name).all()
+        return (cls(**data) for data in db.table(cls.Meta.table_name).all())
 
     @classmethod
     def clear(cls):
