@@ -10,6 +10,7 @@ uuid_pattern = r"\{\{([a-z0-9-]{36}):?([tul])?\}\}"
 @dataclass
 class Phrase(Model):
     raw_text: str
+    creator: str
     _words: dict[str: Word] = field(init=False, default_factory=dict)
     _modifiers: ClassVar = {
         "": lambda w: w,

@@ -6,6 +6,7 @@ from ._base import Model
 @dataclass
 class Word(Model):
     word: str
+    creator: str
     tags: list[str] = field(default_factory=list)
     description: str = ""
     # language: description
