@@ -33,4 +33,7 @@ class Model(ABC):
         db.table(cls.Meta.table_name).truncate()
 
     def commit(self):
-        db.table(self.Meta.table_name).insert(asdict(self))
+        db.table(self.Meta.table_name).upsert(self.asdict(), Query().id == self.id)
+
+    def asdict(self):
+        return asdict(self)

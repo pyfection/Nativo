@@ -11,7 +11,7 @@ uuid_pattern = r"\{\{([a-z0-9-]{36}):?([tul])?\}\}"
 class Phrase(Model):
     raw_text: str
     creator: str
-    _words: dict[str: Word] = field(init=False, default_factory=dict)
+    _words: dict[str: Word] = field(init=False, repr=False, default_factory=dict)
     _modifiers: ClassVar = {
         "": lambda w: w,
         "t": lambda w: w.title(),
@@ -40,3 +40,8 @@ class Phrase(Model):
             modifier = self._modifiers[modifier]
             text = text.replace(key, modifier(word.word))
         return text
+
+    def asdict(self):
+        data = super().asdict()
+        data.pop("_words")
+        return data
