@@ -1,10 +1,9 @@
 
-from kivy.properties import StringProperty, NumericProperty
+from kivy.properties import StringProperty
 from kivy.lang.builder import Builder
 from kivymd.uix.boxlayout import MDBoxLayout
 
-import client
-
+from models.word import Word
 
 Builder.load_file('views/wordlist.kv')
 
@@ -19,15 +18,15 @@ class WordLine(MDBoxLayout):
 
 class WordList(MDBoxLayout):
     def load(self):
-        client.get_words(on_success=self.display_words, on_failure=print)  # ToDo: proper fail handling
+        words = Word.all()
+        self.display_words(words)
 
     def display_words(self, words):
         self.words.clear_widgets()
         for word in words:
             line = WordLine()
-            line.uid = word["_id"]
-            line.word = word["word"]
-            line.lang = word["language"]
-            line.creator = word["creator"]
-            line.description = "Descriptions need to be added to words"  # word["description.text"]
+            line.uid = word.id
+            line.word = word.word
+            # line.creator = word["creator"]
+            line.description = word.description
             self.words.add_widget(line)

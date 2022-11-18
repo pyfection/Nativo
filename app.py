@@ -1,7 +1,6 @@
 
 from kivymd.app import MDApp
 from kivy.core.window import Window
-from kivy.factory import Factory
 from kivy.properties import BooleanProperty, ListProperty
 from kivy.uix.screenmanager import ScreenManager
 from kivy.storage.jsonstore import JsonStore
@@ -11,7 +10,6 @@ from views.main import Main
 from views.wordlist import WordList
 from views.wordedit import WordEdit
 import config
-import client
 
 Window.size = (480, 800)
 
@@ -34,21 +32,11 @@ class Manager(ScreenManager):
 
 
 class NativoApp(MDApp):
-    title = 'Nativo'
+    title = "Nativo"
     authenticated = BooleanProperty(config.debug)
-    settings = JsonStore('config.json')
+    settings = JsonStore("config.json")
 
     def build(self):
-        def fail_login(msg):
-            print("error", msg)
-
-        def after_login(token):
-            print("Successfully authenticated")
-            user["token"] = token
-            config.token = token
-
-        user = self.settings.get("user")
-        client.login(after_login, fail_login, user["username"], user["password"])
         self.theme_cls.primary_palette = "Teal"
         self.theme_cls.accent_palette = "Indigo"
         self.theme_cls.theme_style = "Dark"
