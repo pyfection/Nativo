@@ -1,6 +1,7 @@
 import os
 from abc import ABC
 from dataclasses import dataclass, asdict, field
+from datetime import datetime
 from uuid import uuid4
 
 from tinydb import TinyDB, Query
@@ -11,6 +12,7 @@ db = TinyDB(f"dbs/{os.getenv('NATIVO_LANG')}.json")
 @dataclass(kw_only=True)
 class Model(ABC):
     id: str = field(default_factory=lambda: str(uuid4()))
+    created_at: datetime = field(default_factory=datetime.utcnow)
 
     class Meta:
         table_name: str = None
