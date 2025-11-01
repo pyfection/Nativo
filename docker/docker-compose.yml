@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../backend:/app/backend
+      - backend-uploads:/app/backend/uploads
+    environment:
+      - DATABASE_URL=postgresql://nativo:nativo@db:5432/nativo
+      - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
+    depends_on:
+      - db
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ../frontend:/app/frontend
+      - /app/frontend/node_modules
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000
+    depends_on:
+      - backend
+
+  db:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=nativo
+      - POSTGRES_PASSWORD=nativo
+      - POSTGRES_DB=nativo
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-data:
+  backend-uploads:
+
