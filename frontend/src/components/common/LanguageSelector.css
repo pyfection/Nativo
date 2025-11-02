@@ -35,3 +35,67 @@
   box-shadow: 0 0 0 3px rgba(var(--primary-rgb, 139, 69, 19), 0.1);
 }
 
+/* Join Button */
+.join-button {
+  padding: 0.5rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  background-color: var(--primary, #8B4513);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.join-button:hover {
+  background-color: #723a0f;
+  transform: translateY(-1px);
+}
+
+.join-button:active {
+  transform: translateY(0);
+}
+
+/* Proficiency Badge */
+.proficiency-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.875rem;
+  background-color: rgba(var(--primary-rgb, 139, 69, 19), 0.1);
+  border: 1.5px solid var(--primary, #8B4513);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--primary, #8B4513);
+  white-space: nowrap;
+}
+
+.proficiency-level {
+  font-weight: 600;
+}
+
+.permission-icons {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--primary, #8B4513);
+}
+
+.permission-icons svg {
+  opacity: 0.8;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .language-selector {
+    flex-wrap: wrap;
+  }
+
+  .selector-dropdown {
+    min-width: 200px;
+  }
+}
+

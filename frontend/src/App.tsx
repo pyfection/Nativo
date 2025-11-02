@@ -5,6 +5,7 @@ import AppLayout from './components/layouts/AppLayout';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Languages from './pages/Languages';
 import WordList from './pages/WordList';
 import AddWord from './pages/AddWord';
 import DocumentList from './pages/DocumentList';
@@ -145,6 +146,20 @@ function App() {
             />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            
+            {/* Languages Route */}
+            <Route 
+              path="/languages" 
+              element={
+                <AppLayout
+                  selectedLanguage={selectedLanguage!}
+                  onLanguageChange={setSelectedLanguage}
+                  languages={languages}
+                >
+                  <Languages />
+                </AppLayout>
+              } 
+            />
             
             {/* Word Routes */}
             <Route 

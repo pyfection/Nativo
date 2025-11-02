@@ -10,6 +10,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   canEditLanguage: (languageId: string) => boolean;
   canVerifyLanguage: (languageId: string) => boolean;
+  refreshUserProficiencies: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -80,6 +81,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return authService.canVerifyLanguage(user, languageId);
   };
 
+  const refreshUserProficiencies = async () => {
+    if (!user) return;
+    
+    try {
+      const proficiencies = await authService.getUserLanguages(user.id);
+      setUser({
+        ...user,
+        language_proficiencies: proficiencies,
+      });
+    } catch (error) {
+      console.error('Failed to refresh language proficiencies:', error);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -91,6 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: !!user,
         canEditLanguage,
         canVerifyLanguage,
+        refreshUserProficiencies,
       }}
     >
       {children}

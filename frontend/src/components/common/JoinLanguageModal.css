@@ -1,0 +1,133 @@
+.join-language-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.join-language-intro {
+  margin: 0;
+  color: #555;
+  line-height: 1.6;
+}
+
+.proficiency-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.proficiency-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.proficiency-option:hover {
+  border-color: #ccc;
+  background-color: #fafafa;
+}
+
+.proficiency-option.selected {
+  border-color: var(--primary, #8B4513);
+  background-color: rgba(139, 69, 19, 0.05);
+}
+
+.proficiency-radio {
+  margin-top: 0.25rem;
+  cursor: pointer;
+}
+
+.proficiency-content {
+  flex: 1;
+}
+
+.proficiency-label {
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 0.25rem;
+}
+
+.proficiency-description {
+  font-size: 0.875rem;
+  color: #666;
+  line-height: 1.4;
+}
+
+.join-language-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background-color: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  color: #856404;
+}
+
+.join-language-note svg {
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.join-language-error {
+  padding: 0.75rem 1rem;
+  background-color: #f8d7da;
+  border: 1px solid #f5c2c7;
+  border-radius: 6px;
+  color: #842029;
+  font-size: 0.875rem;
+}
+
+.join-language-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  padding-top: 0.5rem;
+}
+
+.btn-primary,
+.btn-secondary {
+  padding: 0.625rem 1.25rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.btn-primary {
+  background-color: var(--primary, #8B4513);
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #723a0f;
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background-color: #f5f5f5;
+  color: #333;
+  border: 1px solid #ddd;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: #e0e0e0;
+}
+
+.btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+

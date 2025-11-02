@@ -13,7 +13,11 @@ interface AppLayoutProps {
 }
 
 export default function AppLayout({ children, selectedLanguage, onLanguageChange, languages }: AppLayoutProps) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, refreshUserProficiencies } = useAuth();
+
+  const handleLanguageJoined = async () => {
+    await refreshUserProficiencies();
+  };
 
   return (
     <div className="app-layout">
@@ -26,6 +30,7 @@ export default function AppLayout({ children, selectedLanguage, onLanguageChange
               languages={languages}
               selectedLanguage={selectedLanguage}
               onLanguageChange={onLanguageChange}
+              onLanguageJoined={handleLanguageJoined}
             />
             <UserMenu />
           </div>

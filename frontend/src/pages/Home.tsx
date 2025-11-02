@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Language } from '../App';
-import LanguageSelector from '../components/common/LanguageSelector';
-import UserMenu from '../components/common/UserMenu';
 import { getStatistics, Statistics } from '../services/statisticsService';
 import './Home.css';
 
@@ -43,21 +41,6 @@ export default function Home({ selectedLanguage, onLanguageChange, languages }: 
       '--accent': selectedLanguage.colorScheme.accent,
       '--background': selectedLanguage.colorScheme.background,
     } as React.CSSProperties}>
-      {/* Header */}
-      <header className="header">
-        <div className="header-content">
-          <h1 className="logo">Nativo</h1>
-          <div className="header-right">
-            <LanguageSelector
-              languages={languages}
-              selectedLanguage={selectedLanguage}
-              onLanguageChange={onLanguageChange}
-            />
-            <UserMenu />
-          </div>
-        </div>
-      </header>
-
       {/* Hero Section */}
       <section className="hero">
         <div className="hero-content">
