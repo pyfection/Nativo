@@ -1,8 +1,8 @@
-"""Initial schema with user roles and language colors
+"""Initial schema with language_register field
 
-Revision ID: a526a9c4cfb3
+Revision ID: 0824d0747660
 Revises: 
-Create Date: 2025-11-01 22:43:06.082172
+Create Date: 2025-11-01 23:22:13.701031
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'a526a9c4cfb3'
+revision: str = '0824d0747660'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -117,7 +117,7 @@ def upgrade() -> None:
     sa.Column('grammatical_case', sa.Enum('NOMINATIVE', 'ACCUSATIVE', 'GENITIVE', 'DATIVE', 'ABLATIVE', 'LOCATIVE', 'INSTRUMENTAL', 'VOCATIVE', 'PARTITIVE', 'COMITATIVE', 'ESSIVE', 'TRANSLATIVE', 'ERGATIVE', 'ABSOLUTIVE', 'NOT_APPLICABLE', 'OTHER', name='grammaticalcase'), nullable=True),
     sa.Column('verb_aspect', sa.Enum('PERFECTIVE', 'IMPERFECTIVE', 'PROGRESSIVE', 'CONTINUOUS', 'HABITUAL', 'ITERATIVE', 'INCHOATIVE', 'PERFECT', 'PROSPECTIVE', 'NOT_APPLICABLE', 'OTHER', name='verbaspect'), nullable=True),
     sa.Column('animacy', sa.Enum('ANIMATE', 'INANIMATE', 'HUMAN', 'NON_HUMAN', 'PERSONAL', 'IMPERSONAL', 'NOT_APPLICABLE', name='animacy'), nullable=True),
-    sa.Column('register', sa.Enum('FORMAL', 'INFORMAL', 'COLLOQUIAL', 'SLANG', 'CEREMONIAL', 'ARCHAIC', 'TABOO', 'POETIC', 'TECHNICAL', 'NEUTRAL', name='register'), nullable=True),
+    sa.Column('language_register', sa.Enum('FORMAL', 'INFORMAL', 'COLLOQUIAL', 'SLANG', 'CEREMONIAL', 'ARCHAIC', 'TABOO', 'POETIC', 'TECHNICAL', 'NEUTRAL', name='register'), nullable=True),
     sa.Column('confirmed_at_id', sa.UUID(), nullable=True),
     sa.Column('created_by_id', sa.UUID(), nullable=False),
     sa.Column('verified_by_id', sa.UUID(), nullable=True),
