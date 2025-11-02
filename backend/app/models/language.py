@@ -18,6 +18,12 @@ class Language(Base):
     description = Column(Text, nullable=True)
     is_endangered = Column(Boolean, default=True)
     
+    # Theme colors for UI customization
+    primary_color = Column(String(7), nullable=True)      # e.g., '#8B4513'
+    secondary_color = Column(String(7), nullable=True)    # e.g., '#D2691E'
+    accent_color = Column(String(7), nullable=True)       # e.g., '#CD853F'
+    background_color = Column(String(7), nullable=True)   # e.g., '#FFF8DC'
+    
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
     

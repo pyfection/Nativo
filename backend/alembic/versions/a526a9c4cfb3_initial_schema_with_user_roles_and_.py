@@ -1,8 +1,8 @@
-"""Initial schema with user roles
+"""Initial schema with user roles and language colors
 
-Revision ID: 6cf562a48fea
+Revision ID: a526a9c4cfb3
 Revises: 
-Create Date: 2025-11-01 22:25:53.252168
+Create Date: 2025-11-01 22:43:06.082172
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '6cf562a48fea'
+revision: str = 'a526a9c4cfb3'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -27,6 +27,10 @@ def upgrade() -> None:
     sa.Column('iso_639_3', sa.String(length=3), nullable=True),
     sa.Column('description', sa.Text(), nullable=True),
     sa.Column('is_endangered', sa.Boolean(), nullable=True),
+    sa.Column('primary_color', sa.String(length=7), nullable=True),
+    sa.Column('secondary_color', sa.String(length=7), nullable=True),
+    sa.Column('accent_color', sa.String(length=7), nullable=True),
+    sa.Column('background_color', sa.String(length=7), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.Column('updated_at', sa.DateTime(), nullable=False),
     sa.PrimaryKeyConstraint('id')
