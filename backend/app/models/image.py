@@ -1,4 +1,7 @@
-from sqlalchemy import Column, String, Integer, DateTime, ForeignKey
+"""
+Image model for visual references.
+"""
+from sqlalchemy import Column, String, Text, ForeignKey, DateTime
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -7,15 +10,14 @@ import uuid
 from app.database import Base
 
 
-class Audio(Base):
-    """Audio recordings for pronunciation and spoken content"""
-    __tablename__ = "audio"
+class Image(Base):
+    """Images for visual references to words"""
+    __tablename__ = "images"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     file_path = Column(String(500), nullable=False)
-    file_size = Column(Integer, nullable=True)  # Size in bytes
-    duration = Column(Integer, nullable=True)  # Duration in seconds
-    mime_type = Column(String(100), nullable=True)
+    alt_text = Column(String(500), nullable=True)
+    caption = Column(Text, nullable=True)
     
     uploaded_by_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     
@@ -25,5 +27,5 @@ class Audio(Base):
     uploaded_by = relationship("User")
     
     def __repr__(self):
-        return f"<Audio(id={self.id}, file_path='{self.file_path}')>"
+        return f"<Image(id={self.id}, file_path='{self.file_path}')>"
 
