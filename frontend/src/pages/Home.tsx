@@ -1,5 +1,6 @@
 import { Language } from '../App';
 import LanguageSelector from '../components/common/LanguageSelector';
+import UserMenu from '../components/common/UserMenu';
 import './Home.css';
 
 interface HomeProps {
@@ -28,11 +29,14 @@ export default function Home({ selectedLanguage, onLanguageChange, languages }: 
       <header className="header">
         <div className="header-content">
           <h1 className="logo">Nativo</h1>
-          <LanguageSelector
-            languages={languages}
-            selectedLanguage={selectedLanguage}
-            onLanguageChange={onLanguageChange}
-          />
+          <div className="header-right">
+            <LanguageSelector
+              languages={languages}
+              selectedLanguage={selectedLanguage}
+              onLanguageChange={onLanguageChange}
+            />
+            <UserMenu />
+          </div>
         </div>
       </header>
 

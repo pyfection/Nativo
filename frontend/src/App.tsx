@@ -1,9 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
 import Home from './pages/Home';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import languageService, { LanguageResponse } from './services/languageService';
 import './App.css';
 
-// Hardcoded languages with color schemes
+// Frontend Language type with color scheme
 export interface Language {
   id: string;
   name: string;
@@ -18,93 +22,120 @@ export interface Language {
   };
 }
 
-export const LANGUAGES: Language[] = [
-  {
-    id: '1',
-    name: 'Navajo',
-    nativeName: 'Diné bizaad',
-    iso: 'nav',
-    description: 'Indigenous language of the Navajo people of the Southwestern United States',
+// Default color scheme for languages without colors
+const DEFAULT_COLOR_SCHEME = {
+  primary: '#8B4513',
+  secondary: '#D2691E',
+  accent: '#CD853F',
+  background: '#FFF8DC',
+};
+
+// Convert API language to frontend Language type
+function convertLanguage(apiLang: LanguageResponse): Language {
+  return {
+    id: apiLang.id,
+    name: apiLang.name,
+    nativeName: apiLang.native_name || apiLang.name,
+    iso: apiLang.iso_639_3 || '',
+    description: apiLang.description || '',
     colorScheme: {
-      primary: '#8B4513',
-      secondary: '#D2691E',
-      accent: '#CD853F',
-      background: '#FFF8DC',
+      primary: apiLang.primary_color || DEFAULT_COLOR_SCHEME.primary,
+      secondary: apiLang.secondary_color || DEFAULT_COLOR_SCHEME.secondary,
+      accent: apiLang.accent_color || DEFAULT_COLOR_SCHEME.accent,
+      background: apiLang.background_color || DEFAULT_COLOR_SCHEME.background,
     },
-  },
-  {
-    id: '2',
-    name: 'Hawaiian',
-    nativeName: 'ʻŌlelo Hawaiʻi',
-    iso: 'haw',
-    description: 'Polynesian language of the Hawaiian Islands',
-    colorScheme: {
-      primary: '#006B8F',
-      secondary: '#00A7E1',
-      accent: '#4DD0E1',
-      background: '#E0F7FA',
-    },
-  },
-  {
-    id: '3',
-    name: 'Irish',
-    nativeName: 'Gaeilge',
-    iso: 'gle',
-    description: 'Celtic language native to Ireland',
-    colorScheme: {
-      primary: '#169B62',
-      secondary: '#2E7D32',
-      accent: '#66BB6A',
-      background: '#E8F5E9',
-    },
-  },
-  {
-    id: '4',
-    name: 'Ainu',
-    nativeName: 'アイヌ・イタㇰ',
-    iso: 'ain',
-    description: 'Language of the indigenous Ainu people of Japan',
-    colorScheme: {
-      primary: '#7B1FA2',
-      secondary: '#9C27B0',
-      accent: '#BA68C8',
-      background: '#F3E5F5',
-    },
-  },
-  {
-    id: '5',
-    name: 'Quechua',
-    nativeName: 'Runa Simi',
-    iso: 'que',
-    description: 'Indigenous language family of the Andes',
-    colorScheme: {
-      primary: '#D32F2F',
-      secondary: '#F44336',
-      accent: '#EF5350',
-      background: '#FFEBEE',
-    },
-  },
-];
+  };
+}
 
 function App() {
-  const [selectedLanguage, setSelectedLanguage] = useState<Language>(LANGUAGES[0]);
+  const [languages, setLanguages] = useState<Language[]>([]);
+  const [selectedLanguage, setSelectedLanguage] = useState<Language | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch languages on mount
+  useEffect(() => {
+    const fetchLanguages = async () => {
+      try {
+        setLoading(true);
+        // First get the list of languages
+        const languageList = await languageService.getAll();
+        
+        // Then fetch full details for each language (to get colors)
+        const languagesWithDetails = await Promise.all(
+          languageList.map(lang => languageService.getById(lang.id))
+        );
+        
+        // Convert to frontend format
+        const convertedLanguages = languagesWithDetails.map(convertLanguage);
+        setLanguages(convertedLanguages);
+        
+        // Set first language as selected
+        if (convertedLanguages.length > 0) {
+          setSelectedLanguage(convertedLanguages[0]);
+        }
+      } catch (err) {
+        console.error('Failed to fetch languages:', err);
+        setError('Failed to load languages');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLanguages();
+  }, []);
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="app-loading">
+        <div className="loading-spinner"></div>
+        <p>Loading languages...</p>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="app-error">
+        <h2>Error</h2>
+        <p>{error}</p>
+        <button onClick={() => window.location.reload()}>Retry</button>
+      </div>
+    );
+  }
+
+  // Show message if no languages found
+  if (languages.length === 0) {
+    return (
+      <div className="app-empty">
+        <h2>No Languages Found</h2>
+        <p>No endangered languages have been added to the database yet.</p>
+      </div>
+    );
+  }
 
   return (
     <Router>
-      <div className="app" style={{ '--primary': selectedLanguage.colorScheme.primary } as React.CSSProperties}>
-        <Routes>
-          <Route 
-            path="/" 
-            element={
-              <Home 
-                selectedLanguage={selectedLanguage} 
-                onLanguageChange={setSelectedLanguage}
-                languages={LANGUAGES}
-              />
-            } 
-          />
-        </Routes>
-      </div>
+      <AuthProvider>
+        <div className="app" style={{ '--primary': selectedLanguage?.colorScheme.primary } as React.CSSProperties}>
+          <Routes>
+            <Route 
+              path="/" 
+              element={
+                <Home 
+                  selectedLanguage={selectedLanguage!} 
+                  onLanguageChange={setSelectedLanguage}
+                  languages={languages}
+                />
+              } 
+            />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+          </Routes>
+        </div>
+      </AuthProvider>
     </Router>
   );
 }
