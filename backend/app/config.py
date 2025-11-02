@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite:///./nativo.db"
     
     # CORS
-    BACKEND_CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:3000"]
+    BACKEND_CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "http://localhost:3000"]
     
     model_config = SettingsConfigDict(
         env_file=".env",

@@ -93,7 +93,7 @@ function App() {
   // Show loading state
   if (loading) {
     return (
-      <div className="app-loading">
+      <div className="app-loading" style={{ padding: '2rem', textAlign: 'center' }}>
         <div className="loading-spinner"></div>
         <p>Loading languages...</p>
       </div>
@@ -103,10 +103,11 @@ function App() {
   // Show error state
   if (error) {
     return (
-      <div className="app-error">
+      <div className="app-error" style={{ padding: '2rem', textAlign: 'center' }}>
         <h2>Error</h2>
         <p>{error}</p>
-        <button onClick={() => window.location.reload()}>Retry</button>
+        <p style={{ fontSize: '0.875rem', color: '#666' }}>Make sure the backend is running on http://localhost:8000</p>
+        <button onClick={() => window.location.reload()} style={{ marginTop: '1rem', padding: '0.5rem 1rem', cursor: 'pointer' }}>Retry</button>
       </div>
     );
   }
@@ -114,7 +115,7 @@ function App() {
   // Show message if no languages found
   if (languages.length === 0) {
     return (
-      <div className="app-empty">
+      <div className="app-empty" style={{ padding: '2rem', textAlign: 'center' }}>
         <h2>No Languages Found</h2>
         <p>No endangered languages have been added to the database yet.</p>
       </div>

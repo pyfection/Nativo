@@ -1,6 +1,8 @@
+import { useEffect, useState } from 'react';
 import { Language } from '../App';
 import LanguageSelector from '../components/common/LanguageSelector';
 import UserMenu from '../components/common/UserMenu';
+import { getStatistics, Statistics } from '../services/statisticsService';
 import './Home.css';
 
 interface HomeProps {
@@ -10,13 +12,29 @@ interface HomeProps {
 }
 
 export default function Home({ selectedLanguage, onLanguageChange, languages }: HomeProps) {
-  // Hardcoded stats for now
-  const stats = {
-    totalLanguages: 5,
-    wordsDocumented: 1247,
-    audioRecordings: 389,
-    contributors: 42,
-  };
+  const [stats, setStats] = useState<Statistics>({
+    total_languages: 0,
+    total_words: 0,
+    total_audio: 0,
+    total_documents: 0,
+    total_contributors: 0,
+  });
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const data = await getStatistics();
+        setStats(data);
+      } catch (error) {
+        console.error('Failed to fetch statistics:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
 
   return (
     <div className="home-page" style={{
@@ -62,19 +80,33 @@ export default function Home({ selectedLanguage, onLanguageChange, languages }: 
       <section className="stats-section">
         <div className="stats-grid">
           <div className="stat-card">
-            <div className="stat-number">{stats.totalLanguages}</div>
+            <div className="stat-number">
+              {isLoading ? '...' : stats.total_languages}
+            </div>
             <div className="stat-label">Languages Preserved</div>
           </div>
           <div className="stat-card">
-            <div className="stat-number">{stats.wordsDocumented}</div>
+            <div className="stat-number">
+              {isLoading ? '...' : stats.total_words}
+            </div>
             <div className="stat-label">Words Documented</div>
           </div>
           <div className="stat-card">
-            <div className="stat-number">{stats.audioRecordings}</div>
+            <div className="stat-number">
+              {isLoading ? '...' : stats.total_documents}
+            </div>
+            <div className="stat-label">Documents Preserved</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-number">
+              {isLoading ? '...' : stats.total_audio}
+            </div>
             <div className="stat-label">Audio Recordings</div>
           </div>
           <div className="stat-card">
-            <div className="stat-number">{stats.contributors}</div>
+            <div className="stat-number">
+              {isLoading ? '...' : stats.total_contributors}
+            </div>
             <div className="stat-label">Contributors</div>
           </div>
         </div>
