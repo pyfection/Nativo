@@ -1,9 +1,14 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
+import AppLayout from './components/layouts/AppLayout';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import WordList from './pages/WordList';
+import AddWord from './pages/AddWord';
+import DocumentList from './pages/DocumentList';
+import AddDocument from './pages/AddDocument';
 import languageService, { LanguageResponse } from './services/languageService';
 import './App.css';
 
@@ -124,15 +129,73 @@ function App() {
             <Route 
               path="/" 
               element={
-                <Home 
-                  selectedLanguage={selectedLanguage!} 
+                <AppLayout
+                  selectedLanguage={selectedLanguage!}
                   onLanguageChange={setSelectedLanguage}
                   languages={languages}
-                />
+                >
+                  <Home 
+                    selectedLanguage={selectedLanguage!} 
+                    onLanguageChange={setSelectedLanguage}
+                    languages={languages}
+                  />
+                </AppLayout>
               } 
             />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            
+            {/* Word Routes */}
+            <Route 
+              path="/words" 
+              element={
+                <AppLayout
+                  selectedLanguage={selectedLanguage!}
+                  onLanguageChange={setSelectedLanguage}
+                  languages={languages}
+                >
+                  <WordList selectedLanguage={selectedLanguage!} />
+                </AppLayout>
+              } 
+            />
+            <Route 
+              path="/words/add" 
+              element={
+                <AppLayout
+                  selectedLanguage={selectedLanguage!}
+                  onLanguageChange={setSelectedLanguage}
+                  languages={languages}
+                >
+                  <AddWord />
+                </AppLayout>
+              } 
+            />
+            
+            {/* Document Routes */}
+            <Route 
+              path="/documents" 
+              element={
+                <AppLayout
+                  selectedLanguage={selectedLanguage!}
+                  onLanguageChange={setSelectedLanguage}
+                  languages={languages}
+                >
+                  <DocumentList selectedLanguage={selectedLanguage!} />
+                </AppLayout>
+              } 
+            />
+            <Route 
+              path="/documents/add" 
+              element={
+                <AppLayout
+                  selectedLanguage={selectedLanguage!}
+                  onLanguageChange={setSelectedLanguage}
+                  languages={languages}
+                >
+                  <AddDocument />
+                </AppLayout>
+              } 
+            />
           </Routes>
         </div>
       </AuthProvider>

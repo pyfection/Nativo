@@ -1,48 +1,57 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import wordService, { WordListItem } from '../services/wordService';
-import languageService, { LanguageListItem } from '../services/languageService';
+import wordService, { Word } from '../services/wordService';
+import { Language } from '../App';
 import './WordList.css';
 
-export default function WordList() {
+interface WordListProps {
+  selectedLanguage?: Language;
+}
+
+export default function WordList({ selectedLanguage }: WordListProps) {
   const navigate = useNavigate();
-  const [words, setWords] = useState<WordListItem[]>([]);
-  const [languages, setLanguages] = useState<LanguageListItem[]>([]);
+  const [words, setWords] = useState<Word[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
   // Filters
   const [filters, setFilters] = useState({
-    language_id: '',
     status_filter: '',
+    part_of_speech: '',
+    search: '',
   });
 
   useEffect(() => {
-    fetchLanguages();
-  }, []);
-
-  useEffect(() => {
     fetchWords();
-  }, [filters]);
-
-  const fetchLanguages = async () => {
-    try {
-      const langs = await languageService.getAll();
-      setLanguages(langs);
-    } catch (err) {
-      console.error('Failed to fetch languages:', err);
-    }
-  };
+  }, [filters, selectedLanguage]);
 
   const fetchWords = async () => {
     try {
       setLoading(true);
       const params: any = {};
-      if (filters.language_id) params.language_id = filters.language_id;
+      
+      // Always filter by selected language
+      if (selectedLanguage) {
+        params.language_id = selectedLanguage.id;
+      }
+      
       if (filters.status_filter) params.status_filter = filters.status_filter;
+      if (filters.part_of_speech) params.part_of_speech = filters.part_of_speech;
       
       const data = await wordService.getAll(params);
-      setWords(data);
+      
+      // Client-side search if needed
+      let filtered = data;
+      if (filters.search) {
+        const searchLower = filters.search.toLowerCase();
+        filtered = data.filter(word => 
+          word.word.toLowerCase().includes(searchLower) ||
+          word.definition.toLowerCase().includes(searchLower) ||
+          word.romanization?.toLowerCase().includes(searchLower)
+        );
+      }
+      
+      setWords(filtered);
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to load words');
     } finally {
@@ -50,7 +59,7 @@ export default function WordList() {
     }
   };
 
-  const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
     setFilters({
       ...filters,
       [e.target.name]: e.target.value,
@@ -59,8 +68,9 @@ export default function WordList() {
 
   const clearFilters = () => {
     setFilters({
-      language_id: '',
       status_filter: '',
+      part_of_speech: '',
+      search: '',
     });
   };
 
@@ -82,20 +92,36 @@ export default function WordList() {
       {/* Filters */}
       <div className="filters-section">
         <div className="filters">
+          <div className="filter-group search-group">
+            <label htmlFor="search">Search</label>
+            <input
+              type="text"
+              id="search"
+              name="search"
+              value={filters.search}
+              onChange={handleFilterChange}
+              placeholder="Search words, definitions, romanization..."
+            />
+          </div>
+
           <div className="filter-group">
-            <label htmlFor="language_id">Language</label>
+            <label htmlFor="part_of_speech">Part of Speech</label>
             <select
-              id="language_id"
-              name="language_id"
-              value={filters.language_id}
+              id="part_of_speech"
+              name="part_of_speech"
+              value={filters.part_of_speech}
               onChange={handleFilterChange}
             >
-              <option value="">All Languages</option>
-              {languages.map((lang) => (
-                <option key={lang.id} value={lang.id}>
-                  {lang.name}
-                </option>
-              ))}
+              <option value="">All</option>
+              <option value="noun">Noun</option>
+              <option value="verb">Verb</option>
+              <option value="adjective">Adjective</option>
+              <option value="adverb">Adverb</option>
+              <option value="pronoun">Pronoun</option>
+              <option value="preposition">Preposition</option>
+              <option value="conjunction">Conjunction</option>
+              <option value="interjection">Interjection</option>
+              <option value="other">Other</option>
             </select>
           </div>
 
@@ -107,14 +133,14 @@ export default function WordList() {
               value={filters.status_filter}
               onChange={handleFilterChange}
             >
-              <option value="">All Statuses</option>
+              <option value="">All</option>
               <option value="draft">Draft</option>
               <option value="pending_review">Pending Review</option>
               <option value="published">Published</option>
             </select>
           </div>
 
-          {(filters.language_id || filters.status_filter) && (
+          {(filters.search || filters.part_of_speech || filters.status_filter) && (
             <button onClick={clearFilters} className="btn-clear-filters">
               Clear Filters
             </button>
@@ -146,21 +172,35 @@ export default function WordList() {
             <thead>
               <tr>
                 <th>Word</th>
+                <th>Romanization</th>
+                <th>IPA</th>
                 <th>Part of Speech</th>
                 <th>Definition</th>
+                <th>Literal Translation</th>
                 <th>Status</th>
+                <th>Verified</th>
               </tr>
             </thead>
             <tbody>
               {words.map((word) => (
                 <tr key={word.id} onClick={() => navigate(`/words/${word.id}`)} className="clickable-row">
                   <td className="word-cell">{word.word}</td>
+                  <td className="romanization-cell">{word.romanization || '—'}</td>
+                  <td className="ipa-cell">{word.ipa_pronunciation || '—'}</td>
                   <td className="pos-cell">{word.part_of_speech || '—'}</td>
                   <td className="definition-cell">{word.definition}</td>
+                  <td className="literal-cell">{word.literal_translation || '—'}</td>
                   <td>
                     <span className={`status-badge status-${word.status}`}>
                       {word.status.replace('_', ' ')}
                     </span>
+                  </td>
+                  <td className="verified-cell">
+                    {word.is_verified ? (
+                      <span className="verified-badge">✓</span>
+                    ) : (
+                      <span className="unverified-badge">—</span>
+                    )}
                   </td>
                 </tr>
               ))}

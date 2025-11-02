@@ -66,22 +66,33 @@
   min-width: 200px;
 }
 
+.filter-group.search-group {
+  flex: 1;
+  min-width: 300px;
+}
+
 .filter-group label {
   font-size: 0.875rem;
   font-weight: 600;
   color: #666;
 }
 
-.filter-group select {
+.filter-group select,
+.filter-group input[type="text"] {
   padding: 0.75rem 1rem;
   font-size: 1rem;
   border: 2px solid #e0e0e0;
   border-radius: 8px;
-  cursor: pointer;
   transition: all 0.2s ease;
+  font-family: inherit;
 }
 
-.filter-group select:focus {
+.filter-group select {
+  cursor: pointer;
+}
+
+.filter-group select:focus,
+.filter-group input[type="text"]:focus {
   outline: none;
   border-color: var(--primary);
 }
@@ -151,18 +162,50 @@
   font-weight: 600;
   font-size: 1.05rem;
   color: var(--primary);
+  min-width: 120px;
+}
+
+.romanization-cell,
+.ipa-cell {
+  color: #666;
+  font-style: italic;
+  min-width: 100px;
 }
 
 .pos-cell {
   color: #666;
   font-style: italic;
+  min-width: 100px;
 }
 
 .definition-cell {
-  max-width: 400px;
+  max-width: 300px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.literal-cell {
+  max-width: 250px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.verified-cell {
+  text-align: center;
+}
+
+.verified-badge {
+  color: #2e7d32;
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+.unverified-badge {
+  color: #ccc;
 }
 
 .status-badge {

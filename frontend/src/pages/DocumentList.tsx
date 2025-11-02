@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import documentService, { DocumentListItem } from '../services/documentService';
-import languageService, { LanguageListItem } from '../services/languageService';
+import documentService, { Document } from '../services/documentService';
+import { Language } from '../App';
 import './DocumentList.css';
 
 const DOCUMENT_TYPES = [
@@ -21,45 +21,51 @@ const DOCUMENT_TYPES = [
   { value: 'other', label: 'Other' },
 ];
 
-export default function DocumentList() {
+interface DocumentListProps {
+  selectedLanguage?: Language;
+}
+
+export default function DocumentList({ selectedLanguage }: DocumentListProps) {
   const navigate = useNavigate();
-  const [documents, setDocuments] = useState<DocumentListItem[]>([]);
-  const [languages, setLanguages] = useState<LanguageListItem[]>([]);
+  const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
   // Filters
   const [filters, setFilters] = useState({
-    language_id: '',
     document_type: '',
+    search: '',
   });
 
   useEffect(() => {
-    fetchLanguages();
-  }, []);
-
-  useEffect(() => {
     fetchDocuments();
-  }, [filters]);
-
-  const fetchLanguages = async () => {
-    try {
-      const langs = await languageService.getAll();
-      setLanguages(langs);
-    } catch (err) {
-      console.error('Failed to fetch languages:', err);
-    }
-  };
+  }, [filters, selectedLanguage]);
 
   const fetchDocuments = async () => {
     try {
       setLoading(true);
       const params: any = {};
-      if (filters.language_id) params.language_id = filters.language_id;
+      
+      // Always filter by selected language
+      if (selectedLanguage) {
+        params.language_id = selectedLanguage.id;
+      }
+      
       if (filters.document_type) params.document_type = filters.document_type;
       
       const data = await documentService.getAll(params);
-      setDocuments(data);
+      
+      // Client-side search if needed
+      let filtered = data;
+      if (filters.search) {
+        const searchLower = filters.search.toLowerCase();
+        filtered = data.filter(doc => 
+          doc.content.toLowerCase().includes(searchLower) ||
+          doc.source?.toLowerCase().includes(searchLower)
+        );
+      }
+      
+      setDocuments(filtered);
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to load documents');
     } finally {
@@ -67,7 +73,7 @@ export default function DocumentList() {
     }
   };
 
-  const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
     setFilters({
       ...filters,
       [e.target.name]: e.target.value,
@@ -76,8 +82,8 @@ export default function DocumentList() {
 
   const clearFilters = () => {
     setFilters({
-      language_id: '',
       document_type: '',
+      search: '',
     });
   };
 
@@ -107,21 +113,16 @@ export default function DocumentList() {
       {/* Filters */}
       <div className="filters-section">
         <div className="filters">
-          <div className="filter-group">
-            <label htmlFor="language_id">Language</label>
-            <select
-              id="language_id"
-              name="language_id"
-              value={filters.language_id}
+          <div className="filter-group search-group">
+            <label htmlFor="search">Search</label>
+            <input
+              type="text"
+              id="search"
+              name="search"
+              value={filters.search}
               onChange={handleFilterChange}
-            >
-              <option value="">All Languages</option>
-              {languages.map((lang) => (
-                <option key={lang.id} value={lang.id}>
-                  {lang.name}
-                </option>
-              ))}
-            </select>
+              placeholder="Search content, source..."
+            />
           </div>
 
           <div className="filter-group">
@@ -141,7 +142,7 @@ export default function DocumentList() {
             </select>
           </div>
 
-          {(filters.language_id || filters.document_type) && (
+          {(filters.search || filters.document_type) && (
             <button onClick={clearFilters} className="btn-clear-filters">
               Clear Filters
             </button>
@@ -174,18 +175,24 @@ export default function DocumentList() {
               <tr>
                 <th>Content Preview</th>
                 <th>Type</th>
+                <th>Source</th>
+                <th>Notes</th>
                 <th>Date</th>
               </tr>
             </thead>
             <tbody>
               {documents.map((doc) => (
                 <tr key={doc.id} onClick={() => navigate(`/documents/${doc.id}`)} className="clickable-row">
-                  <td className="content-cell">{doc.content}</td>
+                  <td className="content-cell">
+                    {doc.content.length > 200 ? `${doc.content.substring(0, 200)}...` : doc.content}
+                  </td>
                   <td>
                     <span className="type-badge">
                       {DOCUMENT_TYPES.find(t => t.value === doc.document_type)?.label || doc.document_type}
                     </span>
                   </td>
+                  <td className="source-cell">{doc.source || '—'}</td>
+                  <td className="notes-cell">{doc.notes || '—'}</td>
                   <td className="date-cell">{formatDate(doc.created_at)}</td>
                 </tr>
               ))}

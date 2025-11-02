@@ -4,7 +4,7 @@
 }
 
 .content-cell {
-  max-width: 500px;
+  max-width: 400px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -22,10 +22,41 @@
   color: var(--primary);
 }
 
+.source-cell,
+.notes-cell {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.95rem;
+  color: #666;
+}
+
 .date-cell {
   color: #666;
   font-size: 0.95rem;
   white-space: nowrap;
+}
+
+/* Filters */
+.filter-group.search-group {
+  flex: 1;
+  min-width: 300px;
+}
+
+.filter-group input[type="text"] {
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  width: 100%;
+}
+
+.filter-group input[type="text"]:focus {
+  outline: none;
+  border-color: var(--primary);
 }
 
 /* Reuse other styles from WordList.css */
