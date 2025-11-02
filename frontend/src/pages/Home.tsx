@@ -9,7 +9,7 @@ interface HomeProps {
   languages: Language[];
 }
 
-export default function Home({ selectedLanguage, onLanguageChange, languages }: HomeProps) {
+export default function Home({ selectedLanguage }: HomeProps) {
   const [stats, setStats] = useState<Statistics>({
     total_languages: 0,
     total_words: 0,
