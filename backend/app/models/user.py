@@ -1,10 +1,19 @@
-from sqlalchemy import Column, String, Boolean, DateTime
+from sqlalchemy import Column, String, Boolean, DateTime, Enum as SQLEnum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime
+import enum
 import uuid
 
 from app.database import Base
+
+
+class UserRole(str, enum.Enum):
+    """User roles for access control"""
+    ADMIN = "admin"
+    NATIVE_SPEAKER = "native_speaker"
+    RESEARCHER = "researcher"
+    PUBLIC = "public"
 
 
 class User(Base):
@@ -15,6 +24,7 @@ class User(Base):
     email = Column(String(255), unique=True, nullable=False, index=True)
     username = Column(String(100), unique=True, nullable=False, index=True)
     hashed_password = Column(String(255), nullable=False)
+    role = Column(SQLEnum(UserRole), default=UserRole.PUBLIC, nullable=False)
     is_active = Column(Boolean, default=True)
     is_superuser = Column(Boolean, default=False)
     
@@ -26,5 +36,5 @@ class User(Base):
     words_verified = relationship("Word", foreign_keys="Word.verified_by_id", back_populates="verified_by")
     
     def __repr__(self):
-        return f"<User(id={self.id}, username='{self.username}')>"
+        return f"<User(id={self.id}, username='{self.username}', role={self.role})>"
 

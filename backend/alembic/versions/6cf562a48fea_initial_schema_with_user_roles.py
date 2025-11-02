@@ -1,8 +1,8 @@
-"""Initial database schema with Word model and typed relationships
+"""Initial schema with user roles
 
-Revision ID: b09164d27d80
+Revision ID: 6cf562a48fea
 Revises: 
-Create Date: 2025-11-01 22:15:21.321398
+Create Date: 2025-11-01 22:25:53.252168
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'b09164d27d80'
+revision: str = '6cf562a48fea'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -55,6 +55,7 @@ def upgrade() -> None:
     sa.Column('email', sa.String(length=255), nullable=False),
     sa.Column('username', sa.String(length=100), nullable=False),
     sa.Column('hashed_password', sa.String(length=255), nullable=False),
+    sa.Column('role', sa.Enum('ADMIN', 'NATIVE_SPEAKER', 'RESEARCHER', 'PUBLIC', name='userrole'), nullable=False),
     sa.Column('is_active', sa.Boolean(), nullable=True),
     sa.Column('is_superuser', sa.Boolean(), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=False),
