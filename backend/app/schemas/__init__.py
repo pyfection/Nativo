@@ -2,6 +2,50 @@
 Pydantic schemas for API request/response validation.
 """
 
+# User schemas
+from app.schemas.user import (
+    UserBase,
+    UserCreate,
+    UserLogin,
+    UserResponse,
+    UserUpdate,
+    Token,
+    TokenData,
+)
+
+# Language schemas
+from app.schemas.language import (
+    LanguageBase,
+    LanguageCreate,
+    LanguageUpdate,
+    LanguageInDB,
+    Language,
+    LanguageListItem,
+)
+
+# Audio schemas
+from app.schemas.audio import (
+    AudioBase,
+    AudioCreate,
+    AudioUpdate,
+    AudioInDB,
+    Audio,
+    AudioListItem,
+)
+
+# Document schemas
+from app.schemas.document import (
+    DocumentBase,
+    DocumentCreate,
+    DocumentUpdate,
+    DocumentInDB,
+    Document,
+    DocumentListItem,
+    DocumentFilter,
+    DocumentStatistics,
+)
+
+# Word schemas (includes Location, Tag, Image schemas too)
 from app.schemas.word import (
     # Word schemas
     WordBase,
@@ -13,16 +57,6 @@ from app.schemas.word import (
     WordWithRelations,
     WordFilter,
     WordStatistics,
-    
-    # Document schemas
-    DocumentBase,
-    DocumentCreate,
-    DocumentUpdate,
-    DocumentInDB,
-    Document,
-    DocumentListItem,
-    DocumentFilter,
-    DocumentStatistics,
     
     # Location schemas
     LocationBase,
@@ -51,16 +85,30 @@ from app.schemas.word import (
 )
 
 __all__ = [
-    # Word schemas
-    "WordBase",
-    "WordCreate",
-    "WordUpdate",
-    "WordInDB",
-    "Word",
-    "WordListItem",
-    "WordWithRelations",
-    "WordFilter",
-    "WordStatistics",
+    # User schemas
+    "UserBase",
+    "UserCreate",
+    "UserLogin",
+    "UserResponse",
+    "UserUpdate",
+    "Token",
+    "TokenData",
+    
+    # Language schemas
+    "LanguageBase",
+    "LanguageCreate",
+    "LanguageUpdate",
+    "LanguageInDB",
+    "Language",
+    "LanguageListItem",
+    
+    # Audio schemas
+    "AudioBase",
+    "AudioCreate",
+    "AudioUpdate",
+    "AudioInDB",
+    "Audio",
+    "AudioListItem",
     
     # Document schemas
     "DocumentBase",
@@ -71,6 +119,17 @@ __all__ = [
     "DocumentListItem",
     "DocumentFilter",
     "DocumentStatistics",
+    
+    # Word schemas
+    "WordBase",
+    "WordCreate",
+    "WordUpdate",
+    "WordInDB",
+    "Word",
+    "WordListItem",
+    "WordWithRelations",
+    "WordFilter",
+    "WordStatistics",
     
     # Location schemas
     "LocationBase",

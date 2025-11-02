@@ -4,7 +4,7 @@ Database models for Nativo language preservation platform.
 All models use UUID primary keys for better distributed system compatibility.
 """
 
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.models.language import Language
 from app.models.audio import Audio
 from app.models.document import Document, DocumentType
@@ -40,6 +40,9 @@ __all__ = [
     "Tag",
     "Word",
     "Image",
+    
+    # User Enum
+    "UserRole",
     
     # Document Enum
     "DocumentType",
