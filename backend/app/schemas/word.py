@@ -37,7 +37,7 @@ class WordBase(BaseModel):
     animacy: Optional[Animacy] = None
     
     # Cultural Context
-    register: Optional[Register] = Register.NEUTRAL
+    language_register: Optional[Register] = Register.NEUTRAL
     
     # Location
     confirmed_at_id: Optional[UUID] = None
@@ -68,7 +68,7 @@ class WordUpdate(BaseModel):
     animacy: Optional[Animacy] = None
     
     # Cultural Context
-    register: Optional[Register] = None
+    language_register: Optional[Register] = None
     
     # Location
     confirmed_at_id: Optional[UUID] = None
@@ -329,7 +329,7 @@ class WordFilter(BaseModel):
     grammatical_case: Optional[GrammaticalCase] = None
     verb_aspect: Optional[VerbAspect] = None
     animacy: Optional[Animacy] = None
-    register: Optional[Register] = None
+    language_register: Optional[Register] = None
     status: Optional[WordStatus] = None
     is_verified: Optional[bool] = None
     search_term: Optional[str] = None  # Search in word, romanization

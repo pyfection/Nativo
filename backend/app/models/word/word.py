@@ -64,7 +64,7 @@ class Word(Base):
     animacy = Column(SQLEnum(Animacy), nullable=True)
     
     # Cultural Context
-    register = Column(SQLEnum(Register), nullable=True, default=Register.NEUTRAL)
+    language_register = Column(SQLEnum(Register), nullable=True, default=Register.NEUTRAL)
     
     # Location where this word/pronunciation was confirmed
     confirmed_at_id = Column(UUID(as_uuid=True), ForeignKey("locations.id"), nullable=True)
