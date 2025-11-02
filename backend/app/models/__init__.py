@@ -6,6 +6,7 @@ All models use UUID primary keys for better distributed system compatibility.
 
 from app.models.user import User, UserRole
 from app.models.language import Language
+from app.models.user_language import UserLanguage, ProficiencyLevel
 from app.models.audio import Audio
 from app.models.document import Document, DocumentType
 from app.models.location import Location
@@ -34,6 +35,7 @@ __all__ = [
     # Core Models
     "User",
     "Language",
+    "UserLanguage",
     "Audio",
     "Document",
     "Location",
@@ -41,8 +43,9 @@ __all__ = [
     "Word",
     "Image",
     
-    # User Enum
+    # User Enums
     "UserRole",
+    "ProficiencyLevel",
     
     # Document Enum
     "DocumentType",

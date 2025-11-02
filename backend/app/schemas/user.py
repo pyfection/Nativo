@@ -2,7 +2,7 @@
 User schemas for API request/response validation.
 """
 from pydantic import BaseModel, EmailStr, Field, ConfigDict
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 from uuid import UUID
 
@@ -33,8 +33,14 @@ class UserResponse(UserBase):
     role: UserRole
     is_active: bool
     created_at: datetime
+    language_proficiencies: Optional[List["LanguageProficiencyResponse"]] = None
     
     model_config = ConfigDict(from_attributes=True)
+
+
+# Import here to avoid circular dependency
+from app.schemas.user_language import LanguageProficiencyResponse
+UserResponse.model_rebuild()
 
 
 class UserUpdate(BaseModel):

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import documentService, { Document } from '../services/documentService';
 import { Language } from '../App';
+import { useAuth } from '../contexts/AuthContext';
 import './DocumentList.css';
 
 const DOCUMENT_TYPES = [
@@ -27,6 +28,7 @@ interface DocumentListProps {
 
 export default function DocumentList({ selectedLanguage }: DocumentListProps) {
   const navigate = useNavigate();
+  const { canEditLanguage } = useAuth();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -36,6 +38,9 @@ export default function DocumentList({ selectedLanguage }: DocumentListProps) {
     document_type: '',
     search: '',
   });
+
+  // Check if user can edit this language
+  const canEdit = selectedLanguage ? canEditLanguage(selectedLanguage.id) : false;
 
   useEffect(() => {
     fetchDocuments();
@@ -102,13 +107,23 @@ export default function DocumentList({ selectedLanguage }: DocumentListProps) {
           <h1>Documents</h1>
           <p>Browse and manage text documents and content</p>
         </div>
-        <button onClick={() => navigate('/documents/add')} className="btn-primary">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-            <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/>
-          </svg>
-          Add Document
-        </button>
+        {canEdit && (
+          <button onClick={() => navigate('/documents/add')} className="btn-primary">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/>
+            </svg>
+            Add Document
+          </button>
+        )}
       </div>
+
+      {!canEdit && selectedLanguage && (
+        <div style={{ padding: '1rem', backgroundColor: '#fff3cd', border: '1px solid #ffc107', borderRadius: '4px', marginBottom: '1rem' }}>
+          <p style={{ margin: 0, color: '#856404' }}>
+            You don't have permission to add documents to this language. Contact an administrator to request access.
+          </p>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="filters-section">

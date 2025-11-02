@@ -34,6 +34,7 @@ class User(Base):
     # Relationships
     words_created = relationship("Word", foreign_keys="Word.created_by_id", back_populates="created_by")
     words_verified = relationship("Word", foreign_keys="Word.verified_by_id", back_populates="verified_by")
+    language_proficiencies = relationship("UserLanguage", back_populates="user", cascade="all, delete-orphan")
     
     def __repr__(self):
         return f"<User(id={self.id}, username='{self.username}', role={self.role})>"

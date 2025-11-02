@@ -11,6 +11,15 @@ export interface LoginData {
   password: string;
 }
 
+export interface LanguageProficiency {
+  language_id: string;
+  language_name: string;
+  proficiency_level: 'native' | 'fluent' | 'intermediate' | 'beginner';
+  can_edit: boolean;
+  can_verify: boolean;
+  created_at: string;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -18,6 +27,7 @@ export interface User {
   role: string;
   is_active: boolean;
   created_at: string;
+  language_proficiencies?: LanguageProficiency[];
 }
 
 export interface TokenResponse {
@@ -59,6 +69,31 @@ export const authService = {
 
   isAuthenticated(): boolean {
     return !!localStorage.getItem('access_token');
+  },
+
+  async getUserLanguages(userId: string): Promise<LanguageProficiency[]> {
+    const response = await api.get<LanguageProficiency[]>(`/api/v1/users/${userId}/languages/`);
+    return response.data;
+  },
+
+  canEditLanguage(user: User | null, languageId: string): boolean {
+    if (!user) return false;
+    if (user.role === 'admin') return true;
+    
+    const proficiency = user.language_proficiencies?.find(
+      (lp) => lp.language_id === languageId
+    );
+    return proficiency?.can_edit || false;
+  },
+
+  canVerifyLanguage(user: User | null, languageId: string): boolean {
+    if (!user) return false;
+    if (user.role === 'admin') return true;
+    
+    const proficiency = user.language_proficiencies?.find(
+      (lp) => lp.language_id === languageId
+    );
+    return proficiency?.can_verify || false;
   },
 };
 

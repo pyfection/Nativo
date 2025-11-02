@@ -6,9 +6,12 @@ from typing import Optional
 from uuid import UUID
 from jose import JWTError, jwt
 from fastapi import HTTPException, status
+from sqlalchemy.orm import Session
+from sqlalchemy import and_
 
 from app.config import settings
 from app.models.user import User, UserRole
+from app.models.user_language import UserLanguage
 
 
 def create_access_token(user_id: UUID, role: UserRole) -> str:
@@ -87,5 +90,109 @@ def require_resource_owner(user: User, resource_owner_id: UUID) -> None:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You can only modify your own resources"
+        )
+
+
+def can_user_edit_language(db: Session, user_id: UUID, language_id: UUID) -> bool:
+    """
+    Check if a user has permission to edit content for a specific language.
+    Admins always have permission.
+    
+    Args:
+        db: Database session
+        user_id: User's UUID
+        language_id: Language's UUID
+        
+    Returns:
+        True if user can edit content in this language
+    """
+    # Get user
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        return False
+    
+    # Admins can edit any language
+    if user.role == UserRole.ADMIN:
+        return True
+    
+    # Check user-language relationship
+    user_language = db.query(UserLanguage).filter(
+        and_(
+            UserLanguage.user_id == user_id,
+            UserLanguage.language_id == language_id
+        )
+    ).first()
+    
+    return user_language is not None and user_language.can_edit
+
+
+def can_user_verify_language(db: Session, user_id: UUID, language_id: UUID) -> bool:
+    """
+    Check if a user has permission to verify content for a specific language.
+    Admins always have permission.
+    
+    Args:
+        db: Database session
+        user_id: User's UUID
+        language_id: Language's UUID
+        
+    Returns:
+        True if user can verify content in this language
+    """
+    # Get user
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        return False
+    
+    # Admins can verify any language
+    if user.role == UserRole.ADMIN:
+        return True
+    
+    # Check user-language relationship
+    user_language = db.query(UserLanguage).filter(
+        and_(
+            UserLanguage.user_id == user_id,
+            UserLanguage.language_id == language_id
+        )
+    ).first()
+    
+    return user_language is not None and user_language.can_verify
+
+
+def require_language_edit_permission(db: Session, user: User, language_id: UUID) -> None:
+    """
+    Require that a user has permission to edit content for a language.
+    
+    Args:
+        db: Database session
+        user: Current user
+        language_id: Language's UUID
+        
+    Raises:
+        HTTPException: If user lacks permission
+    """
+    if not can_user_edit_language(db, user.id, language_id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have permission to edit content for this language"
+        )
+
+
+def require_language_verify_permission(db: Session, user: User, language_id: UUID) -> None:
+    """
+    Require that a user has permission to verify content for a language.
+    
+    Args:
+        db: Database session
+        user: Current user
+        language_id: Language's UUID
+        
+    Raises:
+        HTTPException: If user lacks permission
+    """
+    if not can_user_verify_language(db, user.id, language_id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have permission to verify content for this language"
         )
 

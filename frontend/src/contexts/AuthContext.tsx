@@ -8,6 +8,8 @@ interface AuthContextType {
   register: (data: RegisterData) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
+  canEditLanguage: (languageId: string) => boolean;
+  canVerifyLanguage: (languageId: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -22,6 +24,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (authService.isAuthenticated()) {
         try {
           const currentUser = await authService.getCurrentUser();
+          // Fetch language proficiencies
+          if (currentUser.id) {
+            try {
+              const proficiencies = await authService.getUserLanguages(currentUser.id);
+              currentUser.language_proficiencies = proficiencies;
+            } catch (error) {
+              console.error('Failed to load language proficiencies:', error);
+              // Continue anyway, user just won't have proficiencies loaded
+            }
+          }
           setUser(currentUser);
         } catch (error) {
           console.error('Failed to load user:', error);
@@ -37,6 +49,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (data: LoginData) => {
     await authService.login(data);
     const currentUser = await authService.getCurrentUser();
+    // Fetch language proficiencies
+    if (currentUser.id) {
+      try {
+        const proficiencies = await authService.getUserLanguages(currentUser.id);
+        currentUser.language_proficiencies = proficiencies;
+      } catch (error) {
+        console.error('Failed to load language proficiencies:', error);
+      }
+    }
     setUser(currentUser);
   };
 
@@ -51,6 +72,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   };
 
+  const canEditLanguage = (languageId: string): boolean => {
+    return authService.canEditLanguage(user, languageId);
+  };
+
+  const canVerifyLanguage = (languageId: string): boolean => {
+    return authService.canVerifyLanguage(user, languageId);
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -60,6 +89,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         register,
         logout,
         isAuthenticated: !!user,
+        canEditLanguage,
+        canVerifyLanguage,
       }}
     >
       {children}

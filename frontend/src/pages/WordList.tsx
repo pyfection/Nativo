@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import wordService, { Word } from '../services/wordService';
 import { Language } from '../App';
+import { useAuth } from '../contexts/AuthContext';
 import './WordList.css';
 
 interface WordListProps {
@@ -10,6 +11,7 @@ interface WordListProps {
 
 export default function WordList({ selectedLanguage }: WordListProps) {
   const navigate = useNavigate();
+  const { canEditLanguage } = useAuth();
   const [words, setWords] = useState<Word[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -20,6 +22,9 @@ export default function WordList({ selectedLanguage }: WordListProps) {
     part_of_speech: '',
     search: '',
   });
+
+  // Check if user can edit this language
+  const canEdit = selectedLanguage ? canEditLanguage(selectedLanguage.id) : false;
 
   useEffect(() => {
     fetchWords();
@@ -81,13 +86,23 @@ export default function WordList({ selectedLanguage }: WordListProps) {
           <h1>Words</h1>
           <p>Browse and manage vocabulary entries</p>
         </div>
-        <button onClick={() => navigate('/words/add')} className="btn-primary">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-            <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/>
-          </svg>
-          Add Word
-        </button>
+        {canEdit && (
+          <button onClick={() => navigate('/words/add')} className="btn-primary">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/>
+            </svg>
+            Add Word
+          </button>
+        )}
       </div>
+      
+      {!canEdit && selectedLanguage && (
+        <div style={{ padding: '1rem', backgroundColor: '#fff3cd', border: '1px solid #ffc107', borderRadius: '4px', marginBottom: '1rem' }}>
+          <p style={{ margin: 0, color: '#856404' }}>
+            You don't have permission to add words to this language. Contact an administrator to request access.
+          </p>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="filters-section">
