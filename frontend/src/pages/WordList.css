@@ -127,7 +127,7 @@
 }
 
 .words-table thead {
-  background-color: #f5f5f5;
+  background-color: var(--background);
 }
 
 .words-table th {
@@ -135,7 +135,7 @@
   text-align: left;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #666;
+  color: #555;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -150,7 +150,7 @@
 }
 
 .clickable-row:hover {
-  background-color: #fafafa;
+  background-color: color-mix(in srgb, var(--primary) 8%, white);
 }
 
 .words-table td {
