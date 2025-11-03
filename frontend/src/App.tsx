@@ -55,6 +55,8 @@ function convertLanguage(apiLang: LanguageResponse): Language {
   };
 }
 
+const SELECTED_LANGUAGE_KEY = 'nativo_selected_language_id';
+
 function App() {
   const [languages, setLanguages] = useState<Language[]>([]);
   const [selectedLanguage, setSelectedLanguage] = useState<Language | null>(null);
@@ -78,9 +80,19 @@ function App() {
         const convertedLanguages = languagesWithDetails.map(convertLanguage);
         setLanguages(convertedLanguages);
         
-        // Set first language as selected
-        if (convertedLanguages.length > 0) {
-          setSelectedLanguage(convertedLanguages[0]);
+        // Try to restore previously selected language from localStorage
+        const savedLanguageId = localStorage.getItem(SELECTED_LANGUAGE_KEY);
+        let languageToSelect = convertedLanguages[0]; // Default to first language
+        
+        if (savedLanguageId) {
+          const savedLanguage = convertedLanguages.find(lang => lang.id === savedLanguageId);
+          if (savedLanguage) {
+            languageToSelect = savedLanguage;
+          }
+        }
+        
+        if (languageToSelect) {
+          setSelectedLanguage(languageToSelect);
         }
       } catch (err) {
         console.error('Failed to fetch languages:', err);
@@ -92,6 +104,13 @@ function App() {
 
     fetchLanguages();
   }, []);
+
+  // Save selected language to localStorage whenever it changes
+  useEffect(() => {
+    if (selectedLanguage) {
+      localStorage.setItem(SELECTED_LANGUAGE_KEY, selectedLanguage.id);
+    }
+  }, [selectedLanguage]);
 
   // Show loading state
   if (loading) {
