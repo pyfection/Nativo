@@ -50,6 +50,7 @@ The API will be available at:
 - API: `http://localhost:8000`
 - Interactive docs (Swagger): `http://localhost:8000/docs`
 - Alternative docs (ReDoc): `http://localhost:8000/redoc`
+- Admin interface: `http://localhost:8000/admin`
 
 ## Frontend Setup
 
@@ -91,6 +92,24 @@ This will start:
 - Backend API on `http://localhost:8000`
 - Frontend on `http://localhost:5173`
 - PostgreSQL database on `localhost:5432`
+
+## Admin Interface
+
+Nativo includes a web-based admin interface for managing all aspects of the platform.
+
+### Accessing the Admin
+
+1. Navigate to `http://localhost:8000/admin`
+2. Login with an admin user account (requires `is_superuser=True` or `role=ADMIN`)
+
+### Features
+
+- Full CRUD operations for all models (Users, Languages, Words, Documents, Audio, etc.)
+- Search and filter capabilities
+- Bulk operations
+- Data export functionality
+
+See `backend/ADMIN_GUIDE.md` for detailed documentation.
 
 ## Development Workflow
 

@@ -3,10 +3,11 @@ Authentication endpoints for user registration and login.
 """
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.database import get_db
 from app.models.user import User, UserRole
+from app.models.user_language import UserLanguage
 from app.schemas.user import UserCreate, UserResponse, UserLogin, Token
 from app.services.auth_service import create_access_token
 from app.utils.security import hash_password, verify_password
@@ -151,12 +152,18 @@ async def login(
 
 @router.get("/me", response_model=UserResponse)
 async def get_current_user_info(
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
 ):
     """
     Get current authenticated user's information.
     """
-    return current_user
+    # Reload user with language_proficiencies and language relationships loaded
+    user = db.query(User).options(
+        joinedload(User.language_proficiencies).joinedload(UserLanguage.language)
+    ).filter(User.id == current_user.id).first()
+    
+    return user
 
 
 @router.get("/users", response_model=list[UserResponse])

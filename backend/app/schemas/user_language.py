@@ -50,11 +50,11 @@ class UserLanguageResponse(BaseModel):
 class LanguageProficiencyResponse(BaseModel):
     """User-language proficiency for nested in user responses"""
     language_id: UUID
-    language_name: str
     proficiency_level: ProficiencyLevel
     can_edit: bool
     can_verify: bool
     created_at: datetime
+    language: Optional[LanguageInfo] = None
     
     model_config = ConfigDict(from_attributes=True)
 
