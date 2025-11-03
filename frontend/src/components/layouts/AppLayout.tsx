@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import Sidebar from '../common/Sidebar';
 import LanguageSelector from '../common/LanguageSelector';
@@ -24,7 +25,13 @@ export default function AppLayout({ children, selectedLanguage, onLanguageChange
       {/* Top Header */}
       <header className="app-header">
         <div className="app-header-content">
-          <h1 className="app-logo">Nativo</h1>
+          <Link 
+            to="/" 
+            className="app-logo"
+            style={{ color: selectedLanguage.colorScheme.primary }}
+          >
+            Nativo
+          </Link>
           <div className="app-header-right">
             <LanguageSelector
               languages={languages}
