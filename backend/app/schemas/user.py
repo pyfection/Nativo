@@ -32,6 +32,7 @@ class UserResponse(UserBase):
     id: UUID
     role: UserRole
     is_active: bool
+    is_superuser: bool
     created_at: datetime
     language_proficiencies: Optional[List["LanguageProficiencyResponse"]] = None
     

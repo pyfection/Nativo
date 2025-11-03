@@ -8,6 +8,7 @@ interface AuthContextType {
   register: (data: RegisterData) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
+  isAdmin: boolean;
   canEditLanguage: (languageId: string) => boolean;
   canVerifyLanguage: (languageId: string) => boolean;
   refreshUserProficiencies: () => Promise<void>;
@@ -104,6 +105,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         register,
         logout,
         isAuthenticated: !!user,
+        isAdmin: authService.isAdmin(user),
         canEditLanguage,
         canVerifyLanguage,
         refreshUserProficiencies,

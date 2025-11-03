@@ -26,6 +26,7 @@ export interface User {
   username: string;
   role: string;
   is_active: boolean;
+  is_superuser: boolean;
   created_at: string;
   language_proficiencies?: LanguageProficiency[];
 }
@@ -76,9 +77,14 @@ export const authService = {
     return response.data;
   },
 
+  isAdmin(user: User | null): boolean {
+    if (!user) return false;
+    return user.is_superuser || user.role === 'admin';
+  },
+
   canEditLanguage(user: User | null, languageId: string): boolean {
     if (!user) return false;
-    if (user.role === 'admin') return true;
+    if (this.isAdmin(user)) return true;
     
     const proficiency = user.language_proficiencies?.find(
       (lp) => lp.language_id === languageId
@@ -88,7 +94,7 @@ export const authService = {
 
   canVerifyLanguage(user: User | null, languageId: string): boolean {
     if (!user) return false;
-    if (user.role === 'admin') return true;
+    if (this.isAdmin(user)) return true;
     
     const proficiency = user.language_proficiencies?.find(
       (lp) => lp.language_id === languageId

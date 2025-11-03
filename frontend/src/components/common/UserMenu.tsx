@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { API_URL } from '../../services/api';
 import './UserMenu.css';
 
 export default function UserMenu() {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, isAdmin, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -25,6 +26,11 @@ export default function UserMenu() {
     logout();
     setIsOpen(false);
     navigate('/');
+  };
+
+  const handleAdminClick = () => {
+    // Redirect to backend admin interface
+    window.location.href = `${API_URL}/admin`;
   };
 
   if (!isAuthenticated) {
@@ -69,6 +75,15 @@ export default function UserMenu() {
           </div>
           <div className="user-menu-divider" />
           <div className="user-menu-items">
+            {isAdmin && (
+              <button onClick={handleAdminClick} className="user-menu-item admin">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                  <path d="M8 1a2 2 0 0 1 2 2v1h3.5a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6h-.5a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5H6V3a2 2 0 0 1 2-2h0zm1 3V3a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v1h2z"/>
+                  <path d="M3 6v6a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V6H3z"/>
+                </svg>
+                Admin Panel
+              </button>
+            )}
             <button onClick={handleLogout} className="user-menu-item logout">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                 <path d="M5 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H5zm6 13H5V2h6v12z"/>

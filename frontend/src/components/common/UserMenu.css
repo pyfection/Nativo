@@ -165,6 +165,15 @@
   background-color: #f5f5f5;
 }
 
+.user-menu-item.admin {
+  color: #1976d2;
+  font-weight: 500;
+}
+
+.user-menu-item.admin:hover {
+  background-color: #e3f2fd;
+}
+
 .user-menu-item.logout {
   color: #d32f2f;
 }
