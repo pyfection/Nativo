@@ -14,6 +14,7 @@ class LanguageBase(BaseModel):
     iso_639_3: Optional[str] = Field(None, min_length=3, max_length=3, description="ISO 639-3 language code")
     description: Optional[str] = None
     is_endangered: bool = True
+    managed: bool = False
     
     # Theme colors for UI customization
     primary_color: Optional[str] = Field(None, min_length=7, max_length=7, pattern=r'^#[0-9A-Fa-f]{6}$')
@@ -34,6 +35,7 @@ class LanguageUpdate(BaseModel):
     iso_639_3: Optional[str] = Field(None, min_length=3, max_length=3)
     description: Optional[str] = None
     is_endangered: Optional[bool] = None
+    managed: Optional[bool] = None
     
     # Theme colors
     primary_color: Optional[str] = Field(None, min_length=7, max_length=7, pattern=r'^#[0-9A-Fa-f]{6}$')
@@ -63,6 +65,7 @@ class LanguageListItem(BaseModel):
     native_name: Optional[str] = None
     iso_639_3: Optional[str] = None
     is_endangered: bool
+    managed: bool
     
     model_config = ConfigDict(from_attributes=True)
 

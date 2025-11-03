@@ -17,6 +17,7 @@ class Language(Base):
     iso_639_3 = Column(String(3), nullable=True, unique=True, index=True)  # ISO 639-3 language code
     description = Column(Text, nullable=True)
     is_endangered = Column(Boolean, default=True)
+    managed = Column(Boolean, default=False)  # True if language is managed by Nativo
     
     # Theme colors for UI customization
     primary_color = Column(String(7), nullable=True)      # e.g., '#8B4513'
