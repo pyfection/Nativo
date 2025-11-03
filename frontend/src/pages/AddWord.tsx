@@ -1,19 +1,22 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { Language } from '../App';
 import wordService, { CreateWordData } from '../services/wordService';
-import languageService, { LanguageListItem } from '../services/languageService';
 import './AddWord.css';
 
-export default function AddWord() {
+interface AddWordProps {
+  selectedLanguage: Language;
+}
+
+export default function AddWord({ selectedLanguage }: AddWordProps) {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
-  const [languages, setLanguages] = useState<LanguageListItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState<CreateWordData>({
     word: '',
-    language_id: '',
+    language_id: selectedLanguage.id,
     definition: '',
   });
 
@@ -22,21 +25,12 @@ export default function AddWord() {
       navigate('/login');
       return;
     }
-
-    const fetchLanguages = async () => {
-      try {
-        const langs = await languageService.getAll();
-        setLanguages(langs);
-        if (langs.length > 0) {
-          setFormData(prev => ({ ...prev, language_id: langs[0].id }));
-        }
-      } catch (err) {
-        console.error('Failed to fetch languages:', err);
-      }
-    };
-
-    fetchLanguages();
   }, [isAuthenticated, navigate]);
+
+  // Update language_id when selectedLanguage changes
+  useEffect(() => {
+    setFormData(prev => ({ ...prev, language_id: selectedLanguage.id }));
+  }, [selectedLanguage]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,7 +58,7 @@ export default function AddWord() {
     <div className="add-word-page">
       <div className="page-header">
         <h1>Add New Word</h1>
-        <p>Contribute to preserving endangered languages by adding new words</p>
+        <p>Adding word to: <strong>{selectedLanguage.name} ({selectedLanguage.nativeName})</strong></p>
       </div>
 
       <form onSubmit={handleSubmit} className="word-form">
@@ -82,24 +76,6 @@ export default function AddWord() {
               required
               placeholder="Enter the word"
             />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="language_id">Language *</label>
-            <select
-              id="language_id"
-              name="language_id"
-              value={formData.language_id}
-              onChange={handleChange}
-              required
-            >
-              <option value="">Select a language</option>
-              {languages.map((lang) => (
-                <option key={lang.id} value={lang.id}>
-                  {lang.name} {lang.native_name && `(${lang.native_name})`}
-                </option>
-              ))}
-            </select>
           </div>
         </div>
 

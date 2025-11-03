@@ -184,7 +184,7 @@ function App() {
                   onLanguageChange={setSelectedLanguage}
                   languages={languages}
                 >
-                  <AddWord />
+                  <AddWord selectedLanguage={selectedLanguage!} />
                 </AppLayout>
               } 
             />
