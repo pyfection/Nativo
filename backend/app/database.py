@@ -4,11 +4,15 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
 import os
+from pathlib import Path
+
+# Get the backend directory path (where this file is located)
+BACKEND_DIR = Path(__file__).resolve().parent.parent
 
 # Database URL - will be loaded from environment or config
 SQLALCHEMY_DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "sqlite:///./nativo.db"  # Default to SQLite for development
+    f"sqlite:///{BACKEND_DIR}/nativo.db"  # Absolute path to backend/nativo.db
 )
 
 engine = create_engine(
