@@ -29,8 +29,8 @@ export default function UserMenu() {
   };
 
   const handleAdminClick = () => {
-    // Redirect to backend admin interface
-    window.location.href = `${API_URL}/admin`;
+    // Open backend admin interface in new tab
+    window.open(`${API_URL}/admin`, '_blank', 'noopener,noreferrer');
   };
 
   if (!isAuthenticated) {
