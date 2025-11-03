@@ -20,6 +20,7 @@ export interface Language {
   nativeName: string;
   iso: string;
   description: string;
+  managed: boolean;
   colorScheme: {
     primary: string;
     secondary: string;
@@ -44,6 +45,7 @@ function convertLanguage(apiLang: LanguageResponse): Language {
     nativeName: apiLang.native_name || apiLang.name,
     iso: apiLang.iso_639_3 || '',
     description: apiLang.description || '',
+    managed: apiLang.managed,
     colorScheme: {
       primary: apiLang.primary_color || DEFAULT_COLOR_SCHEME.primary,
       secondary: apiLang.secondary_color || DEFAULT_COLOR_SCHEME.secondary,

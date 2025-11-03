@@ -21,6 +21,10 @@ export default function LanguageSelector({
   const { user, isAuthenticated } = useAuth();
   const [showJoinModal, setShowJoinModal] = useState(false);
 
+  // Split languages into managed and other
+  const managedLanguages = languages.filter(lang => lang.managed);
+  const otherLanguages = languages.filter(lang => !lang.managed);
+
   // Check if user is a member of the selected language
   const userProficiency = user?.language_proficiencies?.find(
     (lp) => lp.language_id === selectedLanguage.id
@@ -59,7 +63,19 @@ export default function LanguageSelector({
           }}
           className="selector-dropdown"
         >
-          {languages.map((language) => (
+          {managedLanguages.length > 0 && (
+            <>
+              {managedLanguages.map((language) => (
+                <option key={language.id} value={language.id}>
+                  {language.name} ({language.nativeName})
+                </option>
+              ))}
+              {otherLanguages.length > 0 && (
+                <option disabled>────────────────</option>
+              )}
+            </>
+          )}
+          {otherLanguages.map((language) => (
             <option key={language.id} value={language.id}>
               {language.name} ({language.nativeName})
             </option>

@@ -7,6 +7,7 @@ export interface LanguageResponse {
   iso_639_3: string | null;
   description: string | null;
   is_endangered: boolean;
+  managed: boolean;
   primary_color: string | null;
   secondary_color: string | null;
   accent_color: string | null;
@@ -21,6 +22,7 @@ export interface LanguageListItem {
   native_name: string | null;
   iso_639_3: string | null;
   is_endangered: boolean;
+  managed: boolean;
 }
 
 export interface CreateLanguageData {
