@@ -1,58 +1,27 @@
-from sqlalchemy import Column, String, Text, DateTime, ForeignKey, Enum as SQLEnum
+from sqlalchemy import Column, DateTime, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime
-import enum
 import uuid
 
 from app.database import Base
 
 
-class DocumentType(str, enum.Enum):
-    """Types of documents/texts"""
-    # Full documents
-    STORY = "story"
-    HISTORICAL_RECORD = "historical_record"
-    BOOK = "book"
-    ARTICLE = "article"
-    TRANSCRIPTION = "transcription"
-    
-    # Text snippets
-    DEFINITION = "definition"
-    LITERAL_TRANSLATION = "literal_translation"
-    CONTEXT_NOTE = "context_note"
-    USAGE_EXAMPLE = "usage_example"
-    ETYMOLOGY = "etymology"
-    CULTURAL_SIGNIFICANCE = "cultural_significance"
-    TRANSLATION = "translation"
-    NOTE = "note"
-    
-    OTHER = "other"
-
-
 class Document(Base):
     """
-    Unified model for all text content - from full documents to small snippets.
+    Document model representing a collection of Texts (potentially in multiple languages).
     
-    Can be:
-    - Full texts (stories, historical records, books)
-    - Small snippets (definitions, etymology, cultural notes)
-    - Everything in between
+    A Document groups together Text records that represent the same content
+    in different languages (translations). For example, a story might have
+    a Document with multiple Text records - one in the indigenous language,
+    one in English, one in Spanish, etc.
     
-    Words in the content can be linked to Word records via word_documents.
+    Words can link to Documents for definitions, etymology, and cultural significance
+    where the meaning is the same across translations.
     """
     __tablename__ = "documents"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    
-    content = Column(Text, nullable=False)
-    document_type = Column(SQLEnum(DocumentType), nullable=False, index=True)
-    
-    # Language of the content itself (optional - e.g., English definition of indigenous word)
-    language_id = Column(UUID(as_uuid=True), ForeignKey("languages.id"), nullable=True, index=True)
-    
-    source = Column(String(500), nullable=True)  # Origin/citation
-    notes = Column(Text, nullable=True)  # Internal notes
     
     created_by_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     
@@ -60,10 +29,11 @@ class Document(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
     
     # Relationships
-    language = relationship("Language", back_populates="documents")
+    texts = relationship("Text", back_populates="document", cascade="all, delete-orphan")
     created_by = relationship("User")
-    # Words linked in this document's content
-    linked_words = relationship("Word", secondary="word_documents", back_populates="documents", viewonly=True)
+    # Words that link to this document for definitions
+    words_with_definition = relationship("Word", foreign_keys="[Word.etymology_document_id]", back_populates="etymology")
+    words_with_cultural_significance = relationship("Word", foreign_keys="[Word.cultural_significance_document_id]", back_populates="cultural_significance")
     
     def __repr__(self):
-        return f"<Document(id={self.id}, type={self.document_type}, content='{self.content[:50]}...')>"
+        return f"<Document(id={self.id}, texts_count={len(self.texts) if self.texts else 0})>"

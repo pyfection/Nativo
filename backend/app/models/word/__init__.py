@@ -18,11 +18,12 @@ from app.models.word.word import Word
 from app.models.word.associations import (
     word_audio,
     word_image,
-    word_documents,
+    word_texts,
+    word_definitions,
     word_synonyms,
     word_antonyms,
     word_related,
-    WordDocumentType,
+    WordTextType,
 )
 
 __all__ = [
@@ -38,12 +39,13 @@ __all__ = [
     "Animacy",
     "Register",
     "WordStatus",
-    "WordDocumentType",
+    "WordTextType",
     
     # Association tables
     "word_audio",
     "word_image",
-    "word_documents",
+    "word_texts",
+    "word_definitions",
     "word_synonyms",
     "word_antonyms",
     "word_related",

@@ -21,11 +21,12 @@ from app.models.word.enums import (
 from app.models.word.associations import (
     word_audio,
     word_image,
-    word_documents,
+    word_texts,
+    word_definitions,
     word_synonyms,
     word_antonyms,
     word_related,
-    WordDocumentType
+    WordTextType
 )
 
 
@@ -34,15 +35,12 @@ class Word(Base):
     """
     Core word model for endangered language preservation.
     
-    Words can be linked to Document records which can contain:
-    - Definitions
-    - Etymology
-    - Cultural significance
-    - Usage examples
-    - And more
+    Words can be linked to:
+    - Documents (definitions, etymology, cultural significance - same across translations)
+    - Texts (usage examples, context notes, literal translations - language-specific)
     
-    Documents can be full texts (stories) or small snippets (a single definition).
-    Each word in a document's content can be linked back to its Word record.
+    Documents contain multiple Text records in different languages.
+    Each word in a text's content can be linked back to its Word record.
     """
     __tablename__ = "words"
 
@@ -69,6 +67,10 @@ class Word(Base):
     # Location where this word/pronunciation was confirmed
     confirmed_at_id = Column(UUID(as_uuid=True), ForeignKey("locations.id"), nullable=True)
     
+    # Document-level relationships (foreign keys for one-to-one)
+    etymology_document_id = Column(UUID(as_uuid=True), ForeignKey("documents.id"), nullable=True)
+    cultural_significance_document_id = Column(UUID(as_uuid=True), ForeignKey("documents.id"), nullable=True)
+    
     # Metadata
     created_by_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     verified_by_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
@@ -92,57 +94,52 @@ class Word(Base):
     images = relationship("Image", secondary=word_image, backref="words")
     tags = relationship("Tag", secondary="word_tags", back_populates="words")
     
-    # Document relationships by type
+    # Document-level relationships (same across translations)
     definitions = relationship(
         "Document",
-        secondary=word_documents,
-        primaryjoin=id == word_documents.c.word_id,
-        secondaryjoin="and_(Document.id == word_documents.c.document_id, word_documents.c.relationship_type == 'definition')",
-        viewonly=True
+        secondary=word_definitions,
+        backref="words_with_definition"
     )
     
-    literal_translations = relationship(
+    etymology = relationship(
         "Document",
-        secondary=word_documents,
-        primaryjoin=id == word_documents.c.word_id,
-        secondaryjoin="and_(Document.id == word_documents.c.document_id, word_documents.c.relationship_type == 'literal_translation')",
-        viewonly=True
-    )
-    
-    context_notes = relationship(
-        "Document",
-        secondary=word_documents,
-        primaryjoin=id == word_documents.c.word_id,
-        secondaryjoin="and_(Document.id == word_documents.c.document_id, word_documents.c.relationship_type == 'context_note')",
-        viewonly=True
-    )
-    
-    usage_examples = relationship(
-        "Document",
-        secondary=word_documents,
-        primaryjoin=id == word_documents.c.word_id,
-        secondaryjoin="and_(Document.id == word_documents.c.document_id, word_documents.c.relationship_type == 'usage_example')",
-        viewonly=True
-    )
-    
-    etymologies = relationship(
-        "Document",
-        secondary=word_documents,
-        primaryjoin=id == word_documents.c.word_id,
-        secondaryjoin="and_(Document.id == word_documents.c.document_id, word_documents.c.relationship_type == 'etymology')",
-        viewonly=True
+        foreign_keys=[etymology_document_id],
+        backref="words_with_etymology"
     )
     
     cultural_significance = relationship(
         "Document",
-        secondary=word_documents,
-        primaryjoin=id == word_documents.c.word_id,
-        secondaryjoin="and_(Document.id == word_documents.c.document_id, word_documents.c.relationship_type == 'cultural_significance')",
+        foreign_keys=[cultural_significance_document_id],
+        backref="words_with_cultural_significance"
+    )
+    
+    # Text-level relationships (language-specific)
+    literal_translations = relationship(
+        "Text",
+        secondary=word_texts,
+        primaryjoin=id == word_texts.c.word_id,
+        secondaryjoin="and_(Text.id == word_texts.c.text_id, word_texts.c.relationship_type == 'literal_translation')",
         viewonly=True
     )
     
-    # Generic relationship for all documents (including stories where word is mentioned)
-    documents = relationship("Document", secondary=word_documents, back_populates="linked_words", viewonly=True)
+    context_notes = relationship(
+        "Text",
+        secondary=word_texts,
+        primaryjoin=id == word_texts.c.word_id,
+        secondaryjoin="and_(Text.id == word_texts.c.text_id, word_texts.c.relationship_type == 'context_note')",
+        viewonly=True
+    )
+    
+    usage_examples = relationship(
+        "Text",
+        secondary=word_texts,
+        primaryjoin=id == word_texts.c.word_id,
+        secondaryjoin="and_(Text.id == word_texts.c.text_id, word_texts.c.relationship_type == 'usage_example')",
+        viewonly=True
+    )
+    
+    # Generic relationship for all texts (where word is mentioned)
+    texts = relationship("Text", secondary=word_texts, back_populates="linked_words", viewonly=True)
     
     # Self-referential relationships
     synonyms = relationship(

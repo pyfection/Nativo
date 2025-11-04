@@ -1,21 +1,19 @@
 """
 Document schemas for API request/response validation.
+
+Documents now group together Text records in multiple languages.
 """
 from pydantic import BaseModel, Field, ConfigDict
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 from uuid import UUID
 
-from app.models.document import DocumentType
+from app.schemas.text import Text, TextListItem
 
 
 class DocumentBase(BaseModel):
-    """Base schema for Document"""
-    content: str = Field(..., min_length=1)
-    document_type: DocumentType
-    language_id: Optional[UUID] = None  # Language of the content
-    source: Optional[str] = Field(None, max_length=500)
-    notes: Optional[str] = None
+    """Base schema for Document (minimal fields)"""
+    pass
 
 
 class DocumentCreate(DocumentBase):
@@ -25,11 +23,7 @@ class DocumentCreate(DocumentBase):
 
 class DocumentUpdate(BaseModel):
     """Schema for updating a document"""
-    content: Optional[str] = Field(None, min_length=1)
-    document_type: Optional[DocumentType] = None
-    language_id: Optional[UUID] = None
-    source: Optional[str] = Field(None, max_length=500)
-    notes: Optional[str] = None
+    pass
 
 
 class DocumentInDB(DocumentBase):
@@ -47,22 +41,33 @@ class Document(DocumentInDB):
     pass
 
 
+class DocumentWithTexts(DocumentInDB):
+    """Document schema with all associated texts"""
+    texts: List[Text] = []
+    
+    model_config = ConfigDict(from_attributes=True)
+
+
 class DocumentListItem(BaseModel):
-    """Simplified schema for document lists"""
+    """Simplified schema for document lists
+    
+    Shows the primary text's title and a preview.
+    For the documents view, we'll show the text in the selected language.
+    """
     id: UUID
-    content: str = Field(..., max_length=200)  # Truncated content for lists
-    document_type: DocumentType
-    language_id: Optional[UUID] = None
+    title: str  # From primary or selected language text
+    content_preview: str = Field(..., max_length=200)  # Truncated content
+    language_id: Optional[UUID] = None  # Language of the displayed text
     created_at: datetime
+    text_count: int = 0  # Number of translations
     
     model_config = ConfigDict(from_attributes=True)
 
 
 class DocumentFilter(BaseModel):
     """Schema for filtering and searching documents"""
-    document_type: Optional[DocumentType] = None
-    language_id: Optional[UUID] = None
-    search_term: Optional[str] = None  # Search in content
+    language_id: Optional[UUID] = None  # Filter by texts in this language
+    search_term: Optional[str] = None  # Search in text titles/content
     created_by_id: Optional[UUID] = None
     skip: int = Field(0, ge=0)
     limit: int = Field(100, ge=1, le=1000)
@@ -71,7 +76,7 @@ class DocumentFilter(BaseModel):
 class DocumentStatistics(BaseModel):
     """Statistics about documents in the database"""
     total_documents: int
-    documents_by_type: dict[str, int]
-    documents_by_language: dict[str, int]
-    documents_with_linked_words: int
+    documents_with_multiple_languages: int
+    total_texts: int
+    texts_by_language: dict[str, int]
 

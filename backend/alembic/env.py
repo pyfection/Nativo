@@ -9,7 +9,7 @@ from alembic import context
 from app.database import Base
 # Import all models to ensure they're registered with Base
 from app.models import (
-    User, Language, Audio, Document, Location, Image, Tag, Word
+    User, Language, Audio, Document, Text, Location, Image, Tag, Word
 )
 
 # this is the Alembic Config object, which provides
