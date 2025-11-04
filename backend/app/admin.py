@@ -13,6 +13,7 @@ from app.database import engine, SessionLocal
 from app.models.user import User, UserRole
 from app.models.language import Language
 from app.models.word.word import Word
+from app.models.word.associations import word_translations
 from app.models.document import Document
 from app.models.text import Text
 from app.models.audio import Audio
@@ -118,14 +119,20 @@ class LanguageAdmin(ModelView):
 
 class WordAdmin(ModelView):
     """Admin view for Word model"""
-    exclude_fields_from_create = ["created_at", "updated_at"]
-    exclude_fields_from_edit = ["created_at", "updated_at"]
+    exclude_fields_from_create = ["created_at", "updated_at", "translated_from"]
+    exclude_fields_from_edit = ["created_at", "updated_at", "translated_from"]
     
     searchable_fields = ["word", "romanization"]
     sortable_fields = ["word", "part_of_speech", "is_verified", "status", "created_at"]
     
+    # Fields to show in the list view
+    fields_default_sort = ["word", "language_id", "part_of_speech", "is_verified", "status"]
+    
     page_size = 25
     page_size_options = [25, 50, 100]
+    
+    # Note: The 'translations' relationship will be automatically available
+    # in the detail and edit views as a many-to-many field
 
 
 class DocumentAdmin(ModelView):
