@@ -112,6 +112,41 @@ class WordListItem(BaseModel):
 
 
 # ============================================================================
+# Translation Schemas
+# ============================================================================
+
+class TranslationCreate(BaseModel):
+    """Schema for creating a translation link between two words"""
+    translation_id: UUID = Field(..., description="ID of the word to link as translation")
+    notes: Optional[str] = Field(None, max_length=500, description="Additional context about the translation")
+
+
+class TranslationUpdate(BaseModel):
+    """Schema for updating a translation's notes"""
+    notes: Optional[str] = Field(None, max_length=500)
+
+
+class WordTranslation(BaseModel):
+    """Schema for a word translation with full word details"""
+    id: UUID
+    word: str
+    romanization: Optional[str] = None
+    language_id: UUID
+    language_name: Optional[str] = None  # Populated by join
+    part_of_speech: Optional[PartOfSpeech] = None
+    notes: Optional[str] = None  # Translation-specific notes from association table
+    
+    model_config = ConfigDict(from_attributes=True)
+
+
+class WordWithTranslations(Word):
+    """Word schema with translations included"""
+    translations: List[WordTranslation] = []
+    
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ============================================================================
 # Document Schemas (unified for full texts and snippets)
 # ============================================================================
 

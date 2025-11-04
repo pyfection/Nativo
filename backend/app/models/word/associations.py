@@ -84,3 +84,15 @@ word_related = Table(
     Column('created_at', DateTime, default=datetime.utcnow, nullable=False)
 )
 
+
+# Association table for word translations (Word-to-Word self-referential for cross-language translations)
+word_translations = Table(
+    'word_translations',
+    Base.metadata,
+    Column('word_id', UUID(as_uuid=True), ForeignKey('words.id'), primary_key=True),
+    Column('translation_id', UUID(as_uuid=True), ForeignKey('words.id'), primary_key=True),
+    Column('notes', String(500), nullable=True),  # Additional context about the translation
+    Column('created_at', DateTime, default=datetime.utcnow, nullable=False),
+    Column('created_by_id', UUID(as_uuid=True), ForeignKey('users.id'), nullable=True)
+)
+

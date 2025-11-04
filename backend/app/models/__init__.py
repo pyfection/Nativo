@@ -29,6 +29,7 @@ from app.models.word import (
     word_synonyms,
     word_antonyms,
     word_related,
+    word_translations,
 )
 
 __all__ = [
@@ -69,4 +70,5 @@ __all__ = [
     "word_synonyms",
     "word_antonyms",
     "word_related",
+    "word_translations",
 ]

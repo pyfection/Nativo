@@ -66,7 +66,11 @@ export default function LanguageSelector({
           {managedLanguages.length > 0 && (
             <>
               {managedLanguages.map((language) => (
-                <option key={language.id} value={language.id}>
+                <option 
+                  key={language.id} 
+                  value={language.id}
+                  style={{ backgroundColor: language.colorScheme.background }}
+                >
                   {language.name} ({language.nativeName})
                 </option>
               ))}

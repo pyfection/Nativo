@@ -25,6 +25,7 @@ from app.models.word.associations import (
     word_synonyms,
     word_antonyms,
     word_related,
+    word_translations,
     WordDocumentType
 )
 
@@ -167,6 +168,15 @@ class Word(Base):
         primaryjoin=id == word_related.c.word_id,
         secondaryjoin=id == word_related.c.related_word_id,
         backref="related_to"
+    )
+    
+    # Translations (cross-language word equivalents)
+    translations = relationship(
+        "Word",
+        secondary=word_translations,
+        primaryjoin=id == word_translations.c.word_id,
+        secondaryjoin=id == word_translations.c.translation_id,
+        backref="translated_from"
     )
     
     def __repr__(self):

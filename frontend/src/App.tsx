@@ -8,6 +8,7 @@ import Register from './pages/Register';
 import Languages from './pages/Languages';
 import WordList from './pages/WordList';
 import AddWord from './pages/AddWord';
+import Dictionary from './pages/Dictionary';
 import DocumentList from './pages/DocumentList';
 import AddDocument from './pages/AddDocument';
 import languageService, { LanguageResponse } from './services/languageService';
@@ -204,6 +205,23 @@ function App() {
                   languages={languages}
                 >
                   <AddWord selectedLanguage={selectedLanguage!} />
+                </AppLayout>
+              } 
+            />
+            
+            {/* Dictionary Route */}
+            <Route 
+              path="/dictionary" 
+              element={
+                <AppLayout
+                  selectedLanguage={selectedLanguage!}
+                  onLanguageChange={setSelectedLanguage}
+                  languages={languages}
+                >
+                  <Dictionary 
+                    selectedLanguage={selectedLanguage!}
+                    languages={languages}
+                  />
                 </AppLayout>
               } 
             />

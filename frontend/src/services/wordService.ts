@@ -38,6 +38,29 @@ export interface CreateWordData {
   usage_examples?: string;
 }
 
+export interface WordTranslation {
+  id: string;
+  word: string;
+  romanization?: string;
+  language_id: string;
+  language_name?: string;
+  part_of_speech?: string;
+  notes?: string;
+}
+
+export interface WordWithTranslations extends Word {
+  translations: WordTranslation[];
+}
+
+export interface TranslationCreate {
+  translation_id: string;
+  notes?: string;
+}
+
+export interface TranslationUpdate {
+  notes?: string;
+}
+
 export const wordService = {
   async getAll(params?: {
     skip?: number;
@@ -70,6 +93,33 @@ export const wordService = {
 
   async verify(id: string): Promise<Word> {
     const response = await api.post<Word>(`/api/v1/words/${id}/verify`);
+    return response.data;
+  },
+
+  // Translation management
+  async addTranslation(wordId: string, data: TranslationCreate): Promise<Word> {
+    const response = await api.post<Word>(`/api/v1/words/${wordId}/translations/`, data);
+    return response.data;
+  },
+
+  async removeTranslation(wordId: string, translationId: string): Promise<void> {
+    await api.delete(`/api/v1/words/${wordId}/translations/${translationId}`);
+  },
+
+  async updateTranslationNotes(wordId: string, translationId: string, data: TranslationUpdate): Promise<Word> {
+    const response = await api.put<Word>(`/api/v1/words/${wordId}/translations/${translationId}`, data);
+    return response.data;
+  },
+
+  // Dictionary search
+  async search(params: {
+    q: string;
+    language_ids?: string;  // Comma-separated language IDs
+    include_translations?: boolean;
+    skip?: number;
+    limit?: number;
+  }): Promise<WordWithTranslations[]> {
+    const response = await api.get<WordWithTranslations[]>('/api/v1/words/search', { params });
     return response.data;
   },
 };
