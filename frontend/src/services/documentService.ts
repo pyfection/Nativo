@@ -1,61 +1,83 @@
 import api from './api';
+import { 
+  Document, 
+  DocumentWithTexts, 
+  DocumentListItem, 
+  DocumentFilter 
+} from '../types/document';
+import { Text, TextCreate, TextUpdate } from '../types/text';
 
-export interface Document {
-  id: string;
-  content: string;
-  document_type: string;
-  language_id?: string;
-  source?: string;
-  notes?: string;
-  created_by_id: string;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface DocumentListItem {
-  id: string;
-  content: string;
-  document_type: string;
-  language_id?: string;
-  created_at: string;
-}
-
-export interface CreateDocumentData {
-  content: string;
-  document_type: string;
-  language_id?: string;
-  source?: string;
-  notes?: string;
-}
-
+/**
+ * Document service for managing documents and their texts (translations).
+ * 
+ * Documents group together Text records in multiple languages.
+ * The service fetches documents and returns the text in the selected language.
+ */
 export const documentService = {
-  async getAll(params?: {
-    skip?: number;
-    limit?: number;
-    language_id?: string;
-    document_type?: string;
-  }): Promise<DocumentListItem[]> {
+  /**
+   * Get all documents with filtering.
+   * Returns documents with the text in the selected language (or primary if not available).
+   */
+  async getAll(params?: DocumentFilter & { language_id?: string }): Promise<DocumentListItem[]> {
     const response = await api.get<DocumentListItem[]>('/api/v1/documents/', { params });
     return response.data;
   },
 
-  async getById(id: string): Promise<Document> {
-    const response = await api.get<Document>(`/api/v1/documents/${id}`);
+  /**
+   * Get a document by ID with all its texts.
+   */
+  async getById(id: string): Promise<DocumentWithTexts> {
+    const response = await api.get<DocumentWithTexts>(`/api/v1/documents/${id}`);
     return response.data;
   },
 
-  async create(data: CreateDocumentData): Promise<Document> {
-    const response = await api.post<Document>('/api/v1/documents/', data);
+  /**
+   * Get a document's text in a specific language.
+   * Returns the primary text if the requested language is not available.
+   */
+  async getByIdForLanguage(id: string, languageId: string): Promise<{ document: Document; text: Text }> {
+    const response = await api.get<{ document: Document; text: Text }>(
+      `/api/v1/documents/${id}/language/${languageId}`
+    );
     return response.data;
   },
 
-  async update(id: string, data: Partial<CreateDocumentData>): Promise<Document> {
-    const response = await api.put<Document>(`/api/v1/documents/${id}`, data);
+  /**
+   * Create a new document with an initial text.
+   */
+  async create(data: TextCreate): Promise<DocumentWithTexts> {
+    const response = await api.post<DocumentWithTexts>('/api/v1/documents/', data);
     return response.data;
   },
 
+  /**
+   * Add a translation (new text) to an existing document.
+   */
+  async addTranslation(documentId: string, data: TextCreate): Promise<Text> {
+    const response = await api.post<Text>(`/api/v1/documents/${documentId}/texts`, data);
+    return response.data;
+  },
+
+  /**
+   * Update a specific text within a document.
+   */
+  async updateText(documentId: string, textId: string, data: TextUpdate): Promise<Text> {
+    const response = await api.put<Text>(`/api/v1/documents/${documentId}/texts/${textId}`, data);
+    return response.data;
+  },
+
+  /**
+   * Delete a document and all its texts.
+   */
   async delete(id: string): Promise<void> {
     await api.delete(`/api/v1/documents/${id}`);
+  },
+
+  /**
+   * Delete a specific text (translation) from a document.
+   */
+  async deleteText(documentId: string, textId: string): Promise<void> {
+    await api.delete(`/api/v1/documents/${documentId}/texts/${textId}`);
   },
 };
 

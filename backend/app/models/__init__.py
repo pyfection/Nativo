@@ -8,7 +8,8 @@ from app.models.user import User, UserRole
 from app.models.language import Language
 from app.models.user_language import UserLanguage, ProficiencyLevel
 from app.models.audio import Audio
-from app.models.document import Document, DocumentType
+from app.models.document import Document
+from app.models.text import Text, DocumentType
 from app.models.location import Location
 from app.models.image import Image
 from app.models.tag import Tag, word_tags
@@ -22,10 +23,11 @@ from app.models.word import (
     Animacy,
     Register,
     WordStatus,
-    WordDocumentType,
+    WordTextType,
     word_audio,
     word_image,
-    word_documents,
+    word_texts,
+    word_definitions,
     word_synonyms,
     word_antonyms,
     word_related,
@@ -38,6 +40,7 @@ __all__ = [
     "UserLanguage",
     "Audio",
     "Document",
+    "Text",
     "Location",
     "Tag",
     "Word",
@@ -47,7 +50,7 @@ __all__ = [
     "UserRole",
     "ProficiencyLevel",
     
-    # Document Enum
+    # Document/Text Enum
     "DocumentType",
     
     # Word Enums
@@ -59,13 +62,14 @@ __all__ = [
     "Animacy",
     "Register",
     "WordStatus",
-    "WordDocumentType",
+    "WordTextType",
     
     # Association tables
     "word_tags",
     "word_audio",
     "word_image",
-    "word_documents",
+    "word_texts",
+    "word_definitions",
     "word_synonyms",
     "word_antonyms",
     "word_related",

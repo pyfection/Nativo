@@ -30,7 +30,7 @@ class Language(Base):
     
     # Relationships
     words = relationship("Word", back_populates="language")
-    documents = relationship("Document", back_populates="language")
+    texts = relationship("Text", back_populates="language")
     user_proficiencies = relationship("UserLanguage", back_populates="language", cascade="all, delete-orphan")
     
     def __repr__(self):

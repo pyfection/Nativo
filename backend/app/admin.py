@@ -14,6 +14,7 @@ from app.models.user import User, UserRole
 from app.models.language import Language
 from app.models.word.word import Word
 from app.models.document import Document
+from app.models.text import Text
 from app.models.audio import Audio
 from app.models.user_language import UserLanguage
 from app.models.location import Location
@@ -128,12 +129,23 @@ class WordAdmin(ModelView):
 
 
 class DocumentAdmin(ModelView):
-    """Admin view for Document model"""
+    """Admin view for Document model (groups texts in multiple languages)"""
     exclude_fields_from_create = ["created_at", "updated_at"]
     exclude_fields_from_edit = ["created_at", "updated_at"]
     
-    searchable_fields = ["content", "source"]
-    sortable_fields = ["document_type", "created_at"]
+    sortable_fields = ["created_at"]
+    
+    page_size = 25
+    page_size_options = [25, 50, 100]
+
+
+class TextAdmin(ModelView):
+    """Admin view for Text model"""
+    exclude_fields_from_create = ["created_at", "updated_at"]
+    exclude_fields_from_edit = ["created_at", "updated_at"]
+    
+    searchable_fields = ["title", "content", "source"]
+    sortable_fields = ["title", "document_type", "language_id", "is_primary", "created_at"]
     
     page_size = 25
     page_size_options = [25, 50, 100]
@@ -222,6 +234,7 @@ def create_admin(app):
     admin.add_view(LanguageAdmin(Language, icon="fa fa-language"))
     admin.add_view(WordAdmin(Word, icon="fa fa-book"))
     admin.add_view(DocumentAdmin(Document, icon="fa fa-file-text"))
+    admin.add_view(TextAdmin(Text, icon="fa fa-file"))
     admin.add_view(AudioAdmin(Audio, icon="fa fa-volume-up"))
     admin.add_view(ImageAdmin(Image, icon="fa fa-image"))
     admin.add_view(LocationAdmin(Location, icon="fa fa-map-marker"))

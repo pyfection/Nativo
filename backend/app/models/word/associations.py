@@ -9,14 +9,11 @@ import enum
 from app.database import Base
 
 
-class WordDocumentType(str, enum.Enum):
-    """Types of word-document relationships"""
-    DEFINITION = "definition"
+class WordTextType(str, enum.Enum):
+    """Types of word-text relationships (language-specific content)"""
     LITERAL_TRANSLATION = "literal_translation"
     CONTEXT_NOTE = "context_note"
     USAGE_EXAMPLE = "usage_example"
-    ETYMOLOGY = "etymology"
-    CULTURAL_SIGNIFICANCE = "cultural_significance"
     OTHER = "other"
 
 
@@ -42,14 +39,25 @@ word_image = Table(
 )
 
 
-# Association table for Word-Document many-to-many relationship
-# Links words to documents with a relationship type
-word_documents = Table(
-    'word_documents',
+# Association table for Word-Text many-to-many relationship
+# Links words to texts with a relationship type (for language-specific content)
+word_texts = Table(
+    'word_texts',
+    Base.metadata,
+    Column('word_id', UUID(as_uuid=True), ForeignKey('words.id'), primary_key=True),
+    Column('text_id', UUID(as_uuid=True), ForeignKey('texts.id'), primary_key=True),
+    Column('relationship_type', SQLEnum(WordTextType), nullable=False, primary_key=True),
+    Column('created_at', DateTime, default=datetime.utcnow, nullable=False)
+)
+
+
+# Association table for Word-Document many-to-many relationship for definitions
+# Links words to documents (definitions that exist across translations)
+word_definitions = Table(
+    'word_definitions',
     Base.metadata,
     Column('word_id', UUID(as_uuid=True), ForeignKey('words.id'), primary_key=True),
     Column('document_id', UUID(as_uuid=True), ForeignKey('documents.id'), primary_key=True),
-    Column('relationship_type', SQLEnum(WordDocumentType), nullable=False, primary_key=True),
     Column('created_at', DateTime, default=datetime.utcnow, nullable=False)
 )
 
