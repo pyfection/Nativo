@@ -23,6 +23,7 @@ from app.models.word.associations import (
     word_synonyms,
     word_antonyms,
     word_related,
+    word_translations,
     WordTextType,
 )
 
@@ -49,5 +50,6 @@ __all__ = [
     "word_synonyms",
     "word_antonyms",
     "word_related",
+    "word_translations",
 ]
 

@@ -81,7 +81,7 @@ from app.schemas.word import (
     
     # Relationship schemas
     WordRelationshipCreate,
-    WordDocumentAssociation,
+    WordTextAssociation,
 )
 
 __all__ = [
@@ -154,5 +154,5 @@ __all__ = [
     
     # Relationship schemas
     "WordRelationshipCreate",
-    "WordDocumentAssociation",
+    "WordTextAssociation",
 ]

@@ -31,9 +31,8 @@ class Document(Base):
     # Relationships
     texts = relationship("Text", back_populates="document", cascade="all, delete-orphan")
     created_by = relationship("User")
-    # Words that link to this document for definitions
-    words_with_definition = relationship("Word", foreign_keys="[Word.etymology_document_id]", back_populates="etymology")
-    words_with_cultural_significance = relationship("Word", foreign_keys="[Word.cultural_significance_document_id]", back_populates="cultural_significance")
+    # Note: words_with_definition, words_with_etymology, and words_with_cultural_significance
+    # are created automatically via backrefs defined in the Word model
     
     def __repr__(self):
         return f"<Document(id={self.id}, texts_count={len(self.texts) if self.texts else 0})>"
