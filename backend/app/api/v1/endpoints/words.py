@@ -61,6 +61,84 @@ async def list_words(
     return words
 
 
+@router.get("/search", response_model=list[WordWithTranslations])
+async def search_words(
+    q: str,
+    language_ids: str = None,  # Comma-separated list of language UUIDs
+    include_translations: bool = True,
+    skip: int = 0,
+    limit: int = 50,
+    db: Session = Depends(get_db)
+):
+    """
+    Search for words and optionally include their translations.
+    
+    - q: Search query (searches word and romanization)
+    - language_ids: Comma-separated language IDs to search in
+    - include_translations: Whether to include translation data
+    - Returns words matching the search with their translations
+    """
+    query = db.query(Word).filter(Word.status == WordStatus.PUBLISHED)
+    
+    # Apply search filter
+    search_filter = or_(
+        Word.word.ilike(f"%{q}%"),
+        Word.romanization.ilike(f"%{q}%") if q else False
+    )
+    query = query.filter(search_filter)
+    
+    # Apply language filter
+    if language_ids:
+        try:
+            lang_id_list = [UUID(lid.strip()) for lid in language_ids.split(",")]
+            query = query.filter(Word.language_id.in_(lang_id_list))
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid language ID format")
+    
+    words = query.offset(skip).limit(limit).all()
+    
+    if not include_translations:
+        return words
+    
+    # Fetch translations for each word
+    result = []
+    for word in words:
+        # Get translation IDs and notes
+        translation_rows = db.execute(
+            select(
+                word_translations.c.translation_id,
+                word_translations.c.notes
+            ).where(word_translations.c.word_id == word.id)
+        ).fetchall()
+        
+        # Fetch full word details for translations
+        translations = []
+        for trans_row in translation_rows:
+            trans_word = db.query(Word).filter(Word.id == trans_row.translation_id).first()
+            if trans_word:
+                # Get language name
+                lang = db.query(Language).filter(Language.id == trans_word.language_id).first()
+                
+                translations.append(WordTranslation(
+                    id=trans_word.id,
+                    word=trans_word.word,
+                    romanization=trans_word.romanization,
+                    language_id=trans_word.language_id,
+                    language_name=lang.name if lang else None,
+                    part_of_speech=trans_word.part_of_speech,
+                    notes=trans_row.notes
+                ))
+        
+        # Create WordWithTranslations instance
+        word_dict = {
+            **{c.name: getattr(word, c.name) for c in Word.__table__.columns},
+            'translations': translations
+        }
+        result.append(WordWithTranslations(**word_dict))
+    
+    return result
+
+
 @router.get("/{word_id}", response_model=WordSchema)
 async def get_word(
     word_id: UUID,
@@ -351,82 +429,4 @@ async def update_translation_notes(
     
     word = db.query(Word).filter(Word.id == word_id).first()
     return word
-
-
-@router.get("/search", response_model=list[WordWithTranslations])
-async def search_words(
-    q: str,
-    language_ids: str = None,  # Comma-separated list of language UUIDs
-    include_translations: bool = True,
-    skip: int = 0,
-    limit: int = 50,
-    db: Session = Depends(get_db)
-):
-    """
-    Search for words and optionally include their translations.
-    
-    - q: Search query (searches word and romanization)
-    - language_ids: Comma-separated language IDs to search in
-    - include_translations: Whether to include translation data
-    - Returns words matching the search with their translations
-    """
-    query = db.query(Word).filter(Word.status == WordStatus.PUBLISHED)
-    
-    # Apply search filter
-    search_filter = or_(
-        Word.word.ilike(f"%{q}%"),
-        Word.romanization.ilike(f"%{q}%") if q else False
-    )
-    query = query.filter(search_filter)
-    
-    # Apply language filter
-    if language_ids:
-        try:
-            lang_id_list = [UUID(lid.strip()) for lid in language_ids.split(",")]
-            query = query.filter(Word.language_id.in_(lang_id_list))
-        except ValueError:
-            raise HTTPException(status_code=400, detail="Invalid language ID format")
-    
-    words = query.offset(skip).limit(limit).all()
-    
-    if not include_translations:
-        return words
-    
-    # Fetch translations for each word
-    result = []
-    for word in words:
-        # Get translation IDs and notes
-        translation_rows = db.execute(
-            select(
-                word_translations.c.translation_id,
-                word_translations.c.notes
-            ).where(word_translations.c.word_id == word.id)
-        ).fetchall()
-        
-        # Fetch full word details for translations
-        translations = []
-        for trans_row in translation_rows:
-            trans_word = db.query(Word).filter(Word.id == trans_row.translation_id).first()
-            if trans_word:
-                # Get language name
-                lang = db.query(Language).filter(Language.id == trans_word.language_id).first()
-                
-                translations.append(WordTranslation(
-                    id=trans_word.id,
-                    word=trans_word.word,
-                    romanization=trans_word.romanization,
-                    language_id=trans_word.language_id,
-                    language_name=lang.name if lang else None,
-                    part_of_speech=trans_word.part_of_speech,
-                    notes=trans_row.notes
-                ))
-        
-        # Create WordWithTranslations instance
-        word_dict = {
-            **{c.name: getattr(word, c.name) for c in Word.__table__.columns},
-            'translations': translations
-        }
-        result.append(WordWithTranslations(**word_dict))
-    
-    return result
 
