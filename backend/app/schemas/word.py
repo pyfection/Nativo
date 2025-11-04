@@ -12,9 +12,11 @@ from app.models.word import (
     Animacy,
     Register,
     WordStatus,
-    WordDocumentType
+    WordTextType
 )
-from app.models.document import DocumentType
+from app.models.text import DocumentType
+from app.schemas.document import Document
+from app.schemas.text import TextListItem
 
 
 # ============================================================================
@@ -283,11 +285,11 @@ class WordRelationshipCreate(BaseModel):
     relationship_type: Optional[str] = Field(None, max_length=100)  # For related words
 
 
-class WordDocumentAssociation(BaseModel):
-    """Schema for linking a word to a document with a relationship type"""
+class WordTextAssociation(BaseModel):
+    """Schema for linking a word to a text with a relationship type"""
     word_id: UUID
-    document_id: UUID
-    relationship_type: WordDocumentType
+    text_id: UUID
+    relationship_type: WordTextType
 
 
 class WordWithRelations(Word):
@@ -296,16 +298,18 @@ class WordWithRelations(Word):
     images: List[UUID] = []
     tags: List[Tag] = []
     
-    # Typed document relationships
-    definitions: List[DocumentListItem] = []
-    literal_translations: List[DocumentListItem] = []
-    context_notes: List[DocumentListItem] = []
-    usage_examples: List[DocumentListItem] = []
-    etymologies: List[DocumentListItem] = []
-    cultural_significance: List[DocumentListItem] = []
+    # Document-level relationships (same across translations)
+    definitions: List['Document'] = []  # Many-to-many
+    etymology: Optional['Document'] = None  # One-to-one
+    cultural_significance: Optional['Document'] = None  # One-to-one
     
-    # All documents (including stories where word is mentioned)
-    documents: List[DocumentListItem] = []
+    # Text-level relationships (language-specific)
+    literal_translations: List['TextListItem'] = []
+    context_notes: List['TextListItem'] = []
+    usage_examples: List['TextListItem'] = []
+    
+    # All texts (where word is mentioned)
+    texts: List['TextListItem'] = []
     
     # Word relationships
     synonyms: List[WordListItem] = []
