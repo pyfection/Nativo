@@ -258,13 +258,11 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
 
     const selection = window.getSelection();
     if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
-      setSelectedSpan(null);
       return;
     }
 
     const range = selection.getRangeAt(0);
     if (!container.contains(range.startContainer) || !container.contains(range.endContainer)) {
-      setSelectedSpan(null);
       return;
     }
 
@@ -272,7 +270,6 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
     const endOffset = getOffsetFromNode(range.endContainer, range.endOffset);
 
     if (startOffset === null || endOffset === null) {
-      setSelectedSpan(null);
       return;
     }
 
@@ -280,7 +277,6 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
     const end = Math.max(startOffset, endOffset);
 
     if (start === end) {
-      setSelectedSpan(null);
       return;
     }
 
@@ -565,6 +561,11 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
     }
   }, [selectedLanguage?.id, selectedSpan?.text]);
 
+  const clearSelection = useCallback(() => {
+    setSelectedSpan(null);
+    const selection = window.getSelection();
+    selection?.removeAllRanges();
+  }, []);
   const handleCreateWordAndLink = async () => {
     if (!activeText || !selectedSpan) return;
     setIsSaving(true);
@@ -719,6 +720,11 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                   'linking-token',
                   token.type === 'whitespace' ? 'token-whitespace' : 'token-word',
                   `status-${token.status}`,
+                  selectedSpan &&
+                  token.start >= selectedSpan.start &&
+                  token.end <= selectedSpan.end
+                    ? 'selected'
+                    : '',
                 ]
                   .filter(Boolean)
                   .join(' ')}
@@ -739,6 +745,11 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                   <span className={`selection-status status-${selectedStatus}`}>
                     {selectedSpan.link ? selectedSpan.link.status : 'unlinked'}
                   </span>
+                </div>
+                <div className="selection-toolbar">
+                  <button type="button" className="btn-link" onClick={clearSelection}>
+                    Clear selection
+                  </button>
                 </div>
                 {selectedSpan.link ? (
                   <div className="selection-actions">

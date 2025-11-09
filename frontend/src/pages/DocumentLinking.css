@@ -133,6 +133,11 @@
   cursor: text;
 }
 
+.linking-token.selected {
+  outline: 2px solid #2d6a4f;
+  outline-offset: 1px;
+}
+
 .linking-token.status-unlinked {
   background-color: #fff4b1;
   color: #5c5500;
@@ -207,6 +212,12 @@
 .selection-status.status-rejected {
   background-color: #e3e3e3;
   color: #4b4b4b;
+}
+
+.selection-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
 }
 
 .selection-actions {
