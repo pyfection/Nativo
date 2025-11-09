@@ -51,7 +51,7 @@ class WordBase(BaseModel):
 
 class WordCreate(WordBase):
     """Schema for creating a new word entry"""
-    pass
+    tags: Optional[List[str]] = None
 
 
 class WordUpdate(BaseModel):
@@ -79,6 +79,7 @@ class WordUpdate(BaseModel):
     source: Optional[str] = Field(None, max_length=500)
     notes: Optional[str] = None
     status: Optional[WordStatus] = None
+    tags: Optional[List[str]] = None
 
 
 class WordInDB(WordBase):

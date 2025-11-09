@@ -7,10 +7,17 @@ export interface Word {
   romanization?: string;
   ipa_pronunciation?: string;
   part_of_speech?: string;
-  definition: string;
+  gender?: string;
+  plurality?: string;
+  grammatical_case?: string;
+  verb_aspect?: string;
+  animacy?: string;
+  language_register?: string;
+  definition?: string;
   literal_translation?: string;
   context_notes?: string;
   usage_examples?: string;
+  tags?: string[];
   status: string;
   is_verified: boolean;
   created_at: string;
@@ -22,7 +29,7 @@ export interface WordListItem {
   word: string;
   language_id: string;
   part_of_speech?: string;
-  definition: string;
+  definition?: string;
   status: string;
 }
 
@@ -32,10 +39,17 @@ export interface CreateWordData {
   romanization?: string;
   ipa_pronunciation?: string;
   part_of_speech?: string;
-  definition: string;
+  gender?: string;
+  plurality?: string;
+  grammatical_case?: string;
+  verb_aspect?: string;
+  animacy?: string;
+  language_register?: string;
+  definition?: string;
   literal_translation?: string;
   context_notes?: string;
   usage_examples?: string;
+  tags?: string[];
 }
 
 export interface WordTranslation {

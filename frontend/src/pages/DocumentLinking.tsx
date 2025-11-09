@@ -25,6 +25,104 @@ const LETTER_REGEX =
     }
   })();
 
+const PART_OF_SPEECH_OPTIONS = [
+  { value: 'noun', label: 'Noun' },
+  { value: 'verb', label: 'Verb' },
+  { value: 'adjective', label: 'Adjective' },
+  { value: 'adverb', label: 'Adverb' },
+  { value: 'pronoun', label: 'Pronoun' },
+  { value: 'preposition', label: 'Preposition' },
+  { value: 'conjunction', label: 'Conjunction' },
+  { value: 'interjection', label: 'Interjection' },
+  { value: 'article', label: 'Article' },
+  { value: 'determiner', label: 'Determiner' },
+  { value: 'particle', label: 'Particle' },
+  { value: 'numeral', label: 'Numeral' },
+  { value: 'classifier', label: 'Classifier' },
+  { value: 'other', label: 'Other' },
+];
+
+const GENDER_OPTIONS = [
+  { value: 'masculine', label: 'Masculine' },
+  { value: 'feminine', label: 'Feminine' },
+  { value: 'neuter', label: 'Neuter' },
+  { value: 'common', label: 'Common' },
+  { value: 'animate', label: 'Animate' },
+  { value: 'inanimate', label: 'Inanimate' },
+  { value: 'not_applicable', label: 'Not applicable' },
+];
+
+const PLURALITY_OPTIONS = [
+  { value: 'singular', label: 'Singular' },
+  { value: 'plural', label: 'Plural' },
+  { value: 'dual', label: 'Dual' },
+  { value: 'trial', label: 'Trial' },
+  { value: 'paucal', label: 'Paucal' },
+  { value: 'collective', label: 'Collective' },
+  { value: 'not_applicable', label: 'Not applicable' },
+];
+
+const CASE_OPTIONS = [
+  { value: 'nominative', label: 'Nominative' },
+  { value: 'accusative', label: 'Accusative' },
+  { value: 'genitive', label: 'Genitive' },
+  { value: 'dative', label: 'Dative' },
+  { value: 'ablative', label: 'Ablative' },
+  { value: 'locative', label: 'Locative' },
+  { value: 'instrumental', label: 'Instrumental' },
+  { value: 'vocative', label: 'Vocative' },
+  { value: 'partitive', label: 'Partitive' },
+  { value: 'comitative', label: 'Comitative' },
+  { value: 'essive', label: 'Essive' },
+  { value: 'translative', label: 'Translative' },
+  { value: 'ergative', label: 'Ergative' },
+  { value: 'absolutive', label: 'Absolutive' },
+  { value: 'not_applicable', label: 'Not applicable' },
+];
+
+const VERB_ASPECT_OPTIONS = [
+  { value: 'perfective', label: 'Perfective' },
+  { value: 'imperfective', label: 'Imperfective' },
+  { value: 'progressive', label: 'Progressive' },
+  { value: 'continuous', label: 'Continuous' },
+  { value: 'habitual', label: 'Habitual' },
+  { value: 'iterative', label: 'Iterative' },
+  { value: 'inchoative', label: 'Inchoative' },
+  { value: 'perfect', label: 'Perfect' },
+  { value: 'prospective', label: 'Prospective' },
+  { value: 'not_applicable', label: 'Not applicable' },
+  { value: 'other', label: 'Other' },
+];
+
+const ANIMACY_OPTIONS = [
+  { value: 'animate', label: 'Animate' },
+  { value: 'inanimate', label: 'Inanimate' },
+  { value: 'human', label: 'Human' },
+  { value: 'non_human', label: 'Non-human' },
+  { value: 'personal', label: 'Personal' },
+  { value: 'impersonal', label: 'Impersonal' },
+  { value: 'not_applicable', label: 'Not applicable' },
+];
+
+const REGISTER_OPTIONS = [
+  { value: 'formal', label: 'Formal' },
+  { value: 'informal', label: 'Informal' },
+  { value: 'colloquial', label: 'Colloquial' },
+  { value: 'slang', label: 'Slang' },
+  { value: 'ceremonial', label: 'Ceremonial' },
+  { value: 'archaic', label: 'Archaic' },
+  { value: 'taboo', label: 'Taboo' },
+  { value: 'poetic', label: 'Poetic' },
+  { value: 'technical', label: 'Technical' },
+  { value: 'neutral', label: 'Neutral' },
+];
+
+const parseTags = (value: string): string[] =>
+  value
+    .split(',')
+    .map((tag) => tag.trim())
+    .filter((tag) => tag.length > 0);
+
 const isLetter = (char: string | undefined): boolean => {
   if (!char) return false;
   return LETTER_REGEX.test(char);
@@ -143,8 +241,10 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
   const [newWordData, setNewWordData] = useState<CreateWordData>({
     word: '',
     language_id: selectedLanguage.id,
+    language_register: 'neutral',
     definition: '',
   });
+  const [newWordTagsInput, setNewWordTagsInput] = useState('');
 
   const textContainerRef = useRef<HTMLDivElement | null>(null);
   const initialState = useMemo(() => {
@@ -343,6 +443,10 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
   const applySelectionRange = useCallback(
     (start: number, end: number) => {
       if (!activeText) return;
+      if (start === end) {
+        setSelectedSpan(null);
+        return;
+      }
       const snippet = activeText.content.slice(start, end);
       const linkMatch = activeText.word_links?.find(
         (link) => link.start_char === start && link.end_char === end,
@@ -704,7 +808,8 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
       }
 
       if (!autoExpandSelection) {
-        applySelectionRange(caretOffset, caretOffset);
+        setSelectedSpan(null);
+        selection.removeAllRanges();
         return;
       }
 
@@ -731,20 +836,73 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
   ]);
   const handleCreateWordAndLink = async () => {
     if (!activeText || !selectedSpan) return;
+    const trimmedWord = newWordData.word.trim();
+    if (!trimmedWord) {
+      setActionError('Word is required before creating a new entry.');
+      return;
+    }
     setIsSaving(true);
     setActionError(null);
     try {
-      const wordPayload: CreateWordData = {
-        ...newWordData,
-        language_id: activeText.language_id ?? selectedLanguage.id,
+      const targetLanguageId = activeText.language_id ?? selectedLanguage.id;
+      const tags = parseTags(newWordTagsInput);
+      const payload: CreateWordData = {
+        word: trimmedWord,
+        language_id: targetLanguageId,
       };
-      const newWord = await wordService.create(wordPayload);
+
+      const optionalFields: Array<keyof CreateWordData> = [
+        'romanization',
+        'ipa_pronunciation',
+        'part_of_speech',
+        'gender',
+        'plurality',
+        'grammatical_case',
+        'verb_aspect',
+        'animacy',
+        'language_register',
+        'definition',
+        'literal_translation',
+        'context_notes',
+        'usage_examples',
+      ];
+
+      optionalFields.forEach((field) => {
+        const value = newWordData[field];
+        if (typeof value === 'string') {
+          const trimmed = value.trim();
+          if (trimmed) {
+            payload[field] = trimmed as any;
+          }
+        } else if (value) {
+          payload[field] = value;
+        }
+      });
+
+      if (tags.length > 0) {
+        payload.tags = tags;
+      }
+
+      const newWord = await wordService.create(payload);
       await handleLinkToWord(newWord.id);
       setNewWordData({
         word: '',
-        language_id: activeText.language_id ?? selectedLanguage.id,
+        language_id: targetLanguageId,
+        romanization: '',
+        ipa_pronunciation: '',
+        part_of_speech: '',
+        gender: '',
+        plurality: '',
+        grammatical_case: '',
+        verb_aspect: '',
+        animacy: '',
+        language_register: 'neutral',
         definition: '',
+        literal_translation: '',
+        context_notes: '',
+        usage_examples: '',
       });
+      setNewWordTagsInput('');
       setShowNewWordForm(false);
       setActionMessage('Word created and linked.');
     } catch (err: any) {
@@ -992,10 +1150,26 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                         <button
                           className="btn-secondary"
                           onClick={() => {
-                            setNewWordData((prev) => ({
-                              ...prev,
+                            const targetLanguageId =
+                              activeText?.language_id ?? selectedLanguage.id;
+                            setNewWordData({
                               word: selectedSpan?.text?.trim() ?? '',
-                            }));
+                              language_id: targetLanguageId,
+                              romanization: '',
+                              ipa_pronunciation: '',
+                              part_of_speech: '',
+                              gender: '',
+                              plurality: '',
+                              grammatical_case: '',
+                              verb_aspect: '',
+                              animacy: '',
+                              language_register: 'neutral',
+                              definition: '',
+                              literal_translation: '',
+                              context_notes: '',
+                              usage_examples: '',
+                            });
+                            setNewWordTagsInput('');
                             setShowNewWordForm(true);
                           }}
                           disabled={!canEdit}
@@ -1014,16 +1188,238 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                             }
                             disabled={!canEdit}
                           />
-                          <label htmlFor="new-word-definition">Definition *</label>
+
+                          <label htmlFor="new-word-romanization">Romanization</label>
+                          <input
+                            id="new-word-romanization"
+                            type="text"
+                            value={newWordData.romanization || ''}
+                            onChange={(event) =>
+                              setNewWordData((prev) => ({
+                                ...prev,
+                                romanization: event.target.value,
+                              }))
+                            }
+                            disabled={!canEdit}
+                          />
+
+                          <label htmlFor="new-word-ipa">IPA Pronunciation</label>
+                          <input
+                            id="new-word-ipa"
+                            type="text"
+                            value={newWordData.ipa_pronunciation || ''}
+                            onChange={(event) =>
+                              setNewWordData((prev) => ({
+                                ...prev,
+                                ipa_pronunciation: event.target.value,
+                              }))
+                            }
+                            disabled={!canEdit}
+                          />
+
+                          <label htmlFor="new-word-part-of-speech">Part of Speech</label>
+                          <select
+                            id="new-word-part-of-speech"
+                            value={newWordData.part_of_speech || ''}
+                            onChange={(event) =>
+                              setNewWordData((prev) => ({
+                                ...prev,
+                                part_of_speech: event.target.value,
+                              }))
+                            }
+                            disabled={!canEdit}
+                          >
+                            <option value="">Select...</option>
+                            {PART_OF_SPEECH_OPTIONS.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+
+                          <label htmlFor="new-word-gender">Gender</label>
+                          <select
+                            id="new-word-gender"
+                            value={newWordData.gender || ''}
+                            onChange={(event) =>
+                              setNewWordData((prev) => ({
+                                ...prev,
+                                gender: event.target.value,
+                              }))
+                            }
+                            disabled={!canEdit}
+                          >
+                            <option value="">Select...</option>
+                            {GENDER_OPTIONS.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+
+                          <label htmlFor="new-word-plurality">Plurality</label>
+                          <select
+                            id="new-word-plurality"
+                            value={newWordData.plurality || ''}
+                            onChange={(event) =>
+                              setNewWordData((prev) => ({
+                                ...prev,
+                                plurality: event.target.value,
+                              }))
+                            }
+                            disabled={!canEdit}
+                          >
+                            <option value="">Select...</option>
+                            {PLURALITY_OPTIONS.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+
+                          <label htmlFor="new-word-case">Grammatical Case</label>
+                          <select
+                            id="new-word-case"
+                            value={newWordData.grammatical_case || ''}
+                            onChange={(event) =>
+                              setNewWordData((prev) => ({
+                                ...prev,
+                                grammatical_case: event.target.value,
+                              }))
+                            }
+                            disabled={!canEdit}
+                          >
+                            <option value="">Select...</option>
+                            {CASE_OPTIONS.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+
+                          <label htmlFor="new-word-verb-aspect">Verb Aspect</label>
+                          <select
+                            id="new-word-verb-aspect"
+                            value={newWordData.verb_aspect || ''}
+                            onChange={(event) =>
+                              setNewWordData((prev) => ({
+                                ...prev,
+                                verb_aspect: event.target.value,
+                              }))
+                            }
+                            disabled={!canEdit}
+                          >
+                            <option value="">Select...</option>
+                            {VERB_ASPECT_OPTIONS.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+
+                          <label htmlFor="new-word-animacy">Animacy</label>
+                          <select
+                            id="new-word-animacy"
+                            value={newWordData.animacy || ''}
+                            onChange={(event) =>
+                              setNewWordData((prev) => ({
+                                ...prev,
+                                animacy: event.target.value,
+                              }))
+                            }
+                            disabled={!canEdit}
+                          >
+                            <option value="">Select...</option>
+                            {ANIMACY_OPTIONS.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+
+                          <label htmlFor="new-word-register">Language Register</label>
+                          <select
+                            id="new-word-register"
+                            value={newWordData.language_register || ''}
+                            onChange={(event) =>
+                              setNewWordData((prev) => ({
+                                ...prev,
+                                language_register: event.target.value,
+                              }))
+                            }
+                            disabled={!canEdit}
+                          >
+                            <option value="">Select...</option>
+                            {REGISTER_OPTIONS.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+
+                          <label htmlFor="new-word-definition">Definition</label>
                           <textarea
                             id="new-word-definition"
                             rows={3}
-                            value={newWordData.definition}
+                            value={newWordData.definition || ''}
                             onChange={(event) =>
                               setNewWordData((prev) => ({ ...prev, definition: event.target.value }))
                             }
                             disabled={!canEdit}
                           />
+
+                          <label htmlFor="new-word-literal">Literal Translation</label>
+                          <textarea
+                            id="new-word-literal"
+                            rows={2}
+                            value={newWordData.literal_translation || ''}
+                            onChange={(event) =>
+                              setNewWordData((prev) => ({
+                                ...prev,
+                                literal_translation: event.target.value,
+                              }))
+                            }
+                            disabled={!canEdit}
+                          />
+
+                          <label htmlFor="new-word-context">Context Notes</label>
+                          <textarea
+                            id="new-word-context"
+                            rows={2}
+                            value={newWordData.context_notes || ''}
+                            onChange={(event) =>
+                              setNewWordData((prev) => ({
+                                ...prev,
+                                context_notes: event.target.value,
+                              }))
+                            }
+                            disabled={!canEdit}
+                          />
+
+                          <label htmlFor="new-word-usage">Usage Examples</label>
+                          <textarea
+                            id="new-word-usage"
+                            rows={3}
+                            value={newWordData.usage_examples || ''}
+                            onChange={(event) =>
+                              setNewWordData((prev) => ({
+                                ...prev,
+                                usage_examples: event.target.value,
+                              }))
+                            }
+                            disabled={!canEdit}
+                          />
+
+                          <label htmlFor="new-word-tags">Tags (comma separated)</label>
+                          <input
+                            id="new-word-tags"
+                            type="text"
+                            value={newWordTagsInput}
+                            onChange={(event) => setNewWordTagsInput(event.target.value)}
+                            disabled={!canEdit}
+                            placeholder="e.g., nature, ceremonial"
+                          />
+
                           <div className="new-word-actions">
                             <button
                               className="btn-primary"
@@ -1031,15 +1427,36 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                               disabled={
                                 !canEdit ||
                                 isSaving ||
-                                !newWordData.word.trim() ||
-                                !newWordData.definition.trim()
+                                !newWordData.word.trim()
                               }
                             >
                               Create & Link
                             </button>
                             <button
                               className="btn-secondary"
-                              onClick={() => setShowNewWordForm(false)}
+                              onClick={() => {
+                                setShowNewWordForm(false);
+                                setNewWordTagsInput('');
+                                const targetLanguageId =
+                                  activeText?.language_id ?? selectedLanguage.id;
+                                setNewWordData({
+                                  word: selectedSpan?.text?.trim() ?? '',
+                                  language_id: targetLanguageId,
+                                  romanization: '',
+                                  ipa_pronunciation: '',
+                                  part_of_speech: '',
+                                  gender: '',
+                                  plurality: '',
+                                  grammatical_case: '',
+                                  verb_aspect: '',
+                                  animacy: '',
+                                  language_register: 'neutral',
+                                  definition: '',
+                                  literal_translation: '',
+                                  context_notes: '',
+                                  usage_examples: '',
+                                });
+                              }}
                               disabled={isSaving}
                             >
                               Cancel

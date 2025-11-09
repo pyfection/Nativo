@@ -302,7 +302,8 @@
 }
 
 .new-word-form input,
-.new-word-form textarea {
+.new-word-form textarea,
+.new-word-form select {
   width: 100%;
   padding: 0.5rem;
   border-radius: 6px;

@@ -8,6 +8,7 @@ from uuid import UUID
 from app.database import get_db
 from app.models.user import User, UserRole
 from app.models.word import Word, WordStatus, word_translations
+from app.models.tag import Tag
 from app.models.language import Language
 from app.schemas.word import (
     WordCreate, 
@@ -26,10 +27,34 @@ from app.api.deps import (
     require_admin
 )
 from app.services.auth_service import require_resource_owner
-from sqlalchemy import select, insert, delete, update, and_, or_
+from sqlalchemy import select, insert, delete, update, and_, or_, func
 from datetime import datetime
 
 router = APIRouter()
+
+
+def _resolve_tags(db: Session, tag_names: list[str]) -> list[Tag]:
+    resolved: list[Tag] = []
+    seen = set()
+
+    for raw_name in tag_names or []:
+        if raw_name is None:
+            continue
+        cleaned = raw_name.strip()
+        if not cleaned:
+            continue
+        key = cleaned.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        tag = db.query(Tag).filter(func.lower(Tag.name) == key).first()
+        if not tag:
+            tag = Tag(name=cleaned)
+            db.add(tag)
+            db.flush()
+        resolved.append(tag)
+
+    return resolved
 
 
 @router.get("/", response_model=list[WordListItem])
@@ -183,12 +208,18 @@ async def create_word(
     
     Requires: NATIVE_SPEAKER, RESEARCHER, or ADMIN role
     """
+    payload = word_data.model_dump(exclude_unset=True, exclude={'tags'})
     new_word = Word(
-        **word_data.model_dump(exclude_unset=True),
+        **payload,
         created_by_id=current_user.id
     )
     
     db.add(new_word)
+    db.flush()
+
+    if word_data.tags:
+        new_word.tags = _resolve_tags(db, word_data.tags)
+
     db.commit()
     db.refresh(new_word)
     
@@ -220,8 +251,14 @@ async def update_word(
     require_resource_owner(current_user, word.created_by_id)
     
     # Update word fields
-    for field, value in word_data.model_dump(exclude_unset=True).items():
+    update_data = word_data.model_dump(exclude_unset=True)
+    tag_names = update_data.pop('tags', None)
+
+    for field, value in update_data.items():
         setattr(word, field, value)
+
+    if tag_names is not None:
+        word.tags = _resolve_tags(db, tag_names)
     
     db.commit()
     db.refresh(word)

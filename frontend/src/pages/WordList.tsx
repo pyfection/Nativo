@@ -53,11 +53,15 @@ export default function WordList({ selectedLanguage }: WordListProps) {
       let filtered = data;
       if (filters.search) {
         const searchLower = filters.search.toLowerCase();
-        filtered = data.filter(word => 
-          word.word.toLowerCase().includes(searchLower) ||
-          word.definition.toLowerCase().includes(searchLower) ||
-          word.romanization?.toLowerCase().includes(searchLower)
-        );
+        filtered = data.filter(word => {
+          const definition = word.definition?.toLowerCase() ?? '';
+          const romanization = word.romanization?.toLowerCase() ?? '';
+          return (
+            word.word.toLowerCase().includes(searchLower) ||
+            definition.includes(searchLower) ||
+            romanization.includes(searchLower)
+          );
+        });
       }
       
       setWords(filtered);
@@ -207,7 +211,7 @@ export default function WordList({ selectedLanguage }: WordListProps) {
                   <td className="romanization-cell">{word.romanization || '—'}</td>
                   <td className="ipa-cell">{word.ipa_pronunciation || '—'}</td>
                   <td className="pos-cell">{word.part_of_speech || '—'}</td>
-                  <td className="definition-cell">{word.definition}</td>
+                  <td className="definition-cell">{word.definition || '—'}</td>
                   <td className="literal-cell">{word.literal_translation || '—'}</td>
                   <td>
                     <span className={`status-badge status-${word.status}`}>
