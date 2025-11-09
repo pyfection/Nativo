@@ -1,40 +1,31 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
 import documentService, { CreateDocumentData } from '../services/documentService';
-import languageService, { LanguageListItem } from '../services/languageService';
 import { DOCUMENT_TYPE_OPTIONS } from '../utils/documentTypes';
+import { Language } from '../App';
 import './AddDocument.css';
 
-export default function AddDocument() {
+interface AddDocumentProps {
+  selectedLanguage: Language;
+}
+
+export default function AddDocument({ selectedLanguage }: AddDocumentProps) {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
-  const [languages, setLanguages] = useState<LanguageListItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState<CreateDocumentData>({
     title: '',
     content: '',
     document_type: 'story',
+    language_id: selectedLanguage.id,
   });
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login');
-      return;
-    }
-
-    const fetchLanguages = async () => {
-      try {
-        const langs = await languageService.getAll();
-        setLanguages(langs);
-      } catch (err) {
-        console.error('Failed to fetch languages:', err);
-      }
-    };
-
-    fetchLanguages();
-  }, [isAuthenticated, navigate]);
+    setFormData((prev) => ({
+      ...prev,
+      language_id: selectedLanguage.id,
+    }));
+  }, [selectedLanguage.id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,7 +46,9 @@ export default function AddDocument() {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
@@ -72,40 +65,21 @@ export default function AddDocument() {
       <form onSubmit={handleSubmit} className="document-form">
         {error && <div className="error-message">{error}</div>}
 
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="document_type">Document Type *</label>
-            <select
-              id="document_type"
-              name="document_type"
-              value={formData.document_type}
-              onChange={handleChange}
-              required
-            >
-              {DOCUMENT_TYPE_OPTIONS.map((type) => (
-                <option key={type.value} value={type.value}>
-                  {type.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="language_id">Language</label>
-            <select
-              id="language_id"
-              name="language_id"
-              value={formData.language_id || ''}
-              onChange={handleChange}
-            >
-              <option value="">Select a language (optional)</option>
-              {languages.map((lang) => (
-                <option key={lang.id} value={lang.id}>
-                  {lang.name} {lang.native_name && `(${lang.native_name})`}
-                </option>
-              ))}
-            </select>
-          </div>
+        <div className="form-group">
+          <label htmlFor="document_type">Document Type *</label>
+          <select
+            id="document_type"
+            name="document_type"
+            value={formData.document_type}
+            onChange={handleChange}
+            required
+          >
+            {DOCUMENT_TYPE_OPTIONS.map((type) => (
+              <option key={type.value} value={type.value}>
+                {type.label}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="form-group">

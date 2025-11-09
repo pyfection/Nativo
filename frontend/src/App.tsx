@@ -318,7 +318,7 @@ function App() {
                     onLanguageChange={setSelectedLanguage}
                     languages={languages}
                   >
-                    <AddDocument />
+                    <AddDocument selectedLanguage={selectedLanguage!} />
                   </AppLayout>
                 </ProtectedRoute>
               }
