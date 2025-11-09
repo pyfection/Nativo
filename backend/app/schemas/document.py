@@ -57,6 +57,7 @@ class DocumentListItem(BaseModel):
     id: UUID
     title: str  # From primary or selected language text
     content_preview: str = Field(..., max_length=200)  # Truncated content
+    source: Optional[str] = None  # Source of the displayed text
     language_id: Optional[UUID] = None  # Language of the displayed text
     created_at: datetime
     text_count: int = 0  # Number of translations

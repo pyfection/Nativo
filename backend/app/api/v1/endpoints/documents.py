@@ -74,6 +74,7 @@ async def list_documents(
                 id=doc.id,
                 title=text.title,
                 content_preview=text.content[:200] if len(text.content) > 200 else text.content,
+                source=text.source,
                 language_id=text.language_id,
                 created_at=doc.created_at,
                 text_count=len(doc.texts)

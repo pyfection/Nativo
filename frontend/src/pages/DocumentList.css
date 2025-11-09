@@ -99,8 +99,39 @@
 
 .documents-table tbody tr:hover {
   background-color: color-mix(in srgb, var(--primary) 8%, white);
-  cursor: pointer;
 }
+.actions-cell {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  align-items: center;
+  min-width: 110px;
+}
+
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background-color: #f8fafc;
+  color: #1f2933;
+  transition: all 0.2s ease;
+}
+
+.icon-button:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background-color: color-mix(in srgb, var(--primary) 12%, white);
+}
+
+.icon-button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
 
 .documents-table td {
   padding: 1.25rem 1.5rem;

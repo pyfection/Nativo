@@ -21,6 +21,7 @@ export interface DocumentListItem {
   id: string;
   title: string; // From selected language or primary text
   content_preview: string; // Truncated content
+  source?: string;
   language_id?: string; // Language of the displayed text
   created_at: string;
   text_count: number; // Number of translations
