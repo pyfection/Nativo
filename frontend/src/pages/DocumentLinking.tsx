@@ -531,7 +531,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
   };
 
   const runWordSearch = useCallback(async () => {
-    if (!activeText?.language_id) {
+    if (!selectedLanguage?.id) {
       setSearchResults([]);
       return;
     }
@@ -542,12 +542,15 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
       return;
     }
 
+    setActionError(null);
+    setActionMessage(null);
     setSearchLoading(true);
     try {
       const results = await wordService.search({
         q: query.slice(0, 100),
-        language_ids: activeText.language_id,
+        language_ids: selectedLanguage.id,
         include_translations: false,
+        include_unpublished: true,
         limit: 10,
       });
       setSearchResults(results);
@@ -560,7 +563,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
     } finally {
       setSearchLoading(false);
     }
-  }, [activeText?.language_id, selectedSpan?.text]);
+  }, [selectedLanguage?.id, selectedSpan?.text]);
 
   const handleCreateWordAndLink = async () => {
     if (!activeText || !selectedSpan) return;

@@ -67,6 +67,7 @@ async def search_words(
     q: str,
     language_ids: str = None,  # Comma-separated list of language UUIDs
     include_translations: bool = True,
+    include_unpublished: bool = False,
     skip: int = 0,
     limit: int = 50,
     db: Session = Depends(get_db)
@@ -79,20 +80,32 @@ async def search_words(
     - include_translations: Whether to include translation data
     - Returns words matching the search with their translations
     """
-    query = db.query(Word).filter(Word.status == WordStatus.PUBLISHED)
+    query = db.query(Word)
+    if include_unpublished:
+        query = query.filter(
+            Word.status.in_([
+                WordStatus.PUBLISHED,
+                WordStatus.PENDING_REVIEW,
+                WordStatus.DRAFT
+            ])
+        )
+    else:
+        query = query.filter(Word.status == WordStatus.PUBLISHED)
     
     # Apply search filter
-    search_filter = or_(
-        Word.word.ilike(f"%{q}%"),
-        Word.romanization.ilike(f"%{q}%") if q else False
-    )
-    query = query.filter(search_filter)
+    if q:
+        search_filter = or_(
+            Word.word.ilike(f"%{q}%"),
+            Word.romanization.ilike(f"%{q}%")
+        )
+        query = query.filter(search_filter)
     
     # Apply language filter
     if language_ids:
         try:
-            lang_id_list = [UUID(lid.strip()) for lid in language_ids.split(",")]
-            query = query.filter(Word.language_id.in_(lang_id_list))
+            lang_id_list = [UUID(lid.strip()) for lid in language_ids.split(",") if lid.strip()]
+            if lang_id_list:
+                query = query.filter(Word.language_id.in_(lang_id_list))
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid language ID format")
     

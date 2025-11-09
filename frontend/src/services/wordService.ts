@@ -117,6 +117,7 @@ export const wordService = {
     q: string;
     language_ids?: string;  // Comma-separated language IDs
     include_translations?: boolean;
+    include_unpublished?: boolean;
     skip?: number;
     limit?: number;
   }): Promise<WordWithTranslations[]> {
