@@ -16,6 +16,85 @@ import { useAuth } from '../contexts/AuthContext';
 import { getDocumentTypeLabel } from '../utils/documentTypes';
 import './DocumentLinking.css';
 
+const LETTER_REGEX =
+  (() => {
+    try {
+      return new RegExp('\\p{L}', 'u');
+    } catch {
+      return /[A-Za-z]/;
+    }
+  })();
+
+const isLetter = (char: string | undefined): boolean => {
+  if (!char) return false;
+  return LETTER_REGEX.test(char);
+};
+
+const expandRangeToWholeWords = (content: string, start: number, end: number) => {
+  const length = content.length;
+  if (length === 0) return null;
+
+  let rangeStart = Math.max(0, Math.min(start, length));
+  let rangeEnd = Math.max(0, Math.min(end, length));
+
+  if (rangeStart > rangeEnd) {
+    const temp = rangeStart;
+    rangeStart = rangeEnd;
+    rangeEnd = temp;
+  }
+
+  while (rangeStart < rangeEnd && !isLetter(content[rangeStart])) {
+    rangeStart += 1;
+  }
+
+  while (rangeEnd > rangeStart && !isLetter(content[rangeEnd - 1])) {
+    rangeEnd -= 1;
+  }
+
+  if (rangeStart >= rangeEnd) {
+    return null;
+  }
+
+  while (rangeStart > 0 && isLetter(content[rangeStart - 1])) {
+    rangeStart -= 1;
+  }
+
+  while (rangeEnd < length && isLetter(content[rangeEnd])) {
+    rangeEnd += 1;
+  }
+
+  return { start: rangeStart, end: rangeEnd };
+};
+
+const expandCaretToWord = (content: string, offset: number) => {
+  const length = content.length;
+  if (length === 0) return null;
+
+  let start = Math.max(0, Math.min(offset, length));
+  let end = start;
+
+  const hasLeft = start > 0 && isLetter(content[start - 1]);
+  const hasRight = end < length && isLetter(content[end]);
+
+  if (!hasLeft && !hasRight) {
+    return null;
+  }
+
+  while (start > 0 && isLetter(content[start - 1])) {
+    start -= 1;
+  }
+
+  while (end < length && isLetter(content[end])) {
+    end += 1;
+  }
+
+  if (start === end) {
+    return null;
+  }
+
+  return { start, end };
+};
+
 type TokenStatus = TextWordLinkStatus | 'unlinked';
 
 interface AnnotatedToken {
@@ -51,6 +130,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
   const [selectedSpan, setSelectedSpan] = useState<SelectionState | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [autoExpandSelection, setAutoExpandSelection] = useState(true);
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -260,46 +340,23 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
     [],
   );
 
-  const updateSelectionFromNative = useCallback(() => {
-    const container = textContainerRef.current;
-    if (!container || !activeText) return;
+  const applySelectionRange = useCallback(
+    (start: number, end: number) => {
+      if (!activeText) return;
+      const snippet = activeText.content.slice(start, end);
+      const linkMatch = activeText.word_links?.find(
+        (link) => link.start_char === start && link.end_char === end,
+      );
 
-    const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
-      return;
-    }
-
-    const range = selection.getRangeAt(0);
-    if (!container.contains(range.startContainer) || !container.contains(range.endContainer)) {
-      return;
-    }
-
-    const startOffset = getOffsetFromNode(range.startContainer, range.startOffset);
-    const endOffset = getOffsetFromNode(range.endContainer, range.endOffset);
-
-    if (startOffset === null || endOffset === null) {
-      return;
-    }
-
-    const start = Math.min(startOffset, endOffset);
-    const end = Math.max(startOffset, endOffset);
-
-    if (start === end) {
-      return;
-    }
-
-    const snippet = activeText.content.slice(start, end);
-    const linkMatch = activeText.word_links?.find(
-      (link) => link.start_char === start && link.end_char === end,
-    );
-
-    setSelectedSpan({
-      start,
-      end,
-      text: snippet,
-      link: linkMatch,
-    });
-  }, [activeText, getOffsetFromNode]);
+      setSelectedSpan({
+        start,
+        end,
+        text: snippet,
+        link: linkMatch,
+      });
+    },
+    [activeText],
+  );
 
   const findNodeAtOffset = useCallback(
     (offset: number): { node: Node; offset: number } | null => {
@@ -345,6 +402,53 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
     },
     [findNodeAtOffset],
   );
+
+  const updateSelectionFromNative = useCallback(() => {
+    const container = textContainerRef.current;
+    if (!container || !activeText) return;
+
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
+      return;
+    }
+
+    const range = selection.getRangeAt(0);
+    if (!container.contains(range.startContainer) || !container.contains(range.endContainer)) {
+      setSelectedSpan(null);
+      return;
+    }
+
+    const startOffset = getOffsetFromNode(range.startContainer, range.startOffset);
+    const endOffset = getOffsetFromNode(range.endContainer, range.endOffset);
+
+    if (startOffset === null || endOffset === null) {
+      setSelectedSpan(null);
+      return;
+    }
+
+    const rawStart = Math.min(startOffset, endOffset);
+    const rawEnd = Math.max(startOffset, endOffset);
+
+    if (!autoExpandSelection) {
+      applySelectionRange(rawStart, rawEnd);
+      return;
+    }
+
+    if (rawStart === rawEnd) {
+      setSelectedSpan(null);
+      return;
+    }
+
+    const expanded = expandRangeToWholeWords(activeText.content, rawStart, rawEnd);
+    if (!expanded) {
+      setSelectedSpan(null);
+      return;
+    }
+
+    const { start, end } = expanded;
+    selectRangeInText(start, end);
+    applySelectionRange(start, end);
+  }, [activeText, applySelectionRange, getOffsetFromNode, selectRangeInText, autoExpandSelection]);
 
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.document === 'undefined') {
@@ -574,6 +678,57 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
     const selection = window.getSelection();
     selection?.removeAllRanges();
   }, []);
+
+  const handleTextMouseUp = useCallback(() => {
+    const container = textContainerRef.current;
+    if (!container || !activeText) return;
+
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) {
+      setSelectedSpan(null);
+      return;
+    }
+
+    const range = selection.getRangeAt(0);
+    if (!container.contains(range.startContainer) || !container.contains(range.endContainer)) {
+      setSelectedSpan(null);
+      return;
+    }
+
+    if (selection.isCollapsed) {
+      const caretOffset = getOffsetFromNode(range.startContainer, range.startOffset);
+      if (caretOffset === null) {
+        setSelectedSpan(null);
+        selection.removeAllRanges();
+        return;
+      }
+
+      if (!autoExpandSelection) {
+        applySelectionRange(caretOffset, caretOffset);
+        return;
+      }
+
+      const expanded = expandCaretToWord(activeText.content, caretOffset);
+      if (!expanded) {
+        setSelectedSpan(null);
+        selection.removeAllRanges();
+        return;
+      }
+
+      const { start, end } = expanded;
+      selectRangeInText(start, end);
+      applySelectionRange(start, end);
+    } else {
+      updateSelectionFromNative();
+    }
+  }, [
+    activeText,
+    applySelectionRange,
+    getOffsetFromNode,
+    selectRangeInText,
+    updateSelectionFromNative,
+    autoExpandSelection,
+  ]);
   const handleCreateWordAndLink = async () => {
     if (!activeText || !selectedSpan) return;
     setIsSaving(true);
@@ -656,6 +811,14 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
           </p>
         </div>
         <div className="document-linking-actions">
+          <label className="toggle-control">
+            <input
+              type="checkbox"
+              checked={autoExpandSelection}
+              onChange={(event) => setAutoExpandSelection(event.target.checked)}
+            />
+            <span>Auto-expand selection</span>
+          </label>
           <button
             className="btn-secondary"
             onClick={handleRegenerateSuggestionsForText}
@@ -717,7 +880,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
           <div
             ref={textContainerRef}
             className="linking-text-container"
-            onMouseUp={updateSelectionFromNative}
+            onMouseUp={handleTextMouseUp}
           >
             {tokens.map((token) => (
               <span

@@ -25,6 +25,20 @@
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
+  align-items: center;
+}
+
+.toggle-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.95rem;
+  color: #334155;
+}
+
+.toggle-control input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
 }
 
 .document-linking-info {
