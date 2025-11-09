@@ -67,6 +67,7 @@ export const wordService = {
     limit?: number;
     language_id?: string;
     status_filter?: string;
+    include_all_statuses?: boolean;
   }): Promise<WordListItem[]> {
     const response = await api.get<WordListItem[]>('/api/v1/words/', { params });
     return response.data;

@@ -38,6 +38,7 @@ async def list_words(
     limit: int = 100,
     language_id: UUID = None,
     status_filter: WordStatus = None,
+    include_all_statuses: bool = False,
     db: Session = Depends(get_db)
 ):
     """
@@ -53,7 +54,7 @@ async def list_words(
     
     if status_filter:
         query = query.filter(Word.status == status_filter)
-    else:
+    elif not include_all_statuses:
         # By default, show only published words to public
         query = query.filter(Word.status == WordStatus.PUBLISHED)
     

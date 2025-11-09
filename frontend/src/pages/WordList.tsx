@@ -40,7 +40,11 @@ export default function WordList({ selectedLanguage }: WordListProps) {
         params.language_id = selectedLanguage.id;
       }
       
-      if (filters.status_filter) params.status_filter = filters.status_filter;
+      if (filters.status_filter) {
+        params.status_filter = filters.status_filter;
+      } else {
+        params.include_all_statuses = true;
+      }
       if (filters.part_of_speech) params.part_of_speech = filters.part_of_speech;
       
       const data = await wordService.getAll(params);
