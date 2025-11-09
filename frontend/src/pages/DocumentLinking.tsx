@@ -536,21 +536,31 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
       return;
     }
 
+    const query = selectedSpan?.text?.trim();
+    if (!query) {
+      setActionError('Select some text in the document to search for similar words.');
+      return;
+    }
+
     setSearchLoading(true);
     try {
       const results = await wordService.search({
-        q: '', // empty query to fetch closest matches (backend should handle)
+        q: query.slice(0, 100),
         language_ids: activeText.language_id,
         include_translations: false,
         limit: 10,
       });
       setSearchResults(results);
+      if (results.length === 0) {
+        setActionMessage('No similar words found for the current selection.');
+      }
     } catch (err) {
       setSearchResults([]);
+      setActionError('Failed to search for similar words.');
     } finally {
       setSearchLoading(false);
     }
-  }, [activeText?.language_id]);
+  }, [activeText?.language_id, selectedSpan?.text]);
 
   const handleCreateWordAndLink = async () => {
     if (!activeText || !selectedSpan) return;
