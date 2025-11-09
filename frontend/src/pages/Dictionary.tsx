@@ -69,21 +69,12 @@ export default function Dictionary({ selectedLanguage, languages }: DictionaryPr
       let filteredResults = data;
       if (searchDirection === 'current-to-known') {
         // Show only translations in known languages
-        console.log('Known language IDs:', Array.from(selectedKnownLanguages));
-        console.log('All translations:', data.map(w => w.translations));
-        
-        filteredResults = data.map(word => {
-          const filteredTranslations = word.translations.filter(trans => {
-            const isKnown = selectedKnownLanguages.has(trans.language_id);
-            console.log(`Translation "${trans.word}" (${trans.language_id}) is known: ${isKnown}`);
-            return isKnown;
-          });
-          
-          return {
-            ...word,
-            translations: filteredTranslations,
-          };
-        });
+        filteredResults = data.map(word => ({
+          ...word,
+          translations: word.translations.filter(trans =>
+            selectedKnownLanguages.has(trans.language_id)
+          ),
+        }));
       } else {
         // Show only translations in current language
         filteredResults = data.map(word => ({

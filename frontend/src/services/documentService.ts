@@ -1,11 +1,13 @@
 import api from './api';
-import { 
-  Document, 
-  DocumentWithTexts, 
-  DocumentListItem, 
-  DocumentFilter 
+import {
+  Document,
+  DocumentWithTexts,
+  DocumentListItem,
+  DocumentFilter,
 } from '../types/document';
 import { Text, TextCreate, TextUpdate } from '../types/text';
+
+export type CreateDocumentData = TextCreate;
 
 /**
  * Document service for managing documents and their texts (translations).
@@ -45,7 +47,7 @@ export const documentService = {
   /**
    * Create a new document with an initial text.
    */
-  async create(data: TextCreate): Promise<DocumentWithTexts> {
+  async create(data: CreateDocumentData): Promise<DocumentWithTexts> {
     const response = await api.post<DocumentWithTexts>('/api/v1/documents/', data);
     return response.data;
   },

@@ -29,6 +29,7 @@ export default function AddDocument() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState<CreateDocumentData>({
+    title: '',
     content: '',
     document_type: 'story',
   });
@@ -60,7 +61,11 @@ export default function AddDocument() {
       await documentService.create(formData);
       navigate('/documents');
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to create document');
+      const detail = err?.response?.data?.detail;
+      const message = Array.isArray(detail)
+        ? detail.map((item: { msg?: string }) => item?.msg).filter(Boolean).join(', ')
+        : detail;
+      setError(message || 'Failed to create document');
     } finally {
       setLoading(false);
     }
@@ -117,6 +122,19 @@ export default function AddDocument() {
               ))}
             </select>
           </div>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="title">Title *</label>
+          <input
+            type="text"
+            id="title"
+            name="title"
+            value={formData.title}
+            onChange={handleChange}
+            required
+            placeholder="Enter a title or short description"
+          />
         </div>
 
         <div className="form-group">
