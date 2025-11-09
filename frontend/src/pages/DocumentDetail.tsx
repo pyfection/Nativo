@@ -77,6 +77,11 @@ export default function DocumentDetail({ selectedLanguage, languages }: Document
     navigate(`/documents/${documentId}/edit`, { state: { textId: activeTextId } });
   };
 
+  const handleLink = () => {
+    if (!documentId) return;
+    navigate(`/documents/${documentId}/link`, { state: { textId: activeTextId } });
+  };
+
   if (loading) {
     return (
       <div className="document-detail-page">
@@ -155,6 +160,9 @@ export default function DocumentDetail({ selectedLanguage, languages }: Document
         <div className="document-header-actions">
           <button className="btn-secondary" onClick={handleBack}>
             Back
+          </button>
+          <button className="btn-secondary" onClick={handleLink}>
+            Link Words
           </button>
           {canEdit && (
             <button className="btn-primary" onClick={handleEdit}>

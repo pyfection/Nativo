@@ -2,11 +2,12 @@
 Text schemas for API request/response validation.
 """
 from pydantic import BaseModel, Field, ConfigDict
-from typing import Optional
+from typing import List, Optional
 from datetime import datetime
 from uuid import UUID
 
 from app.models.text import DocumentType
+from app.models.text_word_link import TextWordLinkStatus
 
 
 class TextBase(BaseModel):
@@ -51,6 +52,52 @@ class TextInDB(TextBase):
 class Text(TextInDB):
     """Complete text schema"""
     pass
+
+
+class TextWordLinkBase(BaseModel):
+    """Base schema for a word link within a text"""
+    start_char: int = Field(..., ge=0, description="Start character offset (inclusive)")
+    end_char: int = Field(..., gt=0, description="End character offset (exclusive)")
+    notes: Optional[str] = Field(None, max_length=500)
+
+
+class TextWordLinkCreate(TextWordLinkBase):
+    """Schema for creating a link to an existing word"""
+    word_id: UUID
+    status: TextWordLinkStatus = TextWordLinkStatus.CONFIRMED
+
+
+class TextWordLinkUpdate(BaseModel):
+    """Schema for updating link metadata or status"""
+    status: Optional[TextWordLinkStatus] = None
+    notes: Optional[str] = Field(None, max_length=500)
+    word_id: Optional[UUID] = None
+
+
+class TextWordLink(BaseModel):
+    """Complete schema for a link between text span and word"""
+    id: UUID
+    text_id: UUID
+    word_id: UUID
+    start_char: int
+    end_char: int
+    status: TextWordLinkStatus
+    confidence: Optional[float] = None
+    notes: Optional[str] = None
+    created_by_id: Optional[UUID] = None
+    verified_by_id: Optional[UUID] = None
+    created_at: datetime
+    updated_at: datetime
+    verified_at: Optional[datetime] = None
+    word_text: Optional[str] = None
+    word_language_id: Optional[UUID] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class TextWithLinks(Text):
+    """Text schema including link metadata"""
+    word_links: List[TextWordLink] = []
 
 
 class TextListItem(BaseModel):

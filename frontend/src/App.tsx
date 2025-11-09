@@ -13,6 +13,7 @@ import DocumentList from './pages/DocumentList';
 import DocumentDetail from './pages/DocumentDetail';
 import AddDocument from './pages/AddDocument';
 import EditDocument from './pages/EditDocument';
+import DocumentLinking from './pages/DocumentLinking';
 import languageService, { LanguageResponse } from './services/languageService';
 import './App.css';
 
@@ -285,6 +286,23 @@ function App() {
                     languages={languages}
                   >
                     <DocumentDetail
+                      selectedLanguage={selectedLanguage!}
+                      languages={languages}
+                    />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/documents/:documentId/link"
+              element={
+                <ProtectedRoute>
+                  <AppLayout
+                    selectedLanguage={selectedLanguage!}
+                    onLanguageChange={setSelectedLanguage}
+                    languages={languages}
+                  >
+                    <DocumentLinking
                       selectedLanguage={selectedLanguage!}
                       languages={languages}
                     />

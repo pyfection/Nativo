@@ -4,7 +4,7 @@ Document management endpoints.
 Documents group together Text records in multiple languages (translations).
 """
 from fastapi import APIRouter, Depends, HTTPException, status, Query
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import func
 from uuid import UUID
 from typing import Optional
@@ -14,13 +14,15 @@ from app.models.user import User
 from app.models.document import Document
 from app.models.text import Text
 from app.schemas.document import (
-    DocumentWithTexts, 
+    DocumentWithTexts,
+    DocumentWithLinks,
     DocumentListItem,
-    DocumentFilter
+    DocumentFilter,
 )
 from app.schemas.text import TextCreate, TextUpdate, Text as TextSchema
 from app.api.deps import get_current_active_user, require_contributor
 from app.services.auth_service import require_resource_owner
+from app.services.document_service import refresh_document_suggestions, suggest_links_for_text
 
 router = APIRouter()
 
@@ -102,6 +104,68 @@ async def get_document(
     return document
 
 
+@router.get("/{document_id}/links", response_model=DocumentWithLinks)
+async def get_document_with_links(
+    document_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    """
+    Retrieve a document and all associated texts with link metadata.
+    """
+    document = (
+        db.query(Document)
+            .options(selectinload(Document.texts).selectinload(Text.word_links))
+            .filter(Document.id == document_id)
+            .first()
+    )
+
+    if not document:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found"
+        )
+
+    return document
+
+
+@router.post("/{document_id}/links/suggest", response_model=DocumentWithLinks)
+async def regenerate_document_link_suggestions(
+    document_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_contributor),
+):
+    """
+    Re-run auto-link suggestions for every text within a document.
+    """
+    document = (
+        db.query(Document)
+            .options(selectinload(Document.texts).selectinload(Text.word_links))
+            .filter(Document.id == document_id)
+            .first()
+    )
+
+    if not document:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found"
+        )
+
+    refresh_document_suggestions(db, document_id, creator_id=current_user.id)
+    db.commit()
+    db.refresh(document)
+
+    # Reload relationships to include latest suggestions
+    document = (
+        db.query(Document)
+            .options(selectinload(Document.texts).selectinload(Text.word_links))
+            .filter(Document.id == document_id)
+            .first()
+    )
+
+    return document
+
+
 @router.get("/{document_id}/language/{language_id}")
 async def get_document_for_language(
     document_id: UUID,
@@ -168,6 +232,10 @@ async def create_document(
         created_by_id=current_user.id
     )
     db.add(new_text)
+    db.flush()
+
+    # Auto-generate suggested links for the newly created text
+    suggest_links_for_text(db, new_text, creator_id=current_user.id)
     
     db.commit()
     db.refresh(new_document)
@@ -203,6 +271,10 @@ async def add_translation(
         created_by_id=current_user.id
     )
     db.add(new_text)
+    db.flush()
+
+    # Auto-generate suggested links for the new translation
+    suggest_links_for_text(db, new_text, creator_id=current_user.id)
     db.commit()
     db.refresh(new_text)
     

@@ -2,6 +2,7 @@ import api from './api';
 import {
   Document,
   DocumentWithTexts,
+  DocumentWithLinks,
   DocumentListItem,
   DocumentFilter,
 } from '../types/document';
@@ -11,11 +12,11 @@ export type CreateDocumentData = TextCreate;
 
 /**
  * Document service for managing documents and their texts (translations).
- * 
+ *
  * Documents group together Text records in multiple languages.
  * The service fetches documents and returns the text in the selected language.
  */
-export const documentService = {
+const documentService = {
   /**
    * Get all documents with filtering.
    * Returns documents with the text in the selected language (or primary if not available).
@@ -30,6 +31,14 @@ export const documentService = {
    */
   async getById(id: string): Promise<DocumentWithTexts> {
     const response = await api.get<DocumentWithTexts>(`/api/v1/documents/${id}`);
+    return response.data;
+  },
+
+  /**
+   * Get a document by ID including link metadata.
+   */
+  async getWithLinks(id: string): Promise<DocumentWithLinks> {
+    const response = await api.get<DocumentWithLinks>(`/api/v1/documents/${id}/links`);
     return response.data;
   },
 
@@ -81,7 +90,16 @@ export const documentService = {
   async deleteText(documentId: string, textId: string): Promise<void> {
     await api.delete(`/api/v1/documents/${documentId}/texts/${textId}`);
   },
+
+  /**
+   * Regenerate auto-link suggestions for every text in a document.
+   */
+  async regenerateLinkSuggestions(documentId: string): Promise<DocumentWithLinks> {
+    const response = await api.post<DocumentWithLinks>(`/api/v1/documents/${documentId}/links/suggest`);
+    return response.data;
+  },
 };
 
 export default documentService;
+export { documentService };
 

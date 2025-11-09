@@ -75,6 +75,13 @@ class Text(Base):
     created_by = relationship("User")
     # Words linked in this text's content
     linked_words = relationship("Word", secondary="word_texts", back_populates="texts", viewonly=True)
+    word_links = relationship(
+        "TextWordLink",
+        back_populates="text",
+        cascade="all, delete-orphan",
+        primaryjoin="Text.id==TextWordLink.text_id",
+        order_by="TextWordLink.start_char",
+    )
     
     def __repr__(self):
         return f"<Text(id={self.id}, title='{self.title}', type={self.document_type}, language_id={self.language_id})>"

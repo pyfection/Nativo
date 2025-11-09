@@ -8,7 +8,7 @@ from typing import Optional, List
 from datetime import datetime
 from uuid import UUID
 
-from app.schemas.text import Text, TextListItem
+from app.schemas.text import Text, TextListItem, TextWithLinks
 
 
 class DocumentBase(BaseModel):
@@ -45,6 +45,13 @@ class DocumentWithTexts(DocumentInDB):
     """Document schema with all associated texts"""
     texts: List[Text] = []
     
+    model_config = ConfigDict(from_attributes=True)
+
+
+class DocumentWithLinks(DocumentInDB):
+    """Document schema with texts including link metadata"""
+    texts: List[TextWithLinks] = []
+
     model_config = ConfigDict(from_attributes=True)
 
 

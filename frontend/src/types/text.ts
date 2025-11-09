@@ -26,6 +26,44 @@ export enum DocumentType {
   OTHER = 'other',
 }
 
+export enum TextWordLinkStatus {
+  SUGGESTED = 'suggested',
+  CONFIRMED = 'confirmed',
+  REJECTED = 'rejected',
+}
+
+export interface TextWordLink {
+  id: string;
+  text_id: string;
+  word_id: string;
+  start_char: number;
+  end_char: number;
+  status: TextWordLinkStatus;
+  confidence?: number | null;
+  notes?: string | null;
+  created_by_id?: string | null;
+  verified_by_id?: string | null;
+  created_at: string;
+  updated_at: string;
+  verified_at?: string | null;
+  word_text?: string | null;
+  word_language_id?: string | null;
+}
+
+export interface TextWordLinkCreate {
+  word_id: string;
+  start_char: number;
+  end_char: number;
+  status?: TextWordLinkStatus;
+  notes?: string;
+}
+
+export interface TextWordLinkUpdate {
+  status?: TextWordLinkStatus;
+  notes?: string;
+  word_id?: string;
+}
+
 export interface Text {
   id: string;
   title: string;
@@ -39,6 +77,7 @@ export interface Text {
   created_by_id: string;
   created_at: string;
   updated_at: string;
+  word_links?: TextWordLink[];
 }
 
 export interface TextListItem {
@@ -50,6 +89,10 @@ export interface TextListItem {
   document_id?: string;
   is_primary: boolean;
   created_at: string;
+}
+
+export interface TextWithLinks extends Text {
+  word_links: TextWordLink[];
 }
 
 export interface TextCreate {

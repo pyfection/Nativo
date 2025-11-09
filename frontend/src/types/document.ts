@@ -4,7 +4,7 @@
  * Documents group together Text records in multiple languages (translations).
  */
 
-import { Text } from './text';
+import { Text, TextWithLinks } from './text';
 
 export interface Document {
   id: string;
@@ -17,11 +17,16 @@ export interface DocumentWithTexts extends Document {
   texts: Text[];
 }
 
+export interface DocumentWithLinks extends Document {
+  texts: TextWithLinks[];
+}
+
 export interface DocumentListItem {
   id: string;
   title: string; // From selected language or primary text
   content_preview: string; // Truncated content
   source?: string;
+  notes?: string;
   language_id?: string; // Language of the displayed text
   created_at: string;
   text_count: number; // Number of translations

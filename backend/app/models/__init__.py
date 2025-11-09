@@ -10,6 +10,7 @@ from app.models.user_language import UserLanguage, ProficiencyLevel
 from app.models.audio import Audio
 from app.models.document import Document
 from app.models.text import Text, DocumentType
+from app.models.text_word_link import TextWordLink, TextWordLinkStatus
 from app.models.location import Location
 from app.models.image import Image
 from app.models.tag import Tag, word_tags
@@ -42,6 +43,7 @@ __all__ = [
     "Audio",
     "Document",
     "Text",
+    "TextWordLink",
     "Location",
     "Tag",
     "Word",
@@ -53,6 +55,7 @@ __all__ = [
     
     # Document/Text Enum
     "DocumentType",
+    "TextWordLinkStatus",
     
     # Word Enums
     "PartOfSpeech",

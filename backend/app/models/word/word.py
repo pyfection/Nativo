@@ -141,6 +141,12 @@ class Word(Base):
     
     # Generic relationship for all texts (where word is mentioned)
     texts = relationship("Text", secondary=word_texts, back_populates="linked_words", viewonly=True)
+    text_links = relationship(
+        "TextWordLink",
+        back_populates="word",
+        cascade="all, delete-orphan",
+        primaryjoin="Word.id==TextWordLink.word_id",
+    )
     
     # Self-referential relationships
     synonyms = relationship(
