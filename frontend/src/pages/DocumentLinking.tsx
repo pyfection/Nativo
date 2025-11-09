@@ -654,7 +654,6 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
       const link = await wordLinkService.create(activeText.id, payload);
       applyLinkUpdate(link);
       setActionMessage('Link created successfully.');
-      setSearchQuery('');
       setSearchResults([]);
     } catch (err: any) {
       setActionError(err?.response?.data?.detail || 'Failed to create link');
