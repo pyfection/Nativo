@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import documentService from '../services/documentService';
@@ -46,7 +46,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
   const navigate = useNavigate();
   const { canEditLanguage } = useAuth();
 
-  const [document, setDocument] = useState<DocumentWithLinks | null>(null);
+  const [documentData, setDocumentData] = useState<DocumentWithLinks | null>(null);
   const [activeTextId, setActiveTextId] = useState<string | null>(null);
   const [selectedSpan, setSelectedSpan] = useState<SelectionState | null>(null);
   const [loading, setLoading] = useState(true);
@@ -67,6 +67,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
     definition: '',
   });
 
+  const textContainerRef = useRef<HTMLDivElement | null>(null);
   const initialState = useMemo(() => {
     const state = location.state as { textId?: string } | null;
     return state?.textId;
@@ -86,7 +87,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
         }
         setError(null);
         const data = await documentService.getWithLinks(documentId);
-        setDocument(data);
+        setDocumentData(data);
         if (!activeTextId) {
           // Choose preferred text: initial state > selected language > primary > first
           const preferred =
@@ -128,8 +129,8 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
   }, [actionError]);
 
   const activeText: Text | undefined = useMemo(() => {
-    return document?.texts.find((text) => text.id === activeTextId);
-  }, [document, activeTextId]);
+    return documentData?.texts.find((text) => text.id === activeTextId);
+  }, [documentData, activeTextId]);
 
   useEffect(() => {
     if (!activeText) {
@@ -210,37 +211,166 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
     return annotated;
   }, [activeText]);
 
+  const getOffsetFromNode = useCallback(
+    (node: Node, nodeOffset: number): number | null => {
+      const container = textContainerRef.current;
+      if (!container) return null;
+
+      const targetNode = node;
+      if (!container.contains(targetNode)) {
+        return null;
+      }
+
+      let element: HTMLElement | null =
+        targetNode.nodeType === Node.TEXT_NODE
+          ? (targetNode.parentElement as HTMLElement | null)
+          : (targetNode as HTMLElement | null);
+
+      if (!element) {
+        return null;
+      }
+
+      const span = element.closest<HTMLSpanElement>('[data-start]');
+      if (!span || span.dataset.start === undefined || span.dataset.end === undefined) {
+        return null;
+      }
+
+      const spanStart = Number(span.dataset.start);
+      const spanEnd = Number(span.dataset.end);
+
+      let relativeOffset = 0;
+      if (targetNode.nodeType === Node.TEXT_NODE) {
+        const textContent = targetNode.textContent ?? '';
+        const clamped = Math.min(Math.max(nodeOffset, 0), textContent.length);
+        relativeOffset = clamped;
+      } else {
+        const spanLength = Math.max(spanEnd - spanStart, 0);
+        relativeOffset = Math.min(Math.max(nodeOffset, 0), spanLength);
+      }
+
+      return spanStart + relativeOffset;
+    },
+    [],
+  );
+
+  const updateSelectionFromNative = useCallback(() => {
+    const container = textContainerRef.current;
+    if (!container || !activeText) return;
+
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
+      setSelectedSpan(null);
+      return;
+    }
+
+    const range = selection.getRangeAt(0);
+    if (!container.contains(range.startContainer) || !container.contains(range.endContainer)) {
+      setSelectedSpan(null);
+      return;
+    }
+
+    const startOffset = getOffsetFromNode(range.startContainer, range.startOffset);
+    const endOffset = getOffsetFromNode(range.endContainer, range.endOffset);
+
+    if (startOffset === null || endOffset === null) {
+      setSelectedSpan(null);
+      return;
+    }
+
+    const start = Math.min(startOffset, endOffset);
+    const end = Math.max(startOffset, endOffset);
+
+    if (start === end) {
+      setSelectedSpan(null);
+      return;
+    }
+
+    const snippet = activeText.content.slice(start, end);
+    const linkMatch = activeText.word_links?.find(
+      (link) => link.start_char === start && link.end_char === end,
+    );
+
+    setSelectedSpan({
+      start,
+      end,
+      text: snippet,
+      link: linkMatch,
+    });
+  }, [activeText, getOffsetFromNode]);
+
+  const findNodeAtOffset = useCallback(
+    (offset: number): { node: Node; offset: number } | null => {
+      const container = textContainerRef.current;
+      if (!container) return null;
+
+      const spans = container.querySelectorAll<HTMLSpanElement>('[data-start]');
+      for (const span of spans) {
+        const spanStart = Number(span.dataset.start);
+        const spanEnd = Number(span.dataset.end);
+        if (Number.isNaN(spanStart) || Number.isNaN(spanEnd)) continue;
+
+        if (offset >= spanStart && offset <= spanEnd) {
+          const textNode = span.firstChild ?? span;
+          const relative = Math.min(Math.max(offset - spanStart, 0), spanEnd - spanStart);
+          return { node: textNode, offset: relative };
+        }
+      }
+      return null;
+    },
+    [],
+  );
+
+  const selectRangeInText = useCallback(
+    (start: number, end: number) => {
+      const container = textContainerRef.current;
+      if (!container) return;
+
+      const selection = window.getSelection();
+      if (!selection) return;
+
+      const startInfo = findNodeAtOffset(start);
+      const endInfo = findNodeAtOffset(end);
+      if (!startInfo || !endInfo) return;
+
+      const doc = window.document;
+      const range = doc.createRange();
+      range.setStart(startInfo.node, startInfo.offset);
+      range.setEnd(endInfo.node, endInfo.offset);
+
+      selection.removeAllRanges();
+      selection.addRange(range);
+    },
+    [findNodeAtOffset],
+  );
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.document === 'undefined') {
+      return;
+    }
+    const doc = window.document;
+    if (!doc) {
+      return;
+    }
+    doc.addEventListener('selectionchange', updateSelectionFromNative);
+    return () => {
+      doc.removeEventListener('selectionchange', updateSelectionFromNative);
+    };
+  }, [updateSelectionFromNative]);
+
+  useEffect(() => {
+    const selection = window.getSelection();
+    selection?.removeAllRanges();
+    setSelectedSpan(null);
+  }, [activeTextId]);
+
   const suggestions = useMemo(() => {
     return (activeText?.word_links ?? []).filter(
       (link) => link.status === TextWordLinkStatus.SUGGESTED,
     );
   }, [activeText?.word_links]);
 
-  const handleTokenClick = (token: AnnotatedToken, shiftKey: boolean) => {
-    if (!activeText || token.type !== 'word') return;
-
-    const extendSelection = shiftKey && selectedSpan;
-    const rangeStart = extendSelection
-      ? Math.min(selectedSpan!.start, token.start)
-      : token.start;
-    const rangeEnd = extendSelection
-      ? Math.max(selectedSpan!.end, token.end)
-      : token.end;
-
-    const matchingLink = activeText.word_links?.find(
-      (link) => link.start_char === rangeStart && link.end_char === rangeEnd,
-    );
-
-    setSelectedSpan({
-      start: rangeStart,
-      end: rangeEnd,
-      text: activeText.content.slice(rangeStart, rangeEnd),
-      link: matchingLink,
-    });
-  };
-
   const applyLinkUpdate = useCallback((updatedLink: TextWordLink) => {
-    setDocument((prev) => {
+    setDocumentData((prev) => {
       if (!prev) return prev;
       return {
         ...prev,
@@ -276,7 +406,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
   }, []);
 
   const removeLinkFromState = useCallback((textId: string, linkId: string) => {
-    setDocument((prev) => {
+    setDocumentData((prev) => {
       if (!prev) return prev;
       return {
         ...prev,
@@ -392,7 +522,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
     setActionError(null);
     try {
       const data = await documentService.regenerateLinkSuggestions(documentId);
-      setDocument(data);
+      setDocumentData(data);
       setActionMessage('Suggestions regenerated for all texts.');
     } catch (err: any) {
       setActionError(err?.response?.data?.detail || 'Failed to regenerate document suggestions');
@@ -490,7 +620,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
     );
   }
 
-  if (error || !document || !activeText) {
+  if (error || !documentData || !activeText) {
     return (
       <div className="document-linking-page">
         <div className="error-state">
@@ -547,9 +677,9 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
 
       <div className="document-linking-grid">
         <aside className="document-linking-sidebar">
-          <h2>Texts ({document.texts.length})</h2>
+          <h2>Texts ({documentData.texts.length})</h2>
           <ul className="translation-list">
-            {document.texts.map((text) => (
+            {documentData.texts.map((text) => (
               <li key={text.id}>
                 <button
                   type="button"
@@ -577,37 +707,27 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
             <span className="legend-chip legend-confirmed">Linked</span>
             <span className="legend-chip legend-rejected">Rejected</span>
           </div>
-          <div className="linking-text-container">
-            {tokens.map((token) => {
-              if (token.type === 'whitespace') {
-                return (
-                  <span key={token.id} className="linking-whitespace">
-                    {token.text}
-                  </span>
-                );
-              }
-              const isSelected =
-                !!selectedSpan &&
-                token.start >= selectedSpan.start &&
-                token.end <= selectedSpan.end;
-              return (
-                <button
-                  key={token.id}
-                  type="button"
-                  className={[
-                    'linking-token',
-                    `status-${token.status}`,
-                    isSelected ? 'selected' : '',
-                  ]
-                    .filter(Boolean)
-                    .join(' ')}
-                  onClick={(event) => handleTokenClick(token, event.shiftKey)}
-                  disabled={!canEdit}
-                >
-                  {token.text}
-                </button>
-              );
-            })}
+          <div
+            ref={textContainerRef}
+            className="linking-text-container"
+            onMouseUp={updateSelectionFromNative}
+          >
+            {tokens.map((token) => (
+              <span
+                key={token.id}
+                data-start={token.start}
+                data-end={token.end}
+                className={[
+                  'linking-token',
+                  token.type === 'whitespace' ? 'token-whitespace' : 'token-word',
+                  `status-${token.status}`,
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
+              >
+                {token.text}
+              </span>
+            ))}
           </div>
         </main>
 
@@ -748,7 +868,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                 )}
               </>
             ) : (
-              <p>Select a word or hold Shift to extend the selection.</p>
+              <p>Highlight any portion of the document to review or manage its link.</p>
             )}
           </section>
 
@@ -767,14 +887,15 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                     <div className="suggestion-actions">
                       <button
                         className="btn-secondary"
-                        onClick={() =>
+                        onClick={() => {
+                          selectRangeInText(link.start_char, link.end_char);
                           setSelectedSpan({
                             start: link.start_char,
                             end: link.end_char,
                             text: activeText.content.slice(link.start_char, link.end_char),
                             link,
-                          })
-                        }
+                          });
+                        }}
                       >
                         Select
                       </button>
