@@ -56,7 +56,6 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
   const [isSaving, setIsSaving] = useState(false);
   const [isSuggesting, setIsSuggesting] = useState(false);
 
-  const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<WordListItem[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
 
@@ -531,41 +530,27 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
     }
   };
 
-  useEffect(() => {
-    if (!searchQuery || searchQuery.length < 2 || !activeText?.language_id) {
+  const runWordSearch = useCallback(async () => {
+    if (!activeText?.language_id) {
       setSearchResults([]);
       return;
     }
 
-    let cancelled = false;
     setSearchLoading(true);
-    const handler = setTimeout(async () => {
-      try {
-        const results = await wordService.search({
-          q: searchQuery,
-          language_ids: activeText.language_id,
-          include_translations: false,
-          limit: 10,
-        });
-        if (!cancelled) {
-          setSearchResults(results);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setSearchResults([]);
-        }
-      } finally {
-        if (!cancelled) {
-          setSearchLoading(false);
-        }
-      }
-    }, 300);
-
-    return () => {
-      cancelled = true;
-      clearTimeout(handler);
-    };
-  }, [searchQuery, activeText?.language_id]);
+    try {
+      const results = await wordService.search({
+        q: '', // empty query to fetch closest matches (backend should handle)
+        language_ids: activeText.language_id,
+        include_translations: false,
+        limit: 10,
+      });
+      setSearchResults(results);
+    } catch (err) {
+      setSearchResults([]);
+    } finally {
+      setSearchLoading(false);
+    }
+  }, [activeText?.language_id]);
 
   const handleCreateWordAndLink = async () => {
     if (!activeText || !selectedSpan) return;
@@ -778,19 +763,17 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                       Link this selection to an existing word or create a new one.
                     </p>
                     <div className="link-existing">
-                      <label htmlFor="word-search">Search existing words</label>
-                      <input
-                        id="word-search"
-                        type="text"
-                        value={searchQuery}
-                        placeholder="Type at least 2 characters..."
-                        onChange={(event) => setSearchQuery(event.target.value)}
-                        disabled={!canEdit}
-                      />
+                      <button
+                        className="btn-secondary"
+                        onClick={runWordSearch}
+                        disabled={!canEdit || searchLoading}
+                      >
+                        {searchLoading ? 'Searching…' : 'Search existing words'}
+                      </button>
                     </div>
                     <div className="search-results">
-                      {searchLoading && <p>Searching...</p>}
-                      {!searchLoading && searchResults.length === 0 && searchQuery.length >= 2 && (
+                      {searchLoading && <p>Searching…</p>}
+                      {!searchLoading && searchResults.length === 0 && (
                         <p>No words found.</p>
                       )}
                       {searchResults.map((word) => (
