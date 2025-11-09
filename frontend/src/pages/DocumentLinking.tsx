@@ -145,6 +145,14 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
     }));
   }, [activeText, selectedLanguage.id]);
 
+  useEffect(() => {
+    const selectedWord = selectedSpan?.text?.trim() ?? '';
+    setNewWordData((prev) => ({
+      ...prev,
+      word: selectedWord,
+    }));
+  }, [selectedSpan?.text]);
+
   const canEdit = useMemo(() => {
     if (!activeText?.language_id) return false;
     return canEditLanguage(activeText.language_id.toString());
@@ -820,7 +828,13 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                       {!showNewWordForm ? (
                         <button
                           className="btn-secondary"
-                          onClick={() => setShowNewWordForm(true)}
+                          onClick={() => {
+                            setNewWordData((prev) => ({
+                              ...prev,
+                              word: selectedSpan?.text?.trim() ?? '',
+                            }));
+                            setShowNewWordForm(true);
+                          }}
                           disabled={!canEdit}
                         >
                           Create new word
