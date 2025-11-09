@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams, useLocation } from 'react-router-dom';
 import documentService from '../services/documentService';
 import { DocumentWithTexts } from '../types/document';
 import { Text, TextUpdate, DocumentType } from '../types/text';
@@ -16,6 +16,7 @@ interface EditDocumentProps {
 export default function EditDocument({ selectedLanguage, languages }: EditDocumentProps) {
   const { documentId } = useParams<{ documentId: string }>();
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const navigate = useNavigate();
   const { canEditLanguage } = useAuth();
 
@@ -60,9 +61,12 @@ export default function EditDocument({ selectedLanguage, languages }: EditDocume
   useEffect(() => {
     if (!document) return;
 
+    const state = location.state as { textId?: string } | null;
     const queryTextId = searchParams.get('text');
+    const preferredTextId = state?.textId ?? queryTextId ?? null;
+
     const preferred =
-      document.texts.find((text) => text.id === queryTextId) ??
+      document.texts.find((text) => text.id === preferredTextId) ??
       document.texts.find((text) => text.language_id === selectedLanguage.id) ??
       document.texts.find((text) => text.is_primary) ??
       document.texts[0];
@@ -77,7 +81,7 @@ export default function EditDocument({ selectedLanguage, languages }: EditDocume
         notes: preferred.notes,
       });
     }
-  }, [document, searchParams, selectedLanguage.id]);
+  }, [document, location.state, searchParams, selectedLanguage.id]);
 
   const selectedText: Text | undefined = document?.texts.find(
     (text) => text.id === selectedTextId
@@ -212,30 +216,31 @@ export default function EditDocument({ selectedLanguage, languages }: EditDocume
             · {getDocumentTypeLabel(selectedText.document_type)}
           </p>
         </div>
-        <div className="translation-switcher">
-          <label htmlFor="translation-select">Editing translation</label>
-          <select
-            id="translation-select"
-            value={selectedTextId}
-            onChange={(e) => handleTextChange(e.target.value)}
-          >
+        <div className="language-availability">
+          <span className="language-availability-label">
+            Available in {document.texts.length} language{document.texts.length === 1 ? '' : 's'}
+          </span>
+          <div className="language-availability-list">
             {document.texts.map((text) => {
               const language = text.language_id
                 ? languageMap.get(text.language_id.toString())
                 : undefined;
               return (
-                <option key={text.id} value={text.id}>
-                  {text.title} —{' '}
+                <button
+                  key={text.id}
+                  type="button"
+                  className={`language-pill ${text.id === selectedTextId ? 'active' : ''}`}
+                  onClick={() => handleTextChange(text.id)}
+                  disabled={!canEdit && text.id !== selectedTextId}
+                >
                   {language
-                    ? `${language.name}${
-                        language.nativeName ? ` (${language.nativeName})` : ''
-                      }`
-                    : 'Unknown'}
-                  {text.is_primary ? ' (Primary)' : ''}
-                </option>
+                    ? `${language.name}${language.nativeName ? ` (${language.nativeName})` : ''}`
+                    : text.title}
+                  {text.is_primary ? ' • Primary' : ''}
+                </button>
               );
             })}
-          </select>
+          </div>
         </div>
       </div>
 

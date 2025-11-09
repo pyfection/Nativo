@@ -74,8 +74,7 @@ export default function DocumentDetail({ selectedLanguage, languages }: Document
 
   const handleEdit = () => {
     if (!documentId) return;
-    const search = activeTextId ? `?text=${activeTextId}` : '';
-    navigate(`/documents/${documentId}/edit${search}`);
+    navigate(`/documents/${documentId}/edit`, { state: { textId: activeTextId } });
   };
 
   if (loading) {
@@ -150,8 +149,7 @@ export default function DocumentDetail({ selectedLanguage, languages }: Document
                   textLanguage.nativeName ? ` (${textLanguage.nativeName})` : ''
                 }`
               : 'Unknown Language'}{' '}
-            · {getDocumentTypeLabel(activeText.document_type)} · {document.texts.length}{' '}
-            translation{document.texts.length === 1 ? '' : 's'}
+            · {getDocumentTypeLabel(activeText.document_type)}
           </p>
         </div>
         <div className="document-header-actions">
@@ -168,7 +166,7 @@ export default function DocumentDetail({ selectedLanguage, languages }: Document
 
       <div className="document-content-grid">
         <aside className="document-sidebar">
-          <h2>Translations</h2>
+          <h2>Available in {document.texts.length} language{document.texts.length === 1 ? '' : 's'}</h2>
           <ul className="translation-list">
             {document.texts.map((text) => {
               const language = text.language_id

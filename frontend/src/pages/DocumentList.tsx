@@ -152,7 +152,7 @@ export default function DocumentList({ selectedLanguage }: DocumentListProps) {
                 <th>Title</th>
                 <th>Content Preview</th>
                 <th>Source</th>
-                <th>Translations</th>
+                <th>Languages</th>
                 <th>Date</th>
                 <th></th>
               </tr>
