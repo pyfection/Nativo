@@ -1,26 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import documentService, { Document } from '../services/documentService';
+import documentService from '../services/documentService';
+import { DocumentListItem } from '../types/document';
 import { Language } from '../App';
 import { useAuth } from '../contexts/AuthContext';
 import './DocumentList.css';
-
-const DOCUMENT_TYPES = [
-  { value: 'story', label: 'Story' },
-  { value: 'historical_record', label: 'Historical Record' },
-  { value: 'book', label: 'Book' },
-  { value: 'article', label: 'Article' },
-  { value: 'transcription', label: 'Transcription' },
-  { value: 'definition', label: 'Definition' },
-  { value: 'literal_translation', label: 'Literal Translation' },
-  { value: 'context_note', label: 'Context Note' },
-  { value: 'usage_example', label: 'Usage Example' },
-  { value: 'etymology', label: 'Etymology' },
-  { value: 'cultural_significance', label: 'Cultural Significance' },
-  { value: 'translation', label: 'Translation' },
-  { value: 'note', label: 'Note' },
-  { value: 'other', label: 'Other' },
-];
 
 interface DocumentListProps {
   selectedLanguage?: Language;
@@ -29,15 +13,12 @@ interface DocumentListProps {
 export default function DocumentList({ selectedLanguage }: DocumentListProps) {
   const navigate = useNavigate();
   const { canEditLanguage } = useAuth();
-  const [documents, setDocuments] = useState<Document[]>([]);
+  const [documents, setDocuments] = useState<DocumentListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
   // Filters
-  const [filters, setFilters] = useState({
-    document_type: '',
-    search: '',
-  });
+  const [filters, setFilters] = useState({ search: '' });
 
   // Check if user can edit this language
   const canEdit = selectedLanguage ? canEditLanguage(selectedLanguage.id) : false;
@@ -47,30 +28,23 @@ export default function DocumentList({ selectedLanguage }: DocumentListProps) {
   }, [filters, selectedLanguage]);
 
   const fetchDocuments = async () => {
+    if (!selectedLanguage) {
+      setDocuments([]);
+      return;
+    }
+
     try {
       setLoading(true);
-      const params: any = {};
-      
-      // Always filter by selected language
-      if (selectedLanguage) {
-        params.language_id = selectedLanguage.id;
+      const params: Record<string, string> = {
+        language_id: selectedLanguage.id,
+      };
+
+      if (filters.search.trim()) {
+        params.search_term = filters.search.trim();
       }
-      
-      if (filters.document_type) params.document_type = filters.document_type;
-      
+
       const data = await documentService.getAll(params);
-      
-      // Client-side search if needed
-      let filtered = data;
-      if (filters.search) {
-        const searchLower = filters.search.toLowerCase();
-        filtered = data.filter(doc => 
-          doc.content.toLowerCase().includes(searchLower) ||
-          doc.source?.toLowerCase().includes(searchLower)
-        );
-      }
-      
-      setDocuments(filtered);
+      setDocuments(data);
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to load documents');
     } finally {
@@ -78,18 +52,12 @@ export default function DocumentList({ selectedLanguage }: DocumentListProps) {
     }
   };
 
-  const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
-    setFilters({
-      ...filters,
-      [e.target.name]: e.target.value,
-    });
+  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFilters({ ...filters, [e.target.name]: e.target.value });
   };
 
   const clearFilters = () => {
-    setFilters({
-      document_type: '',
-      search: '',
-    });
+    setFilters({ search: '' });
   };
 
   const formatDate = (dateString: string) => {
@@ -99,6 +67,16 @@ export default function DocumentList({ selectedLanguage }: DocumentListProps) {
       day: 'numeric'
     });
   };
+
+  if (!selectedLanguage) {
+    return (
+      <div className="document-list-page">
+        <div className="error-state">
+          <p>Please select a language to view documents.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="document-list-page">
@@ -136,28 +114,11 @@ export default function DocumentList({ selectedLanguage }: DocumentListProps) {
               name="search"
               value={filters.search}
               onChange={handleFilterChange}
-              placeholder="Search content, source..."
+              placeholder="Search title or content..."
             />
           </div>
 
-          <div className="filter-group">
-            <label htmlFor="document_type">Type</label>
-            <select
-              id="document_type"
-              name="document_type"
-              value={filters.document_type}
-              onChange={handleFilterChange}
-            >
-              <option value="">All Types</option>
-              {DOCUMENT_TYPES.map((type) => (
-                <option key={type.value} value={type.value}>
-                  {type.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {(filters.search || filters.document_type) && (
+          {filters.search && (
             <button onClick={clearFilters} className="btn-clear-filters">
               Clear Filters
             </button>
@@ -188,26 +149,20 @@ export default function DocumentList({ selectedLanguage }: DocumentListProps) {
           <table className="documents-table">
             <thead>
               <tr>
+                <th>Title</th>
                 <th>Content Preview</th>
-                <th>Type</th>
-                <th>Source</th>
-                <th>Notes</th>
+                <th>Translations</th>
                 <th>Date</th>
               </tr>
             </thead>
             <tbody>
               {documents.map((doc) => (
                 <tr key={doc.id} onClick={() => navigate(`/documents/${doc.id}`)} className="clickable-row">
+                  <td className="title-cell">{doc.title}</td>
                   <td className="content-cell">
-                    {doc.content.length > 200 ? `${doc.content.substring(0, 200)}...` : doc.content}
+                    {doc.content_preview}
                   </td>
-                  <td>
-                    <span className="type-badge">
-                      {DOCUMENT_TYPES.find(t => t.value === doc.document_type)?.label || doc.document_type}
-                    </span>
-                  </td>
-                  <td className="source-cell">{doc.source || '—'}</td>
-                  <td className="notes-cell">{doc.notes || '—'}</td>
+                  <td className="count-cell">{doc.text_count}</td>
                   <td className="date-cell">{formatDate(doc.created_at)}</td>
                 </tr>
               ))}
