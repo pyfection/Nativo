@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
+import { useState, useEffect, ReactNode } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import AppLayout from './components/layouts/AppLayout';
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -59,6 +59,30 @@ function convertLanguage(apiLang: LanguageResponse): Language {
 }
 
 const SELECTED_LANGUAGE_KEY = 'nativo_selected_language_id';
+
+interface ProtectedRouteProps {
+  children: ReactNode;
+}
+
+function ProtectedRoute({ children }: ProtectedRouteProps) {
+  const { isAuthenticated, loading } = useAuth();
+  const location = useLocation();
+
+  if (loading) {
+    return (
+      <div className="app-loading" style={{ padding: '2rem', textAlign: 'center' }}>
+        <div className="loading-spinner"></div>
+        <p>Checking authentication...</p>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace state={{ from: location }} />;
+  }
+
+  return <>{children}</>;
+}
 
 function App() {
   const [languages, setLanguages] = useState<Language[]>([]);
@@ -172,116 +196,132 @@ function App() {
             <Route path="/register" element={<Register />} />
             
             {/* Languages Route */}
-            <Route 
-              path="/languages" 
+            <Route
+              path="/languages"
               element={
-                <AppLayout
-                  selectedLanguage={selectedLanguage!}
-                  onLanguageChange={setSelectedLanguage}
-                  languages={languages}
-                >
-                  <Languages />
-                </AppLayout>
-              } 
+                <ProtectedRoute>
+                  <AppLayout
+                    selectedLanguage={selectedLanguage!}
+                    onLanguageChange={setSelectedLanguage}
+                    languages={languages}
+                  >
+                    <Languages />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
             />
             
             {/* Word Routes */}
-            <Route 
-              path="/words" 
+            <Route
+              path="/words"
               element={
-                <AppLayout
-                  selectedLanguage={selectedLanguage!}
-                  onLanguageChange={setSelectedLanguage}
-                  languages={languages}
-                >
-                  <WordList selectedLanguage={selectedLanguage!} />
-                </AppLayout>
-              } 
+                <ProtectedRoute>
+                  <AppLayout
+                    selectedLanguage={selectedLanguage!}
+                    onLanguageChange={setSelectedLanguage}
+                    languages={languages}
+                  >
+                    <WordList selectedLanguage={selectedLanguage!} />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
             />
-            <Route 
-              path="/words/add" 
+            <Route
+              path="/words/add"
               element={
-                <AppLayout
-                  selectedLanguage={selectedLanguage!}
-                  onLanguageChange={setSelectedLanguage}
-                  languages={languages}
-                >
-                  <AddWord selectedLanguage={selectedLanguage!} />
-                </AppLayout>
-              } 
+                <ProtectedRoute>
+                  <AppLayout
+                    selectedLanguage={selectedLanguage!}
+                    onLanguageChange={setSelectedLanguage}
+                    languages={languages}
+                  >
+                    <AddWord selectedLanguage={selectedLanguage!} />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
             />
             
             {/* Dictionary Route */}
-            <Route 
-              path="/dictionary" 
+            <Route
+              path="/dictionary"
               element={
-                <AppLayout
-                  selectedLanguage={selectedLanguage!}
-                  onLanguageChange={setSelectedLanguage}
-                  languages={languages}
-                >
-                  <Dictionary 
+                <ProtectedRoute>
+                  <AppLayout
                     selectedLanguage={selectedLanguage!}
+                    onLanguageChange={setSelectedLanguage}
                     languages={languages}
-                  />
-                </AppLayout>
-              } 
+                  >
+                    <Dictionary
+                      selectedLanguage={selectedLanguage!}
+                      languages={languages}
+                    />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
             />
             
             {/* Document Routes */}
-            <Route 
-              path="/documents" 
+            <Route
+              path="/documents"
               element={
-                <AppLayout
-                  selectedLanguage={selectedLanguage!}
-                  onLanguageChange={setSelectedLanguage}
-                  languages={languages}
-                >
-                  <DocumentList selectedLanguage={selectedLanguage!} />
-                </AppLayout>
-              } 
+                <ProtectedRoute>
+                  <AppLayout
+                    selectedLanguage={selectedLanguage!}
+                    onLanguageChange={setSelectedLanguage}
+                    languages={languages}
+                  >
+                    <DocumentList selectedLanguage={selectedLanguage!} />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
             />
             <Route
               path="/documents/:documentId"
               element={
-                <AppLayout
-                  selectedLanguage={selectedLanguage!}
-                  onLanguageChange={setSelectedLanguage}
-                  languages={languages}
-                >
-                  <DocumentDetail
+                <ProtectedRoute>
+                  <AppLayout
                     selectedLanguage={selectedLanguage!}
+                    onLanguageChange={setSelectedLanguage}
                     languages={languages}
-                  />
-                </AppLayout>
+                  >
+                    <DocumentDetail
+                      selectedLanguage={selectedLanguage!}
+                      languages={languages}
+                    />
+                  </AppLayout>
+                </ProtectedRoute>
               }
             />
             <Route
               path="/documents/:documentId/edit"
               element={
-                <AppLayout
-                  selectedLanguage={selectedLanguage!}
-                  onLanguageChange={setSelectedLanguage}
-                  languages={languages}
-                >
-                  <EditDocument
+                <ProtectedRoute>
+                  <AppLayout
                     selectedLanguage={selectedLanguage!}
+                    onLanguageChange={setSelectedLanguage}
                     languages={languages}
-                  />
-                </AppLayout>
+                  >
+                    <EditDocument
+                      selectedLanguage={selectedLanguage!}
+                      languages={languages}
+                    />
+                  </AppLayout>
+                </ProtectedRoute>
               }
             />
-            <Route 
-              path="/documents/add" 
+            <Route
+              path="/documents/add"
               element={
-                <AppLayout
-                  selectedLanguage={selectedLanguage!}
-                  onLanguageChange={setSelectedLanguage}
-                  languages={languages}
-                >
-                  <AddDocument />
-                </AppLayout>
-              } 
+                <ProtectedRoute>
+                  <AppLayout
+                    selectedLanguage={selectedLanguage!}
+                    onLanguageChange={setSelectedLanguage}
+                    languages={languages}
+                  >
+                    <AddDocument />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
             />
           </Routes>
         </div>
