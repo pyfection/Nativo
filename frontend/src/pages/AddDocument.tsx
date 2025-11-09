@@ -3,24 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import documentService, { CreateDocumentData } from '../services/documentService';
 import languageService, { LanguageListItem } from '../services/languageService';
+import { DOCUMENT_TYPE_OPTIONS } from '../utils/documentTypes';
 import './AddDocument.css';
-
-const DOCUMENT_TYPES = [
-  { value: 'story', label: 'Story' },
-  { value: 'historical_record', label: 'Historical Record' },
-  { value: 'book', label: 'Book' },
-  { value: 'article', label: 'Article' },
-  { value: 'transcription', label: 'Transcription' },
-  { value: 'definition', label: 'Definition' },
-  { value: 'literal_translation', label: 'Literal Translation' },
-  { value: 'context_note', label: 'Context Note' },
-  { value: 'usage_example', label: 'Usage Example' },
-  { value: 'etymology', label: 'Etymology' },
-  { value: 'cultural_significance', label: 'Cultural Significance' },
-  { value: 'translation', label: 'Translation' },
-  { value: 'note', label: 'Note' },
-  { value: 'other', label: 'Other' },
-];
 
 export default function AddDocument() {
   const navigate = useNavigate();
@@ -98,7 +82,7 @@ export default function AddDocument() {
               onChange={handleChange}
               required
             >
-              {DOCUMENT_TYPES.map((type) => (
+              {DOCUMENT_TYPE_OPTIONS.map((type) => (
                 <option key={type.value} value={type.value}>
                   {type.label}
                 </option>

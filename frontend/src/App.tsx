@@ -10,7 +10,9 @@ import WordList from './pages/WordList';
 import AddWord from './pages/AddWord';
 import Dictionary from './pages/Dictionary';
 import DocumentList from './pages/DocumentList';
+import DocumentDetail from './pages/DocumentDetail';
 import AddDocument from './pages/AddDocument';
+import EditDocument from './pages/EditDocument';
 import languageService, { LanguageResponse } from './services/languageService';
 import './App.css';
 
@@ -238,6 +240,36 @@ function App() {
                   <DocumentList selectedLanguage={selectedLanguage!} />
                 </AppLayout>
               } 
+            />
+            <Route
+              path="/documents/:documentId"
+              element={
+                <AppLayout
+                  selectedLanguage={selectedLanguage!}
+                  onLanguageChange={setSelectedLanguage}
+                  languages={languages}
+                >
+                  <DocumentDetail
+                    selectedLanguage={selectedLanguage!}
+                    languages={languages}
+                  />
+                </AppLayout>
+              }
+            />
+            <Route
+              path="/documents/:documentId/edit"
+              element={
+                <AppLayout
+                  selectedLanguage={selectedLanguage!}
+                  onLanguageChange={setSelectedLanguage}
+                  languages={languages}
+                >
+                  <EditDocument
+                    selectedLanguage={selectedLanguage!}
+                    languages={languages}
+                  />
+                </AppLayout>
+              }
             />
             <Route 
               path="/documents/add" 
