@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: ${COMPOSE_PROJECT_NAME:-nativo}_db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-nativo}
+      POSTGRES_USER: ${POSTGRES_USER:-nativo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nativo}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nativo}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.backend
+    container_name: ${COMPOSE_PROJECT_NAME:-nativo}_backend
+    command: uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      # Mount source code for hot-reload
+      - ../backend:/app/backend
+      - ../pyproject.toml:/app/pyproject.toml
+      - backend-uploads:/app/backend/uploads
+      # Exclude venv from mount (UV manages this)
+      - /app/.venv
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=1
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-nativo}:${POSTGRES_PASSWORD:-nativo}@db:5432/${POSTGRES_DB:-nativo}
+      - SECRET_KEY=${SECRET_KEY:-change-me-in-production-min-32-chars-long}
+    depends_on:
+      db:
+        condition: service_healthy
+    # Run migrations on startup
+    entrypoint: |
+      sh -c "
+        echo 'Waiting for database...'
+        until pg_isready -h db -U ${POSTGRES_USER:-nativo}; do
+          sleep 2
+        done
+        echo 'Running migrations...'
+        cd /app/backend
+        uv run alembic upgrade head || echo 'Migrations skipped or failed'
+        echo 'Starting server...'
+        exec uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+      "
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.frontend
+    container_name: ${COMPOSE_PROJECT_NAME:-nativo}_frontend
+    command: npm run dev -- --host
+    volumes:
+      # Mount source code for hot-reload
+      - ../frontend:/app/frontend
+      - /app/frontend/node_modules  # Exclude node_modules from mount
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000
+      - CHOKIDAR_USEPOLLING=true  # Enable polling for file changes in Docker
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  backend-uploads:
+
