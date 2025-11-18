@@ -20,14 +20,14 @@ services:
 
   backend:
     build:
-      context: ..
+      context: .
       dockerfile: docker/Dockerfile.backend
     container_name: ${COMPOSE_PROJECT_NAME:-nativo}_backend
     command: uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     volumes:
       # Mount source code for hot-reload
-      - ../backend:/app/backend
-      - ../pyproject.toml:/app/pyproject.toml
+      - ./backend:/app/backend
+      - ./pyproject.toml:/app/pyproject.toml
       - backend-uploads:/app/backend/uploads
       # Exclude venv from mount (UV manages this)
       - /app/.venv
@@ -56,13 +56,13 @@ services:
 
   frontend:
     build:
-      context: ..
+      context: .
       dockerfile: docker/Dockerfile.frontend
     container_name: ${COMPOSE_PROJECT_NAME:-nativo}_frontend
     command: npm run dev -- --host
     volumes:
       # Mount source code for hot-reload
-      - ../frontend:/app/frontend
+      - ./frontend:/app/frontend
       - /app/frontend/node_modules  # Exclude node_modules from mount
     ports:
       - "5173:5173"
