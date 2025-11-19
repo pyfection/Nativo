@@ -20,13 +20,27 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    textwordlinkstatus = sa.Enum(
+    # Create enum only if it doesn't exist using raw SQL with proper exception handling
+    connection = op.get_bind()
+    # Use execute_ddl=False to avoid SQLAlchemy's enum creation logic
+    op.execute("""
+        DO $$ 
+        BEGIN
+            IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'textwordlinkstatus') THEN
+                CREATE TYPE textwordlinkstatus AS ENUM ('suggested', 'confirmed', 'rejected');
+            END IF;
+        END $$;
+    """)
+    
+    # Define enum for use in table creation
+    # Use postgresql.ENUM which doesn't auto-create the type
+    textwordlinkstatus = postgresql.ENUM(
         "suggested",
         "confirmed",
         "rejected",
         name="textwordlinkstatus",
+        create_type=False,
     )
-    textwordlinkstatus.create(op.get_bind(), checkfirst=True)
 
     op.create_table(
         "text_word_links",

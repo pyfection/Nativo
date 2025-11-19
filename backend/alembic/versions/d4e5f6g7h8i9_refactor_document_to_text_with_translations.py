@@ -118,9 +118,10 @@ def upgrade() -> None:
     op.execute("ALTER TYPE worddocumenttype RENAME TO wordtexttype")
     
     # Remove values that are no longer in the enum
+    # Cast enum to text for comparison since enum values are uppercase
     op.execute("""
         DELETE FROM word_texts_temp 
-        WHERE relationship_type IN ('definition', 'etymology', 'cultural_significance')
+        WHERE relationship_type::text IN ('DEFINITION', 'ETYMOLOGY', 'CULTURAL_SIGNIFICANCE')
     """)
     
     # Update enum to only include text-level relationship types
