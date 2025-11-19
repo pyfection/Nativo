@@ -37,7 +37,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    # Run migrations on startup
+    # Run migrations and seed database on startup
     entrypoint: |
       sh -c "
         echo 'Waiting for database to be ready...'
@@ -45,6 +45,8 @@ services:
         echo 'Running migrations...'
         cd /app/backend
         uv run alembic upgrade head || echo 'Migrations skipped or failed'
+        echo 'Seeding database...'
+        uv run python seed_dev_postgres_db.py || echo 'Seed script skipped or failed'
         echo 'Starting server...'
         exec uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
       "
