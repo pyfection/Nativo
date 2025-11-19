@@ -81,22 +81,23 @@ def upgrade() -> None:
     
     # Step 5: Auto-generate titles for existing texts
     # For texts linked to words, try to generate meaningful titles
+    # Cast enum to text for comparison since enum values are uppercase
     connection.execute(text("""
         UPDATE texts t
         SET title = CASE 
-            WHEN document_type = 'definition' THEN 'Definition'
-            WHEN document_type = 'literal_translation' THEN 'Literal Translation'
-            WHEN document_type = 'context_note' THEN 'Context Note'
-            WHEN document_type = 'usage_example' THEN 'Usage Example'
-            WHEN document_type = 'etymology' THEN 'Etymology'
-            WHEN document_type = 'cultural_significance' THEN 'Cultural Significance'
-            WHEN document_type = 'story' THEN 'Story'
-            WHEN document_type = 'historical_record' THEN 'Historical Record'
-            WHEN document_type = 'book' THEN 'Book'
-            WHEN document_type = 'article' THEN 'Article'
-            WHEN document_type = 'transcription' THEN 'Transcription'
-            WHEN document_type = 'translation' THEN 'Translation'
-            WHEN document_type = 'note' THEN 'Note'
+            WHEN document_type::text = 'DEFINITION' THEN 'Definition'
+            WHEN document_type::text = 'LITERAL_TRANSLATION' THEN 'Literal Translation'
+            WHEN document_type::text = 'CONTEXT_NOTE' THEN 'Context Note'
+            WHEN document_type::text = 'USAGE_EXAMPLE' THEN 'Usage Example'
+            WHEN document_type::text = 'ETYMOLOGY' THEN 'Etymology'
+            WHEN document_type::text = 'CULTURAL_SIGNIFICANCE' THEN 'Cultural Significance'
+            WHEN document_type::text = 'STORY' THEN 'Story'
+            WHEN document_type::text = 'HISTORICAL_RECORD' THEN 'Historical Record'
+            WHEN document_type::text = 'BOOK' THEN 'Book'
+            WHEN document_type::text = 'ARTICLE' THEN 'Article'
+            WHEN document_type::text = 'TRANSCRIPTION' THEN 'Transcription'
+            WHEN document_type::text = 'TRANSLATION' THEN 'Translation'
+            WHEN document_type::text = 'NOTE' THEN 'Note'
             ELSE SUBSTRING(content FROM 1 FOR 50) || 
                  CASE WHEN LENGTH(content) > 50 THEN '...' ELSE '' END
         END
