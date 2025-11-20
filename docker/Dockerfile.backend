@@ -8,6 +8,9 @@ COPY uv.lock .
 COPY README.md .
 COPY backend ./backend
 
+# Verify seed script is copied
+RUN test -f backend/seed_dev_postgres_db.py || (echo "ERROR: seed_dev_postgres_db.py not found in backend directory" && exit 1)
+
 # Install dependencies with UV
 RUN uv sync --frozen
 

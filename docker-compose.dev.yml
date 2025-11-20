@@ -46,7 +46,14 @@ services:
         cd /app/backend
         uv run alembic upgrade head || echo 'Migrations skipped or failed'
         echo 'Seeding database...'
-        uv run python seed_dev_postgres_db.py || echo 'Seed script skipped or failed'
+        if [ ! -f seed_dev_postgres_db.py ]; then
+          echo 'ERROR: seed_dev_postgres_db.py not found in /app/backend'
+          echo 'Current directory: $(pwd)'
+          echo 'Files in /app/backend:'
+          ls -la /app/backend/ | head -20
+          exit 1
+        fi
+        uv run python seed_dev_postgres_db.py || echo 'Seed script failed (this is OK if database already has data)'
         echo 'Starting server...'
         exec uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
       "
