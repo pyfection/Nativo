@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import Sidebar from '../common/Sidebar';
 import LanguageSelector from '../common/LanguageSelector';
 import UserMenu from '../common/UserMenu';
+import SmileyButton from '../common/SmileyButton';
 import { Language } from '../../App';
 import './AppLayout.css';
 
@@ -33,6 +34,7 @@ export default function AppLayout({ children, selectedLanguage, onLanguageChange
             Nativo
           </Link>
           <div className="app-header-right">
+            <SmileyButton />
             <LanguageSelector
               languages={languages}
               selectedLanguage={selectedLanguage}
