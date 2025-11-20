@@ -46,6 +46,9 @@ def seed_database():
         )
         db.add(user_5029c5d0)
         print(f"  Inserted 1 user(s)")
+        
+        # Commit users before adding languages (users are referenced by documents, texts, words, etc.)
+        db.commit()
 
         # Insert languages
         lang_051e55a2 = Language(
@@ -145,6 +148,9 @@ def seed_database():
         )
         db.add(lang_54266e9b)
         print(f"  Inserted 6 language(s)")
+        
+        # Commit languages before inserting user_languages to satisfy foreign key constraint
+        db.commit()
 
         # Insert documents
         doc_26d30f6c = Document(
