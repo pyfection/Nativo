@@ -19,6 +19,8 @@ from app.models.word.enums import (
     PartOfSpeech, Register, WordStatus, GrammaticalGender, 
     Plurality, GrammaticalCase, VerbAspect, Animacy
 )
+from app.utils.security import hash_password
+
 
 def seed_database():
     """Seed the database with initial data"""
@@ -37,7 +39,7 @@ def seed_database():
             id=UUID('5029c5d0-c4f6-401e-9257-a8d1055b121a'),
             email='admin@nativo.dev',
             username='admin',
-            hashed_password='$2b$12$12srheX8HHRIeIUCG1K82uXToxAUxx/2UCyYhi00SL1o.fCR9a0Ze',
+            hashed_password=hash_password("admin123"),
             role=UserRole.ADMIN,
             is_active=True,
             is_superuser=True,
