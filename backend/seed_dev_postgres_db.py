@@ -161,6 +161,9 @@ def seed_database():
         )
         db.add(doc_26d30f6c)
         print(f"  Inserted 1 document(s)")
+        
+        # Commit documents before texts reference them
+        db.commit()
 
         # Insert texts
         text_d5edacf8 = Text(
@@ -179,6 +182,9 @@ def seed_database():
         )
         db.add(text_d5edacf8)
         print(f"  Inserted 1 text(s)")
+        
+        # Commit texts before text_word_links reference them
+        db.commit()
 
         # Insert words
         word_b8f1722f = Word(
@@ -390,6 +396,9 @@ def seed_database():
         )
         db.add(word_f5e98ccc)
         print(f"  Inserted 8 word(s)")
+        
+        # Commit words before word_translations and text_word_links reference them
+        db.commit()
 
         # Insert user_languages
         db.execute(text("""
