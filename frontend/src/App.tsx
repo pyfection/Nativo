@@ -173,7 +173,7 @@ function App() {
   }
 
   return (
-    <Router>
+    <Router basename={import.meta.env.BASE_URL}>
       <AuthProvider>
         <div className="app" style={{ '--primary': selectedLanguage?.colorScheme.primary } as React.CSSProperties}>
           <Routes>
