@@ -126,7 +126,7 @@ export default function Home({ selectedLanguage }: HomeProps) {
 
       {/* Footer */}
       <footer className="footer">
-        <p>© 2025 Nativo - Preserving Linguistic Heritage</p>
+        <p>© 2026 Nativo - Preserving Linguistic Heritage</p>
       </footer>
     </div>
   );
