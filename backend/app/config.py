@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     # CORS - allow all localhost origins for development
     BACKEND_CORS_ORIGINS: list[str] = ["*"]
     
+    # Frontend URL for password reset links
+    FRONTEND_URL: str = "http://localhost:5173"  # Default Vite dev server
+    
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

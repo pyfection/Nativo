@@ -83,6 +83,11 @@ export default function Login() {
 
         <div className="login-footer">
           <p>
+            <Link to="/password-reset-request" className="forgot-password-link">
+              Forgot your password?
+            </Link>
+          </p>
+          <p>
             Don't have an account?{' '}
             <Link to="/register" className="register-link">
               Register here

@@ -5,6 +5,8 @@ import AppLayout from './components/layouts/AppLayout';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import PasswordResetRequest from './pages/PasswordResetRequest';
+import PasswordReset from './pages/PasswordReset';
 import Languages from './pages/Languages';
 import WordList from './pages/WordList';
 import AddWord from './pages/AddWord';
@@ -195,6 +197,8 @@ function App() {
             />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/password-reset-request" element={<PasswordResetRequest />} />
+            <Route path="/password-reset" element={<PasswordReset />} />
             
             {/* Languages Route */}
             <Route

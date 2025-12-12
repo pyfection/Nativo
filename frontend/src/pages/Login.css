@@ -123,6 +123,7 @@
   color: #666;
 }
 
+.forgot-password-link,
 .register-link,
 .home-link {
   color: #8B4513;
@@ -131,6 +132,7 @@
   transition: color 0.2s ease;
 }
 
+.forgot-password-link:hover,
 .register-link:hover,
 .home-link:hover {
   color: #6d3510;

@@ -101,6 +101,22 @@ export const authService = {
     );
     return proficiency?.can_verify || false;
   },
+
+  async requestPasswordReset(email: string): Promise<{ message: string }> {
+    const response = await api.post<{ message: string }>(
+      '/api/v1/auth/password-reset-request',
+      { email }
+    );
+    return response.data;
+  },
+
+  async resetPassword(token: string, newPassword: string): Promise<{ message: string }> {
+    const response = await api.post<{ message: string }>(
+      '/api/v1/auth/password-reset',
+      { token, new_password: newPassword }
+    );
+    return response.data;
+  },
 };
 
 export default authService;

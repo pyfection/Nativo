@@ -14,6 +14,7 @@ from app.models.text_word_link import TextWordLink, TextWordLinkStatus
 from app.models.location import Location
 from app.models.image import Image
 from app.models.tag import Tag, word_tags
+from app.models.password_reset_token import PasswordResetToken
 from app.models.word import (
     Word,
     PartOfSpeech,
@@ -48,6 +49,7 @@ __all__ = [
     "Tag",
     "Word",
     "Image",
+    "PasswordResetToken",
     
     # User Enums
     "UserRole",
