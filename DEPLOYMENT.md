@@ -100,14 +100,24 @@ Pages will deploy on every push to `master`. PR previews work automatically with
 
 The Fly secret `BACKEND_CORS_ORIGINS` must list your Pages hostnames, including any preview branch you want to hit the API from. The simplest pattern early on is to include `https://*.nativo.pages.dev` once Cloudflare supports wildcards; until then, add each preview URL or keep `["*"]` and rely on JWT auth to gate writes.
 
-## 4. End-to-end smoke after first deploy
+## 4. Live URLs
+
+| Service | URL |
+| --- | --- |
+| Backend (Fly) | <https://nativo-api.fly.dev> |
+| Frontend (Cloudflare Pages) | <https://nativo-4z0.pages.dev> |
+| DB (Neon, project `sparkling-wind-14855455`) | `ep-misty-star-ajtgmxpd.c-3.us-east-2.aws.neon.tech` |
+
+End-to-end smoke:
 
 ```bash
-curl -fsS https://nativo-backend.fly.dev/health        # {"status":"healthy"}
-curl -fsS https://nativo-backend.fly.dev/api/v1/languages/   # JSON, possibly empty
+curl -fsS https://nativo-api.fly.dev/health                  # {"status":"healthy"}
+curl -fsS https://nativo-api.fly.dev/api/v1/languages/       # []  (empty until seeded)
 ```
 
-Then open the Pages URL and confirm the frontend can list languages. If you see "Failed to load languages": either the API URL env var is wrong, or CORS is rejecting the origin (check the browser console).
+Open <https://nativo-4z0.pages.dev> and confirm the page loads. The DB has no data yet — the languages list will be empty. Seed by either (a) running `seed_dev_postgres_db.py` against the prod Neon connection, or (b) creating entries via the admin UI at <https://nativo-api.fly.dev/admin> (needs a superuser; use `backend/create_admin.py`).
+
+If the page errors with "Failed to load languages", check the browser console: usually wrong `VITE_API_URL` (rebuild Pages with the right value) or a CORS rejection (update `BACKEND_CORS_ORIGINS` via `fly secrets set`).
 
 ## 5. Costs as you grow
 

@@ -62,6 +62,9 @@ lerna-debug.log*
 
 # Frontend build
 frontend/dist/
+
+# Wrangler / Cloudflare local cache
+.wrangler/
 frontend/build/
 frontend/.vite/
 
@@ -81,4 +84,3 @@ coverage/
 
 # Docker
 *.env.docker
-
