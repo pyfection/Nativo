@@ -1,19 +1,20 @@
 {
   "hero": {
-    "title": "Sprochn vor'm Aussterbn rettn"
+    "title": "Crbáha foa'm ascdeam rétn",
+    "subtitle": "A digitale blátfoam fia's festhóitn und eahóitn fo de bedrotn cbráha af da veit - duah grimne dokument, voatsámlunga und tonafáma."
   },
   "dictionary": {
-    "title_with_target": "A {{source}}-Wort nochschaung → {{target}}",
-    "title_no_target": "A Wort in {{source}} nochschaung",
-    "search": "Suacha",
-    "searching": "Suach…"
-  },
-  "stats": {
-    "languages": "Gretete Sprochn",
-    "words": "Dokumentierte Werta",
-    "contributors": "Mitwirkende"
-  },
-  "header": {
-    "interface_language": "Bediensproch"
+    "title_with_target": "A {{source}} voat ocaugn -> {{target}}",
+    "title_no_target": "A voat in {{source}} ocaugn",
+    "subtitle_with_target": "Suah in de {{source}} veata und sig d'ivasedsung af {{target}}. De dsuicbróh endad ma om réhds.",
+    "subtitle_no_target": "Suah in de {{source}} veata.",
+    "placeholder": "A {{source}} voat eigém...",
+    "search": "Suaha",
+    "searching": "Suaht...",
+    "empty": "Koa tréfa fia \"{{query}}\". De midheifa baun no an dem veatabuah.",
+    "no_target_translation": "No koa {{target}} ivasetsung dó.",
+    "search_aria_label": "Suah {{source}} veata",
+    "rate_limited": "Ds'fui bitn - bitce ruiga, fasuah's in oana minutn numoi.",
+    "search_failed": "D'suah is feigclógn. Bice numoi fasuaha."
   }
 }
