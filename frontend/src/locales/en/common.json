@@ -30,7 +30,8 @@
     "contributors": "Contributors",
     "cta_add_word": "Add the first word",
     "cta_add_document": "Add the first document",
-    "cta_audio_coming_soon": "Audio upload coming soon"
+    "cta_audio_coming_soon": "Audio upload coming soon",
+    "cta_join_to_contribute": "Sign up to contribute"
   },
   "action_panel": {
     "view_words": "View words",
@@ -71,7 +72,27 @@
     "words": "Words",
     "dictionary": "Dictionary",
     "documents": "Documents",
+    "audio": "Audio",
+    "contributors": "Contributors",
     "languages": "Languages"
+  },
+  "audio_page": {
+    "title": "{{language}} audio",
+    "subtitle": "Recordings linked to words in this language.",
+    "loading": "Loading audio…",
+    "empty_title": "No audio recordings yet.",
+    "empty_hint": "Audio upload is on the roadmap — recordings will appear here once contributors add them.",
+    "linked_words": "linked words"
+  },
+  "contributors_page": {
+    "title": "{{language}} contributors",
+    "subtitle": "Everyone who has joined or contributed to this language.",
+    "loading": "Loading contributors…",
+    "empty": "No contributors for this language yet.",
+    "col_user": "User",
+    "col_proficiency": "Proficiency",
+    "col_words": "Words",
+    "col_documents": "Documents"
   },
   "footer": {
     "copyright": "© 2026 Nativo - Preserving Linguistic Heritage"

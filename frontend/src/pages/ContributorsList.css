@@ -1,0 +1,111 @@
+.contributors-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.contributors-header h1 {
+  margin: 0 0 0.25rem;
+  font-size: 1.75rem;
+  color: var(--primary, #333);
+}
+
+.contributors-subtitle {
+  margin: 0 0 1.5rem;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.contributors-status,
+.contributors-error,
+.contributors-empty {
+  padding: 1rem;
+  border-radius: 8px;
+  background: #fafafa;
+  border: 1px solid #ececec;
+}
+
+.contributors-error {
+  color: #b00020;
+}
+
+.contributors-empty {
+  text-align: center;
+  padding: 2rem 1rem;
+}
+
+.contributors-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.contributors-table th,
+.contributors-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.contributors-table th {
+  background: #fafafa;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #555;
+}
+
+.contributors-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.contributors-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.contributors-user {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.contributors-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary, #0099cc) 0%, var(--secondary, #006699) 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.contributors-username {
+  font-weight: 500;
+  color: #222;
+}
+
+.contributors-role {
+  color: #888;
+  font-size: 0.75rem;
+  text-transform: lowercase;
+}
+
+.contributors-proficiency {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  background: var(--background, #eef);
+  color: var(--primary, #0099cc);
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+.contributors-no-proficiency {
+  color: #999;
+}

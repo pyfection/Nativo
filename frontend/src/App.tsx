@@ -15,6 +15,8 @@ import DocumentDetail from './pages/DocumentDetail';
 import AddDocument from './pages/AddDocument';
 import EditDocument from './pages/EditDocument';
 import DocumentLinking from './pages/DocumentLinking';
+import AudioList from './pages/AudioList';
+import ContributorsList from './pages/ContributorsList';
 import languageService, { LanguageResponse } from './services/languageService';
 import { API_URL } from './services/api';
 import './App.css';
@@ -198,6 +200,34 @@ function App() {
             />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+
+            {/* Audio listing — public, read-only */}
+            <Route
+              path="/audio"
+              element={
+                <AppLayout
+                  selectedLanguage={selectedLanguage!}
+                  onLanguageChange={setSelectedLanguage}
+                  languages={languages}
+                >
+                  <AudioList selectedLanguage={selectedLanguage!} />
+                </AppLayout>
+              }
+            />
+
+            {/* Contributors — public, read-only */}
+            <Route
+              path="/contributors"
+              element={
+                <AppLayout
+                  selectedLanguage={selectedLanguage!}
+                  onLanguageChange={setSelectedLanguage}
+                  languages={languages}
+                >
+                  <ContributorsList selectedLanguage={selectedLanguage!} />
+                </AppLayout>
+              }
+            />
 
             {/* Languages Route */}
             <Route

@@ -8,6 +8,7 @@ import HomeDictionary from '../components/home/HomeDictionary';
 import LanguageActionPanel from '../components/home/LanguageActionPanel';
 import RecentActivity from '../components/home/RecentActivity';
 import StatCard from '../components/home/StatCard';
+import { useAuth } from '../contexts/AuthContext';
 import { getStatistics, Statistics } from '../services/statisticsService';
 import './Home.css';
 
@@ -27,6 +28,7 @@ const EMPTY_STATS: Statistics = {
 
 export default function Home({ selectedLanguage }: HomeProps) {
   const { t } = useTranslation();
+  const { isAuthenticated } = useAuth();
   const [languageStats, setLanguageStats] = useState<Statistics>(EMPTY_STATS);
   const [platformStats, setPlatformStats] = useState<Statistics>(EMPTY_STATS);
   const [statsLoading, setStatsLoading] = useState(true);
@@ -60,9 +62,15 @@ export default function Home({ selectedLanguage }: HomeProps) {
         href="/words"
         loading={statsLoading}
         zeroCta={
-          <Link className="stat-cta-link" to="/words/add">
-            {t('stats.cta_add_word')}
-          </Link>
+          isAuthenticated ? (
+            <Link className="stat-cta-link" to="/words/add">
+              {t('stats.cta_add_word')}
+            </Link>
+          ) : (
+            <Link className="stat-cta-link" to="/register">
+              {t('stats.cta_join_to_contribute')}
+            </Link>
+          )
         }
       />
       <StatCard
@@ -71,14 +79,21 @@ export default function Home({ selectedLanguage }: HomeProps) {
         href="/documents"
         loading={statsLoading}
         zeroCta={
-          <Link className="stat-cta-link" to="/documents/add">
-            {t('stats.cta_add_document')}
-          </Link>
+          isAuthenticated ? (
+            <Link className="stat-cta-link" to="/documents/add">
+              {t('stats.cta_add_document')}
+            </Link>
+          ) : (
+            <Link className="stat-cta-link" to="/register">
+              {t('stats.cta_join_to_contribute')}
+            </Link>
+          )
         }
       />
       <StatCard
         value={stats.total_audio}
         label={t('stats.audio')}
+        href="/audio"
         loading={statsLoading}
         zeroCta={
           <span className="stat-cta-coming-soon" title={t('action_panel.upload_audio_coming_soon')}>
@@ -86,7 +101,12 @@ export default function Home({ selectedLanguage }: HomeProps) {
           </span>
         }
       />
-      <StatCard value={stats.total_contributors} label={t('stats.contributors')} loading={statsLoading} />
+      <StatCard
+        value={stats.total_contributors}
+        label={t('stats.contributors')}
+        href="/contributors"
+        loading={statsLoading}
+      />
     </div>
   );
 
@@ -95,8 +115,13 @@ export default function Home({ selectedLanguage }: HomeProps) {
       <StatCard value={stats.total_languages} label={t('stats.languages')} href="/languages" loading={statsLoading} />
       <StatCard value={stats.total_words} label={t('stats.words')} href="/words" loading={statsLoading} />
       <StatCard value={stats.total_documents} label={t('stats.documents')} href="/documents" loading={statsLoading} />
-      <StatCard value={stats.total_audio} label={t('stats.audio')} loading={statsLoading} />
-      <StatCard value={stats.total_contributors} label={t('stats.contributors')} loading={statsLoading} />
+      <StatCard value={stats.total_audio} label={t('stats.audio')} href="/audio" loading={statsLoading} />
+      <StatCard
+        value={stats.total_contributors}
+        label={t('stats.contributors')}
+        href="/contributors"
+        loading={statsLoading}
+      />
     </div>
   );
 
