@@ -21,46 +21,33 @@ interface LanguageEndangermentData {
   level: Level;
   /** Human-readable level for the badge. */
   levelLabel: string;
-  /** A short explanation specific to this language. English baked-in for now;
-   *  for Bavarian/other UI languages this stays as English fallback until
-   *  per-language translations are reviewed. */
-  body: string;
+  /** i18n key for the per-language body sentence. */
+  bodyKey: string;
 }
 
 // UNESCO Atlas of the World's Languages in Danger, plus a couple of
 // well-documented secondary sources. Update as the Atlas does — these are
-// snapshots, not authoritative live data.
+// snapshots, not authoritative live data. The body sentences live in i18n
+// (endangerment.body_{iso}) so they're translatable per UI language.
 const DATA: Record<string, LanguageEndangermentData> = {
-  bar: {
-    level: 'vulnerable',
-    levelLabel: 'Vulnerable',
-    body: 'Most children still speak it, but increasingly only in informal settings.',
-  },
+  bar: { level: 'vulnerable', levelLabel: 'Vulnerable', bodyKey: 'endangerment.body_bar' },
   umu: {
     level: 'critically-endangered',
     levelLabel: 'Critically endangered',
-    body: 'The youngest fluent speakers are in their seventies and older.',
+    bodyKey: 'endangerment.body_umu',
   },
   haw: {
     level: 'critically-endangered',
     levelLabel: 'Critically endangered',
-    body: 'A revitalization movement is underway; fluent native speakers remain few.',
+    bodyKey: 'endangerment.body_haw',
   },
-  nav: {
-    level: 'vulnerable',
-    levelLabel: 'Vulnerable',
-    body: 'Still the most widely spoken Indigenous language in North America, but younger speakers are declining.',
-  },
+  nav: { level: 'vulnerable', levelLabel: 'Vulnerable', bodyKey: 'endangerment.body_nav' },
   ain: {
     level: 'critically-endangered',
     levelLabel: 'Critically endangered',
-    body: 'Only a handful of fully fluent speakers remain, most very elderly.',
+    bodyKey: 'endangerment.body_ain',
   },
-  eng: {
-    level: 'safe',
-    levelLabel: 'Safe',
-    body: 'Spoken by all generations across many regions; not classified as endangered.',
-  },
+  eng: { level: 'safe', levelLabel: 'Safe', bodyKey: 'endangerment.body_eng' },
 };
 
 const CORE_WORDS_TARGET = 5000;
@@ -84,7 +71,7 @@ export default function EndangermentPanel({
             level: data.levelLabel.toLowerCase(),
           })}
         </h3>
-        <p className="endangerment-body">{data.body}</p>
+        <p className="endangerment-body">{t(data.bodyKey)}</p>
 
         {data.level !== 'safe' && (
           <div className="endangerment-progress">

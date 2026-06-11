@@ -69,7 +69,13 @@
   },
   "endangerment": {
     "headline": "UNESCO classifies {{language}} as {{level}}.",
-    "progress": "{{count}} of an estimated {{target}} core words documented."
+    "progress": "{{count}} of an estimated {{target}} core words documented.",
+    "body_bar": "In rural areas children still grow up with it; in and around the cities, increasingly not.",
+    "body_umu": "The youngest fluent speakers are in their seventies and older.",
+    "body_haw": "A revitalization movement is underway; fluent native speakers remain few.",
+    "body_nav": "Still the most widely spoken Indigenous language in North America, but younger speakers are declining.",
+    "body_ain": "Only a handful of fully fluent speakers remain, most very elderly.",
+    "body_eng": "Spoken by all generations across many regions; not classified as endangered."
   },
   "user_menu": {
     "aria_label": "Profile menu for {{username}}",

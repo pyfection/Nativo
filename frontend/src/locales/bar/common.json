@@ -94,6 +94,16 @@
     "col_words": "Veata",
     "col_documents": "Dokument"
   },
+  "spotlight": {
+    "eyebrow": "A voat aus'm {{language}}",
+    "empty": "No koane veata dó - sai da easte, vo oans dadsuaduad.",
+    "translate_cta": "A voat ivasetsn",
+    "back": "Dsuk dsum umcaugn"
+  },
+  "endangerment": {
+    "headline": "UNESCO klasifidsiad {{language}} óis {{level}}.",
+    "progress": "{{count}} fo gcétsd {{target}} keanveata co dokumentiad."
+  },
   "footer": {
     "copyright": "© 2026 Nativo - Cbráhlihs eab dahóitn"
   }
