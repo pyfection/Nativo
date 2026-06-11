@@ -3,7 +3,7 @@
     "title": "Cbráha foa'm ascdeam rétn",
     "title_language": "Dahóitung fo {{language}}",
     "subtitle": "A digitale blátfoam fia's festhóitn und eahóitn fo de bedrotn cbráha af da veit - duah grimne dokument, voatsámlunga und tonafnáma.",
-    "subtitle_language": "Veataguad, tekste und tonafnáma fia {{language}} festhóitn."
+    "subtitle_language": "Veataguad, tekst und tonafnáma fia {{language}} festhóitn."
   },
   "dictionary": {
     "title_with_target": "A {{source}} voat ocaugn -> {{target}}",
@@ -67,7 +67,7 @@
   "activity": {
     "heading": "Letsde duan in {{language}}",
     "loading": "Duan lót...",
-    "empty": "No niks dó — sai da easte, dea a voat, dokument oda afnáma baidrógt."
+    "empty": "No niks dó — sai da easte, vo a voat, dokument oda afnáma baidrógt."
   },
   "user_menu": {
     "aria_label": "Profil meni fia {{username}}",
@@ -88,7 +88,7 @@
     "title": "Midheifa fo {{language}}",
     "subtitle": "Ole, de midgmáhd oda baidrógn hóm tsua dera cbráh.",
     "loading": "Midheifa lón...",
-    "empty": "No koa midheifa fia dera cbráh dó.",
+    "empty": "No koa midheifa fia de cbráh dó.",
     "col_user": "Nutsa",
     "col_proficiency": "Kentnis",
     "col_words": "Veata",
