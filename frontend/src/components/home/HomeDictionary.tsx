@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { Language } from '../../App';
+import { useUILanguage } from '../../contexts/UILanguageContext';
 import wordService, { WordWithTranslations } from '../../services/wordService';
 import './HomeDictionary.css';
 
@@ -8,19 +9,13 @@ interface HomeDictionaryProps {
   selectedLanguage: Language;
 }
 
-interface GroupedTranslations {
-  [languageName: string]: WordWithTranslations['translations'];
-}
-
-function groupByLanguage(translations: WordWithTranslations['translations']): GroupedTranslations {
-  return translations.reduce<GroupedTranslations>((acc, t) => {
-    const key = t.language_name || 'Unknown';
-    (acc[key] ||= []).push(t);
-    return acc;
-  }, {});
-}
-
 export default function HomeDictionary({ selectedLanguage }: HomeDictionaryProps) {
+  const { uiLanguage } = useUILanguage();
+  // If the page UI language happens to be the same as the source, fall back
+  // to "no target" — the widget will then list any translations it gets back.
+  const targetLanguage =
+    uiLanguage && uiLanguage.id !== selectedLanguage.id ? uiLanguage : null;
+
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<WordWithTranslations[]>([]);
   const [loading, setLoading] = useState(false);
@@ -56,10 +51,14 @@ export default function HomeDictionary({ selectedLanguage }: HomeDictionaryProps
     <section className="home-dictionary">
       <div className="home-dictionary-inner">
         <h3 className="home-dictionary-title">
-          Look up a word in {selectedLanguage.name}
+          {targetLanguage
+            ? `Look up a ${selectedLanguage.name} word → ${targetLanguage.name}`
+            : `Look up a word in ${selectedLanguage.name}`}
         </h3>
         <p className="home-dictionary-subtitle">
-          Search across {selectedLanguage.name} vocabulary and see translations in other languages.
+          {targetLanguage
+            ? `Search ${selectedLanguage.name} vocabulary and see ${targetLanguage.name} translations. Change the target via the language picker in the header.`
+            : `Search ${selectedLanguage.name} vocabulary.`}
         </p>
 
         <div className="home-dictionary-form">
@@ -95,8 +94,9 @@ export default function HomeDictionary({ selectedLanguage }: HomeDictionaryProps
         {results.length > 0 && (
           <ul className="home-dictionary-results">
             {results.map((word) => {
-              const groups = groupByLanguage(word.translations);
-              const languageNames = Object.keys(groups);
+              const targetTranslations = targetLanguage
+                ? word.translations.filter((t) => t.language_id === targetLanguage.id)
+                : [];
               return (
                 <li key={word.id} className="home-dictionary-result">
                   <div className="home-dictionary-headword">
@@ -108,17 +108,16 @@ export default function HomeDictionary({ selectedLanguage }: HomeDictionaryProps
                       <span className="home-dictionary-pos">{word.part_of_speech}</span>
                     )}
                   </div>
-                  {languageNames.length === 0 ? (
-                    <p className="home-dictionary-no-trans">No translations yet.</p>
+                  {targetTranslations.length === 0 ? (
+                    <p className="home-dictionary-no-trans">
+                      {targetLanguage
+                        ? `No ${targetLanguage.name} translation yet.`
+                        : 'No translations yet.'}
+                    </p>
                   ) : (
-                    languageNames.map((lang) => (
-                      <div key={lang} className="home-dictionary-trans-group">
-                        <span className="home-dictionary-trans-lang">{lang}</span>
-                        <span className="home-dictionary-trans-words">
-                          {groups[lang].map((t) => t.word).join(', ')}
-                        </span>
-                      </div>
-                    ))
+                    <p className="home-dictionary-trans-words">
+                      {targetTranslations.map((t) => t.word).join(', ')}
+                    </p>
                   )}
                 </li>
               );

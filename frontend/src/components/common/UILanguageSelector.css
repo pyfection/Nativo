@@ -1,0 +1,31 @@
+.ui-language-selector {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.4rem;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+}
+
+.ui-language-icon {
+  font-size: 0.9rem;
+  opacity: 0.7;
+}
+
+.ui-language-select {
+  border: none;
+  background: transparent;
+  font-size: 0.9rem;
+  color: #333;
+  cursor: pointer;
+  padding: 0.15rem 0.1rem;
+  outline: none;
+}
+
+.ui-language-select:focus {
+  outline: 2px solid var(--primary, #0099cc);
+  outline-offset: 2px;
+  border-radius: 3px;
+}

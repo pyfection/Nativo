@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import Sidebar from '../common/Sidebar';
 import LanguageSelector from '../common/LanguageSelector';
+import UILanguageSelector from '../common/UILanguageSelector';
 import UserMenu from '../common/UserMenu';
 import { Language } from '../../App';
 import './AppLayout.css';
@@ -25,8 +26,8 @@ export default function AppLayout({ children, selectedLanguage, onLanguageChange
       {/* Top Header */}
       <header className="app-header">
         <div className="app-header-content">
-          <Link 
-            to="/" 
+          <Link
+            to="/"
             className="app-logo"
             style={{ color: selectedLanguage.colorScheme.primary }}
           >
@@ -39,6 +40,7 @@ export default function AppLayout({ children, selectedLanguage, onLanguageChange
               onLanguageChange={onLanguageChange}
               onLanguageJoined={handleLanguageJoined}
             />
+            <UILanguageSelector />
             <UserMenu />
           </div>
         </div>
@@ -54,4 +56,3 @@ export default function AppLayout({ children, selectedLanguage, onLanguageChange
     </div>
   );
 }
-

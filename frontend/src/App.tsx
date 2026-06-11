@@ -1,6 +1,7 @@
 import { useState, useEffect, ReactNode } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { UILanguageProvider } from './contexts/UILanguageContext';
 import AppLayout from './components/layouts/AppLayout';
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -176,6 +177,7 @@ function App() {
   return (
     <Router basename={import.meta.env.BASE_URL}>
       <AuthProvider>
+        <UILanguageProvider languages={languages}>
         <div className="app" style={{ '--primary': selectedLanguage?.colorScheme.primary } as React.CSSProperties}>
           <Routes>
             <Route
@@ -344,6 +346,7 @@ function App() {
             />
           </Routes>
         </div>
+        </UILanguageProvider>
       </AuthProvider>
     </Router>
   );

@@ -110,21 +110,10 @@
   letter-spacing: 0.04em;
 }
 
-.home-dictionary-trans-group {
-  display: flex;
-  gap: 0.5rem;
-  font-size: 0.95rem;
-  padding: 0.15rem 0;
-}
-
-.home-dictionary-trans-lang {
-  color: #777;
-  font-weight: 500;
-  min-width: 7rem;
-}
-
 .home-dictionary-trans-words {
+  margin: 0;
   color: #222;
+  font-size: 0.95rem;
 }
 
 .home-dictionary-no-trans {
