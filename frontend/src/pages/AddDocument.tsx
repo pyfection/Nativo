@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import documentService, { CreateDocumentData } from '../services/documentService';
 import { DOCUMENT_TYPE_OPTIONS } from '../utils/documentTypes';
+import { DocumentType } from '../types/text';
 import { Language } from '../App';
 import './AddDocument.css';
 
@@ -16,7 +17,7 @@ export default function AddDocument({ selectedLanguage }: AddDocumentProps) {
   const [formData, setFormData] = useState<CreateDocumentData>({
     title: '',
     content: '',
-    document_type: 'story',
+    document_type: DocumentType.STORY,
     language_id: selectedLanguage.id,
   });
 
@@ -144,4 +145,3 @@ export default function AddDocument({ selectedLanguage }: AddDocumentProps) {
     </div>
   );
 }
-

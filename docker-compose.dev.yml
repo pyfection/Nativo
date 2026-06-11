@@ -69,9 +69,9 @@ services:
       - ./frontend:/app/frontend
       - /app/frontend/node_modules  # Exclude node_modules from mount
     ports:
-      - "5174:5173"
+      - "5173:5173"
     environment:
-      - VITE_API_BASE_URL=http://localhost:8003
+      - VITE_API_BASE_URL=http://localhost:8000
       - CHOKIDAR_USEPOLLING=true  # Enable polling for file changes in Docker
     depends_on:
       - backend
@@ -79,4 +79,3 @@ services:
 volumes:
   postgres_data:
   backend-uploads:
-

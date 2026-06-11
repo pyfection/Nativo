@@ -28,9 +28,13 @@ export interface WordListItem {
   id: string;
   word: string;
   language_id: string;
+  romanization?: string;
+  ipa_pronunciation?: string;
   part_of_speech?: string;
   definition?: string;
+  literal_translation?: string;
   status: string;
+  is_verified?: boolean;
 }
 
 export interface CreateWordData {
@@ -141,4 +145,3 @@ export const wordService = {
 };
 
 export default wordService;
-

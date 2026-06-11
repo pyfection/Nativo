@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import wordService, { Word } from '../services/wordService';
+import wordService, { WordListItem } from '../services/wordService';
 import { Language } from '../App';
 import { useAuth } from '../contexts/AuthContext';
 import './WordList.css';
@@ -12,10 +12,10 @@ interface WordListProps {
 export default function WordList({ selectedLanguage }: WordListProps) {
   const navigate = useNavigate();
   const { canEditLanguage } = useAuth();
-  const [words, setWords] = useState<Word[]>([]);
+  const [words, setWords] = useState<WordListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  
+
   // Filters
   const [filters, setFilters] = useState({
     status_filter: '',
@@ -34,21 +34,21 @@ export default function WordList({ selectedLanguage }: WordListProps) {
     try {
       setLoading(true);
       const params: any = {};
-      
+
       // Always filter by selected language
       if (selectedLanguage) {
         params.language_id = selectedLanguage.id;
       }
-      
+
       if (filters.status_filter) {
         params.status_filter = filters.status_filter;
       } else {
         params.include_all_statuses = true;
       }
       if (filters.part_of_speech) params.part_of_speech = filters.part_of_speech;
-      
+
       const data = await wordService.getAll(params);
-      
+
       // Client-side search if needed
       let filtered = data;
       if (filters.search) {
@@ -63,7 +63,7 @@ export default function WordList({ selectedLanguage }: WordListProps) {
           );
         });
       }
-      
+
       setWords(filtered);
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to load words');
@@ -103,7 +103,7 @@ export default function WordList({ selectedLanguage }: WordListProps) {
           </button>
         )}
       </div>
-      
+
       {!canEdit && selectedLanguage && (
         <div style={{ padding: '1rem', backgroundColor: '#fff3cd', border: '1px solid #ffc107', borderRadius: '4px', marginBottom: '1rem' }}>
           <p style={{ margin: 0, color: '#856404' }}>
@@ -234,4 +234,3 @@ export default function WordList({ selectedLanguage }: WordListProps) {
     </div>
   );
 }
-

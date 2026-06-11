@@ -408,7 +408,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
         return null;
       }
 
-      let element: HTMLElement | null =
+      const element: HTMLElement | null =
         targetNode.nodeType === Node.TEXT_NODE
           ? (targetNode.parentElement as HTMLElement | null)
           : (targetNode as HTMLElement | null);
@@ -871,10 +871,10 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
         if (typeof value === 'string') {
           const trimmed = value.trim();
           if (trimmed) {
-            payload[field] = trimmed as any;
+            (payload as any)[field] = trimmed;
           }
         } else if (value) {
-          payload[field] = value;
+          (payload as any)[field] = value;
         }
       });
 
@@ -1524,5 +1524,3 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
     </div>
   );
 }
-
-

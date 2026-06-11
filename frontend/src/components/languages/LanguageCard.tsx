@@ -26,6 +26,7 @@ export default function LanguageCard({ language, onLanguageJoined }: LanguageCar
     nativeName: language.native_name || language.name,
     iso: language.iso_639_3 || '',
     description: language.description || '',
+    managed: language.managed,
     colorScheme: {
       primary: language.primary_color || '#8B4513',
       secondary: language.secondary_color || '#D2691E',
@@ -43,7 +44,7 @@ export default function LanguageCard({ language, onLanguageJoined }: LanguageCar
 
   return (
     <>
-      <div 
+      <div
         className="language-card"
         style={{
           borderLeftColor: language.primary_color || '#8B4513',
@@ -92,7 +93,7 @@ export default function LanguageCard({ language, onLanguageJoined }: LanguageCar
             <div className="proficiency-info">
               <span className="proficiency-label">Your proficiency:</span>
               <span className="proficiency-value">
-                {userProficiency.proficiency_level.charAt(0).toUpperCase() + 
+                {userProficiency.proficiency_level.charAt(0).toUpperCase() +
                  userProficiency.proficiency_level.slice(1)}
               </span>
             </div>
@@ -148,4 +149,3 @@ export default function LanguageCard({ language, onLanguageJoined }: LanguageCar
     </>
   );
 }
-

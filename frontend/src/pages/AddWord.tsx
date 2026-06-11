@@ -164,10 +164,10 @@ export default function AddWord({ selectedLanguage }: AddWordProps) {
         if (typeof value === 'string') {
           const trimmed = value.trim();
           if (trimmed) {
-            payload[field] = trimmed as any;
+            (payload as any)[field] = trimmed;
           }
         } else if (value) {
-          payload[field] = value;
+          (payload as any)[field] = value;
         }
       });
 
@@ -445,4 +445,3 @@ export default function AddWord({ selectedLanguage }: AddWordProps) {
     </div>
   );
 }
-

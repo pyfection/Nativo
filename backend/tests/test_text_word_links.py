@@ -1,21 +1,22 @@
 import uuid
-from datetime import datetime
+from datetime import UTC, datetime
 
 import pytest
 
 sqlalchemy = pytest.importorskip("sqlalchemy")
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
-
-from app.database import Base
-from app.models.document import Document
-from app.models.language import Language
-from app.models.text import DocumentType, Text
-from app.models.text_word_link import TextWordLink, TextWordLinkStatus
-from app.models.user import User, UserRole
-from app.models.word import Word, WordStatus
-from app.services.document_service import refresh_document_suggestions, suggest_links_for_text
-
+from app.database import Base  # noqa: E402
+from app.models.document import Document  # noqa: E402
+from app.models.language import Language  # noqa: E402
+from app.models.text import DocumentType, Text  # noqa: E402
+from app.models.text_word_link import TextWordLink, TextWordLinkStatus  # noqa: E402
+from app.models.user import User, UserRole  # noqa: E402
+from app.models.word import Word, WordStatus  # noqa: E402
+from app.services.document_service import (  # noqa: E402
+    refresh_document_suggestions,
+    suggest_links_for_text,
+)
+from sqlalchemy import create_engine  # noqa: E402
+from sqlalchemy.orm import Session, sessionmaker  # noqa: E402
 
 engine = create_engine("sqlite:///:memory:", future=True)
 SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
@@ -39,7 +40,7 @@ def db_session() -> Session:
 
 
 def _seed_user(session: Session) -> User:
-    now = datetime.utcnow()
+    now = datetime.now(UTC)
     user = User(
         id=uuid.uuid4(),
         email="test@example.com",
@@ -56,7 +57,7 @@ def _seed_user(session: Session) -> User:
 
 
 def _seed_language(session: Session) -> Language:
-    now = datetime.utcnow()
+    now = datetime.now(UTC)
     language = Language(
         id=uuid.uuid4(),
         name="Test Language",
@@ -71,7 +72,7 @@ def _seed_language(session: Session) -> Language:
 
 
 def _seed_document(session: Session, user: User) -> Document:
-    now = datetime.utcnow()
+    now = datetime.now(UTC)
     document = Document(
         id=uuid.uuid4(),
         created_by_id=user.id,
@@ -82,8 +83,10 @@ def _seed_document(session: Session, user: User) -> Document:
     return document
 
 
-def _seed_text(session: Session, document: Document, language: Language, user: User, content: str) -> Text:
-    now = datetime.utcnow()
+def _seed_text(
+    session: Session, document: Document, language: Language, user: User, content: str
+) -> Text:
+    now = datetime.now(UTC)
     text = Text(
         id=uuid.uuid4(),
         title="Sample Text",
@@ -101,7 +104,7 @@ def _seed_text(session: Session, document: Document, language: Language, user: U
 
 
 def _seed_word(session: Session, language: Language, user: User, word_value: str) -> Word:
-    now = datetime.utcnow()
+    now = datetime.now(UTC)
     word = Word(
         id=uuid.uuid4(),
         word=word_value,
@@ -138,7 +141,7 @@ def test_suggest_links_for_text_creates_suggestion(db_session: Session):
     link = stored_links[0]
     assert link.status == TextWordLinkStatus.SUGGESTED
     assert link.start_char == 0
-    assert text.content[link.start_char:link.end_char] == "Hello"
+    assert text.content[link.start_char : link.end_char] == "Hello"
 
 
 def test_suggest_links_skips_existing_span(db_session: Session):
@@ -195,4 +198,3 @@ def test_refresh_document_suggestions_rebuilds_for_all_texts(db_session: Session
     assert set(suggestions.keys()) == {text_primary.id, text_secondary.id}
     total_links = db_session.query(TextWordLink).count()
     assert total_links >= 2
-

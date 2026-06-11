@@ -64,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const register = async (data: RegisterData) => {
-    const newUser = await authService.register(data);
+    await authService.register(data);
     // Auto-login after registration
     await login({ username: data.email, password: data.password });
   };
@@ -84,7 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshUserProficiencies = async () => {
     if (!user) return;
-    
+
     try {
       const proficiencies = await authService.getUserLanguages(user.id);
       setUser({
@@ -123,4 +123,3 @@ export function useAuth() {
   }
   return context;
 }
-
