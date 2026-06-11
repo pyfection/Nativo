@@ -81,7 +81,7 @@ In addition, three accented characters are officially included:
 - **i / j**: The letter *j* is not part of the standard alphabet. The same phoneme is covered by *i*, making *j* redundant.
 - **q, w, x, y**: These letters are not used in the standard language but may be reserved for specific dialectal or historical contexts.
 - **c**: Represents the sound [ʃ], similar to the English "sh". It is a distinct letter, not a digraph.
-- **z**: Currently under consideration. It may represent a "sharp s" ([s]) to distinguish it from the more lenis *s* ([z]), although in most Bavarian varieties, *s* is inherently sharp.
+- **z**: Not used. The /ts/ sound is written as **`ts`** or **`ds`** depending on the length of the pause between the two consonants. Both spellings are valid and the difference is genuinely audible: use **`ts`** for a short pause (e.g. *ivasetsung* "translation") and **`ds`** for a longer pause (e.g. *ds'fui* "too much"). When unsure, either reading is acceptable.
 
 ### Diacritics
 

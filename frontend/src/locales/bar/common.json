@@ -1,18 +1,19 @@
 {
   "hero": {
-    "title": "Crbáha foa'm ascdeam rétn",
+    "title": "Cbráha foa'm ascdeam rétn",
     "subtitle": "A digitale blátfoam fia's festhóitn und eahóitn fo de bedrotn cbráha af da veit - duah grimne dokument, voatsámlunga und tonafáma."
   },
   "dictionary": {
     "title_with_target": "A {{source}} voat ocaugn -> {{target}}",
     "title_no_target": "A voat in {{source}} ocaugn",
-    "subtitle_with_target": "Suah in de {{source}} veata und sig d'ivasedsung af {{target}}. De dsuicbróh endad ma om réhds.",
+    "subtitle_with_target": "Suah in de {{source}} veata und sig d'ivasetsung af {{target}}. De dsuicbróh endad ma om réhds.",
     "subtitle_no_target": "Suah in de {{source}} veata.",
     "placeholder": "A {{source}} voat eigém...",
     "search": "Suaha",
     "searching": "Suaht...",
     "empty": "Koa tréfa fia \"{{query}}\". De midheifa baun no an dem veatabuah.",
     "no_target_translation": "No koa {{target}} ivasetsung dó.",
+    "no_translations": "Koa ivasetsung dó.",
     "search_aria_label": "Suah {{source}} veata",
     "rate_limited": "Ds'fui bitn - bitce ruiga, fasuah's in oana minutn numoi.",
     "search_failed": "D'suah is feigclógn. Bice numoi fasuaha."
