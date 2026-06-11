@@ -1,0 +1,19 @@
+{
+  "hero": {
+    "title": "Sprochn vor'm Aussterbn rettn"
+  },
+  "dictionary": {
+    "title_with_target": "A {{source}}-Wort nochschaung → {{target}}",
+    "title_no_target": "A Wort in {{source}} nochschaung",
+    "search": "Suacha",
+    "searching": "Suach…"
+  },
+  "stats": {
+    "languages": "Gretete Sprochn",
+    "words": "Dokumentierte Werta",
+    "contributors": "Mitwirkende"
+  },
+  "header": {
+    "interface_language": "Bediensproch"
+  }
+}

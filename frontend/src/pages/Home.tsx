@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+
 import { Language } from '../App';
 import HomeDictionary from '../components/home/HomeDictionary';
 import { getStatistics, Statistics } from '../services/statisticsService';
@@ -11,6 +13,7 @@ interface HomeProps {
 }
 
 export default function Home({ selectedLanguage }: HomeProps) {
+  const { t } = useTranslation();
   const [stats, setStats] = useState<Statistics>({
     total_languages: 0,
     total_words: 0,
@@ -45,13 +48,8 @@ export default function Home({ selectedLanguage }: HomeProps) {
       {/* Hero Section */}
       <section className="hero">
         <div className="hero-content">
-          <h2 className="hero-title">
-            Preserving Endangered Languages
-          </h2>
-          <p className="hero-subtitle">
-            A digital platform dedicated to documenting and preserving the world's endangered languages
-            through written documents, vocabulary databases, and audio recordings.
-          </p>
+          <h2 className="hero-title">{t('hero.title')}</h2>
+          <p className="hero-subtitle">{t('hero.subtitle')}</p>
           <div className="hero-language-info">
             <h3 className="language-name">{selectedLanguage.name}</h3>
             <p className="language-native">{selectedLanguage.nativeName}</p>
@@ -70,31 +68,31 @@ export default function Home({ selectedLanguage }: HomeProps) {
             <div className="stat-number">
               {isLoading ? '...' : stats.total_languages}
             </div>
-            <div className="stat-label">Languages Preserved</div>
+            <div className="stat-label">{t('stats.languages')}</div>
           </div>
           <div className="stat-card">
             <div className="stat-number">
               {isLoading ? '...' : stats.total_words}
             </div>
-            <div className="stat-label">Words Documented</div>
+            <div className="stat-label">{t('stats.words')}</div>
           </div>
           <div className="stat-card">
             <div className="stat-number">
               {isLoading ? '...' : stats.total_documents}
             </div>
-            <div className="stat-label">Documents Preserved</div>
+            <div className="stat-label">{t('stats.documents')}</div>
           </div>
           <div className="stat-card">
             <div className="stat-number">
               {isLoading ? '...' : stats.total_audio}
             </div>
-            <div className="stat-label">Audio Recordings</div>
+            <div className="stat-label">{t('stats.audio')}</div>
           </div>
           <div className="stat-card">
             <div className="stat-number">
               {isLoading ? '...' : stats.total_contributors}
             </div>
-            <div className="stat-label">Contributors</div>
+            <div className="stat-label">{t('stats.contributors')}</div>
           </div>
         </div>
       </section>
@@ -102,27 +100,27 @@ export default function Home({ selectedLanguage }: HomeProps) {
       {/* Mission Section */}
       <section className="mission-section">
         <div className="mission-content">
-          <h3 className="mission-title">Our Mission</h3>
+          <h3 className="mission-title">{t('mission.title')}</h3>
           <div className="mission-grid">
             <div className="mission-card">
               <div className="mission-icon">📚</div>
-              <h4>Document</h4>
-              <p>Record and preserve written documents in endangered languages</p>
+              <h4>{t('mission.document_title')}</h4>
+              <p>{t('mission.document_body')}</p>
             </div>
             <div className="mission-card">
               <div className="mission-icon">💬</div>
-              <h4>Build Vocabulary</h4>
-              <p>Create comprehensive databases with translations and pronunciations</p>
+              <h4>{t('mission.vocabulary_title')}</h4>
+              <p>{t('mission.vocabulary_body')}</p>
             </div>
             <div className="mission-card">
               <div className="mission-icon">🎙️</div>
-              <h4>Record Audio</h4>
-              <p>Store authentic recordings of native speakers</p>
+              <h4>{t('mission.audio_title')}</h4>
+              <p>{t('mission.audio_body')}</p>
             </div>
             <div className="mission-card">
               <div className="mission-icon">🌍</div>
-              <h4>Share Knowledge</h4>
-              <p>Make linguistic heritage accessible for future generations</p>
+              <h4>{t('mission.share_title')}</h4>
+              <p>{t('mission.share_body')}</p>
             </div>
           </div>
         </div>
@@ -130,7 +128,7 @@ export default function Home({ selectedLanguage }: HomeProps) {
 
       {/* Footer */}
       <footer className="footer">
-        <p>© 2026 Nativo - Preserving Linguistic Heritage</p>
+        <p>{t('footer.copyright')}</p>
       </footer>
     </div>
   );

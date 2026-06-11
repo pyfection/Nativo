@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Language } from '../../App';
 import { useUILanguage } from '../../contexts/UILanguageContext';
@@ -10,6 +11,7 @@ interface HomeDictionaryProps {
 }
 
 export default function HomeDictionary({ selectedLanguage }: HomeDictionaryProps) {
+  const { t } = useTranslation();
   const { uiLanguage } = useUILanguage();
   // If the page UI language happens to be the same as the source, fall back
   // to "no target" — the widget will then list any translations it gets back.
@@ -37,9 +39,9 @@ export default function HomeDictionary({ selectedLanguage }: HomeDictionaryProps
       setResults(data);
     } catch (err: any) {
       if (err.response?.status === 429) {
-        setError('Too many requests — please slow down and try again in a minute.');
+        setError(t('dictionary.rate_limited'));
       } else {
-        setError(err.response?.data?.detail || 'Search failed. Please try again.');
+        setError(err.response?.data?.detail || t('dictionary.search_failed'));
       }
       setResults([]);
     } finally {
@@ -47,31 +49,33 @@ export default function HomeDictionary({ selectedLanguage }: HomeDictionaryProps
     }
   };
 
+  const ctx = { source: selectedLanguage.name, target: targetLanguage?.name ?? '' };
+
   return (
     <section className="home-dictionary">
       <div className="home-dictionary-inner">
         <h3 className="home-dictionary-title">
           {targetLanguage
-            ? `Look up a ${selectedLanguage.name} word → ${targetLanguage.name}`
-            : `Look up a word in ${selectedLanguage.name}`}
+            ? t('dictionary.title_with_target', ctx)
+            : t('dictionary.title_no_target', ctx)}
         </h3>
         <p className="home-dictionary-subtitle">
           {targetLanguage
-            ? `Search ${selectedLanguage.name} vocabulary and see ${targetLanguage.name} translations. Change the target via the language picker in the header.`
-            : `Search ${selectedLanguage.name} vocabulary.`}
+            ? t('dictionary.subtitle_with_target', ctx)
+            : t('dictionary.subtitle_no_target', ctx)}
         </p>
 
         <div className="home-dictionary-form">
           <input
             type="text"
             className="home-dictionary-input"
-            placeholder={`Type a ${selectedLanguage.name} word…`}
+            placeholder={t('dictionary.placeholder', ctx)}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter') handleSearch();
             }}
-            aria-label={`Search ${selectedLanguage.name} words`}
+            aria-label={t('dictionary.search_aria_label', ctx)}
           />
           <button
             type="button"
@@ -79,23 +83,21 @@ export default function HomeDictionary({ selectedLanguage }: HomeDictionaryProps
             onClick={handleSearch}
             disabled={loading || !query.trim()}
           >
-            {loading ? 'Searching…' : 'Search'}
+            {loading ? t('dictionary.searching') : t('dictionary.search')}
           </button>
         </div>
 
         {error && <p className="home-dictionary-error">{error}</p>}
 
         {submitted && !loading && !error && results.length === 0 && (
-          <p className="home-dictionary-empty">
-            No matches for &ldquo;{query}&rdquo; yet. Contributors are still building this dictionary.
-          </p>
+          <p className="home-dictionary-empty">{t('dictionary.empty', { query })}</p>
         )}
 
         {results.length > 0 && (
           <ul className="home-dictionary-results">
             {results.map((word) => {
               const targetTranslations = targetLanguage
-                ? word.translations.filter((t) => t.language_id === targetLanguage.id)
+                ? word.translations.filter((tr) => tr.language_id === targetLanguage.id)
                 : [];
               return (
                 <li key={word.id} className="home-dictionary-result">
@@ -111,12 +113,12 @@ export default function HomeDictionary({ selectedLanguage }: HomeDictionaryProps
                   {targetTranslations.length === 0 ? (
                     <p className="home-dictionary-no-trans">
                       {targetLanguage
-                        ? `No ${targetLanguage.name} translation yet.`
-                        : 'No translations yet.'}
+                        ? t('dictionary.no_target_translation', ctx)
+                        : t('dictionary.no_translations')}
                     </p>
                   ) : (
                     <p className="home-dictionary-trans-words">
-                      {targetTranslations.map((t) => t.word).join(', ')}
+                      {targetTranslations.map((tr) => tr.word).join(', ')}
                     </p>
                   )}
                 </li>

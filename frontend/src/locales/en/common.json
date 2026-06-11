@@ -1,0 +1,45 @@
+{
+  "hero": {
+    "title": "Preserving Endangered Languages",
+    "subtitle": "A digital platform dedicated to documenting and preserving the world's endangered languages through written documents, vocabulary databases, and audio recordings."
+  },
+  "dictionary": {
+    "title_with_target": "Look up a {{source}} word → {{target}}",
+    "title_no_target": "Look up a word in {{source}}",
+    "subtitle_with_target": "Search {{source}} vocabulary and see {{target}} translations. Change the target via the language picker in the header.",
+    "subtitle_no_target": "Search {{source}} vocabulary.",
+    "placeholder": "Type a {{source}} word…",
+    "search": "Search",
+    "searching": "Searching…",
+    "empty": "No matches for “{{query}}” yet. Contributors are still building this dictionary.",
+    "no_target_translation": "No {{target}} translation yet.",
+    "no_translations": "No translations yet.",
+    "search_aria_label": "Search {{source}} words",
+    "rate_limited": "Too many requests — please slow down and try again in a minute.",
+    "search_failed": "Search failed. Please try again."
+  },
+  "stats": {
+    "languages": "Languages Preserved",
+    "words": "Words Documented",
+    "documents": "Documents Preserved",
+    "audio": "Audio Recordings",
+    "contributors": "Contributors"
+  },
+  "mission": {
+    "title": "Our Mission",
+    "document_title": "Document",
+    "document_body": "Record and preserve written documents in endangered languages",
+    "vocabulary_title": "Build Vocabulary",
+    "vocabulary_body": "Create comprehensive databases with translations and pronunciations",
+    "audio_title": "Record Audio",
+    "audio_body": "Store authentic recordings of native speakers",
+    "share_title": "Share Knowledge",
+    "share_body": "Make linguistic heritage accessible for future generations"
+  },
+  "header": {
+    "interface_language": "Interface language"
+  },
+  "footer": {
+    "copyright": "© 2026 Nativo - Preserving Linguistic Heritage"
+  }
+}

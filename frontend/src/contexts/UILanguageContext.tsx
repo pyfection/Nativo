@@ -1,4 +1,5 @@
 import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react';
+import i18n from '../i18n';
 
 import { Language } from '../App';
 
@@ -43,6 +44,13 @@ export function UILanguageProvider({ languages, children }: UILanguageProviderPr
   useEffect(() => {
     if (uiLanguageId) localStorage.setItem(UI_LANGUAGE_KEY, uiLanguageId);
   }, [uiLanguageId]);
+
+  // Keep i18next in sync with the picker. Bundles that don't exist fall back
+  // to English via the i18n config.
+  useEffect(() => {
+    const lang = languages.find((l) => l.id === uiLanguageId);
+    if (lang?.iso) void i18n.changeLanguage(lang.iso);
+  }, [languages, uiLanguageId]);
 
   const value = useMemo<UILanguageContextValue>(
     () => ({

@@ -136,20 +136,36 @@ async def search_words(
     if not include_translations:
         return words
 
-    # Fetch translations for each word
+    # Fetch translations for each word — bidirectional. word_translations
+    # rows are stored one-way (word_id → translation_id), but the relation is
+    # symmetric: if A links to B, B should also see A as a translation.
     result = []
     for word in words:
-        # Get translation IDs and notes
-        translation_rows = db.execute(
-            select(word_translations.c.translation_id, word_translations.c.notes).where(
-                word_translations.c.word_id == word.id
-            )
+        forward_rows = db.execute(
+            select(
+                word_translations.c.translation_id.label("other_id"),
+                word_translations.c.notes,
+            ).where(word_translations.c.word_id == word.id)
+        ).fetchall()
+        reverse_rows = db.execute(
+            select(
+                word_translations.c.word_id.label("other_id"),
+                word_translations.c.notes,
+            ).where(word_translations.c.translation_id == word.id)
         ).fetchall()
 
-        # Fetch full word details for translations
+        # Dedupe by other_id (a translation could exist in both directions).
+        seen_ids = set()
+        translation_rows = []
+        for row in (*forward_rows, *reverse_rows):
+            if row.other_id in seen_ids:
+                continue
+            seen_ids.add(row.other_id)
+            translation_rows.append(row)
+
         translations = []
         for trans_row in translation_rows:
-            trans_word = db.query(Word).filter(Word.id == trans_row.translation_id).first()
+            trans_word = db.query(Word).filter(Word.id == trans_row.other_id).first()
             if trans_word:
                 # Get language name
                 lang = db.query(Language).filter(Language.id == trans_word.language_id).first()
