@@ -59,7 +59,43 @@ export default function AudioList({ selectedLanguage }: AudioListProps) {
 
       {!loading && !error && items.length === 0 && (
         <div className="audio-list-empty">
-          <p>{t('audio_page.empty_title')}</p>
+          <svg
+            className="audio-list-empty-wave"
+            viewBox="0 0 240 60"
+            role="img"
+            aria-label="Empty waveform placeholder"
+          >
+            {/* A flat-line "no audio" waveform with subtle bumps. */}
+            <path
+              d="M0 30 Q 20 28 40 30 T 80 30 T 120 30 T 160 30 T 200 30 T 240 30"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              opacity="0.4"
+            />
+            {[
+              { x: 30, h: 6 },
+              { x: 60, h: 10 },
+              { x: 95, h: 4 },
+              { x: 130, h: 8 },
+              { x: 170, h: 5 },
+              { x: 210, h: 9 },
+            ].map((b, i) => (
+              <line
+                key={i}
+                x1={b.x}
+                x2={b.x}
+                y1={30 - b.h}
+                y2={30 + b.h}
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                opacity="0.5"
+              />
+            ))}
+          </svg>
+          <p className="audio-list-empty-title">{t('audio_page.empty_title')}</p>
           <p className="audio-list-empty-hint">{t('audio_page.empty_hint')}</p>
         </div>
       )}

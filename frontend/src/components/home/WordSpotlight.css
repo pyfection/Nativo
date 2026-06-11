@@ -1,0 +1,118 @@
+.word-spotlight {
+  padding: 3rem 1.5rem 4rem;
+  background: linear-gradient(180deg, var(--background, #fffaf3) 0%, white 100%);
+}
+
+.word-spotlight-inner {
+  max-width: 720px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.word-spotlight-eyebrow {
+  margin: 0 0 1.5rem;
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--primary, #555);
+  opacity: 0.85;
+}
+
+.word-spotlight-card {
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+
+.word-spotlight-card.fading {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+.word-spotlight-word {
+  font-family: 'Fraunces', 'EB Garamond', 'Source Serif Pro', Georgia, serif;
+  font-weight: 600;
+  font-size: clamp(3rem, 9vw, 5.5rem);
+  color: var(--primary, #1a1a1a);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.word-spotlight-meta {
+  display: flex;
+  gap: 1rem;
+  align-items: baseline;
+  color: #666;
+}
+
+.word-spotlight-roman {
+  font-style: italic;
+  font-size: 1.2rem;
+  color: #888;
+}
+
+.word-spotlight-pos {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #aaa;
+}
+
+.word-spotlight-definition {
+  margin-top: 0.5rem;
+  font-size: 1.1rem;
+  color: #444;
+  max-width: 36rem;
+  line-height: 1.5;
+}
+
+.word-spotlight-empty {
+  min-height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-style: italic;
+}
+
+.word-spotlight-translate {
+  margin-top: 2rem;
+  padding: 0.65rem 1.5rem;
+  background: var(--primary, #0099cc);
+  color: white;
+  border: none;
+  border-radius: 999px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    filter 0.15s ease;
+}
+
+.word-spotlight-translate:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+}
+
+.word-spotlight-back {
+  margin-top: 1rem;
+  background: none;
+  border: none;
+  color: var(--primary, #0099cc);
+  font-size: 0.95rem;
+  cursor: pointer;
+  padding: 0.4rem 0.8rem;
+}
+
+.word-spotlight-back:hover {
+  text-decoration: underline;
+}

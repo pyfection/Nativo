@@ -61,6 +61,12 @@
     "contribute": "Contribute",
     "contribute_tooltip": "Contribute to {{language}}"
   },
+  "spotlight": {
+    "eyebrow": "A word from {{language}}",
+    "empty": "No words yet — be the first to add one.",
+    "translate_cta": "Translate a word",
+    "back": "Back to discover"
+  },
   "user_menu": {
     "aria_label": "Profile menu for {{username}}",
     "sign_in": "Sign In",

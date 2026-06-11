@@ -4,10 +4,10 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
 import { Language } from '../App';
-import HomeDictionary from '../components/home/HomeDictionary';
 import LanguageActionPanel from '../components/home/LanguageActionPanel';
 import RecentActivity from '../components/home/RecentActivity';
 import StatCard from '../components/home/StatCard';
+import WordSpotlight from '../components/home/WordSpotlight';
 import { useAuth } from '../contexts/AuthContext';
 import { getStatistics, Statistics } from '../services/statisticsService';
 import './Home.css';
@@ -155,8 +155,8 @@ export default function Home({ selectedLanguage }: HomeProps) {
         </div>
       </section>
 
-      {/* Dictionary widget */}
-      <HomeDictionary selectedLanguage={selectedLanguage} />
+      {/* Random word spotlight (rotates every 3s; reveals the dictionary on Translate) */}
+      <WordSpotlight selectedLanguage={selectedLanguage} />
 
       {/* Language-scoped stats */}
       <section className="stats-section">
