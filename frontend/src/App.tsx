@@ -15,6 +15,7 @@ import AddDocument from './pages/AddDocument';
 import EditDocument from './pages/EditDocument';
 import DocumentLinking from './pages/DocumentLinking';
 import languageService, { LanguageResponse } from './services/languageService';
+import { API_URL } from './services/api';
 import './App.css';
 
 // Frontend Language type with color scheme
@@ -98,27 +99,27 @@ function App() {
         setLoading(true);
         // First get the list of languages
         const languageList = await languageService.getAll();
-        
+
         // Then fetch full details for each language (to get colors)
         const languagesWithDetails = await Promise.all(
           languageList.map(lang => languageService.getById(lang.id))
         );
-        
+
         // Convert to frontend format
         const convertedLanguages = languagesWithDetails.map(convertLanguage);
         setLanguages(convertedLanguages);
-        
+
         // Try to restore previously selected language from localStorage
         const savedLanguageId = localStorage.getItem(SELECTED_LANGUAGE_KEY);
         let languageToSelect = convertedLanguages[0]; // Default to first language
-        
+
         if (savedLanguageId) {
           const savedLanguage = convertedLanguages.find(lang => lang.id === savedLanguageId);
           if (savedLanguage) {
             languageToSelect = savedLanguage;
           }
         }
-        
+
         if (languageToSelect) {
           setSelectedLanguage(languageToSelect);
         }
@@ -156,7 +157,7 @@ function App() {
       <div className="app-error" style={{ padding: '2rem', textAlign: 'center' }}>
         <h2>Error</h2>
         <p>{error}</p>
-        <p style={{ fontSize: '0.875rem', color: '#666' }}>Make sure the backend is running on http://localhost:8000</p>
+        <p style={{ fontSize: '0.875rem', color: '#666' }}>Backend: {API_URL}</p>
         <button onClick={() => window.location.reload()} style={{ marginTop: '1rem', padding: '0.5rem 1rem', cursor: 'pointer' }}>Retry</button>
       </div>
     );
@@ -177,25 +178,25 @@ function App() {
       <AuthProvider>
         <div className="app" style={{ '--primary': selectedLanguage?.colorScheme.primary } as React.CSSProperties}>
           <Routes>
-            <Route 
-              path="/" 
+            <Route
+              path="/"
               element={
                 <AppLayout
                   selectedLanguage={selectedLanguage!}
                   onLanguageChange={setSelectedLanguage}
                   languages={languages}
                 >
-                  <Home 
-                    selectedLanguage={selectedLanguage!} 
+                  <Home
+                    selectedLanguage={selectedLanguage!}
                     onLanguageChange={setSelectedLanguage}
                     languages={languages}
                   />
                 </AppLayout>
-              } 
+              }
             />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            
+
             {/* Languages Route */}
             <Route
               path="/languages"
@@ -211,7 +212,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            
+
             {/* Word Routes */}
             <Route
               path="/words"
@@ -241,7 +242,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            
+
             {/* Dictionary Route */}
             <Route
               path="/dictionary"
@@ -260,7 +261,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            
+
             {/* Document Routes */}
             <Route
               path="/documents"
@@ -349,4 +350,3 @@ function App() {
 }
 
 export default App;
-

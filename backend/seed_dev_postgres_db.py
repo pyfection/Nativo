@@ -1,31 +1,30 @@
 #!/usr/bin/env python3
+# ruff: noqa: E501  (this file contains raw SQL literals with very long lines)
 """
 Seed script to populate PostgreSQL database with initial data.
 This script recreates the data from nativo.db without requiring access to it.
 """
-import os
+
 import sys
 from datetime import datetime
 from uuid import UUID
-from sqlalchemy import text
 
 from app.database import SessionLocal
-from app.models.user import User, UserRole
-from app.models.language import Language
 from app.models.document import Document
-from app.models.text import Text, DocumentType
-from app.models.word.word import Word
+from app.models.language import Language
+from app.models.text import DocumentType, Text
+from app.models.user import User, UserRole
 from app.models.word.enums import (
+    Animacy,
+    GrammaticalGender,
     PartOfSpeech,
+    Plurality,
     Register,
     WordStatus,
-    GrammaticalGender,
-    Plurality,
-    GrammaticalCase,
-    VerbAspect,
-    Animacy,
 )
+from app.models.word.word import Word
 from app.utils.security import hash_password
+from sqlalchemy import text
 
 
 def seed_database():
@@ -52,7 +51,7 @@ def seed_database():
             updated_at=datetime.fromisoformat("2025-11-02 02:22:52.213909"),
         )
         db.add(user_5029c5d0)
-        print(f"  Inserted 1 user(s)")
+        print("  Inserted 1 user(s)")
 
         # Commit users before adding languages (users are referenced by documents, texts, words, etc.)
         db.commit()
@@ -154,7 +153,7 @@ def seed_database():
             updated_at=datetime.fromisoformat("2025-11-03 02:01:29.707907"),
         )
         db.add(lang_54266e9b)
-        print(f"  Inserted 6 language(s)")
+        print("  Inserted 6 language(s)")
 
         # Commit languages before inserting user_languages to satisfy foreign key constraint
         db.commit()
@@ -167,7 +166,7 @@ def seed_database():
             updated_at=datetime.fromisoformat("2025-11-09 16:30:06.585462"),
         )
         db.add(doc_26d30f6c)
-        print(f"  Inserted 1 document(s)")
+        print("  Inserted 1 document(s)")
 
         # Commit documents before texts reference them
         db.commit()
@@ -188,7 +187,7 @@ def seed_database():
             updated_at=datetime.fromisoformat("2025-11-09 16:43:16.126049"),
         )
         db.add(text_d5edacf8)
-        print(f"  Inserted 1 text(s)")
+        print("  Inserted 1 text(s)")
 
         # Commit texts before text_word_links reference them
         db.commit()
@@ -402,7 +401,7 @@ def seed_database():
             updated_at=datetime.fromisoformat("2025-11-09 23:06:21.584824"),
         )
         db.add(word_f5e98ccc)
-        print(f"  Inserted 8 word(s)")
+        print("  Inserted 8 word(s)")
 
         # Commit words before word_translations and text_word_links reference them
         db.commit()
@@ -424,7 +423,7 @@ def seed_database():
         """
             )
         )
-        print(f"  Inserted 2 user_language(s)")
+        print("  Inserted 2 user_language(s)")
 
         # Insert word_translations
         db.execute(
@@ -435,14 +434,14 @@ def seed_database():
         """
             )
         )
-        print(f"  Inserted 1 word_translation(s)")
+        print("  Inserted 1 word_translation(s)")
 
         # Insert text_word_links
         db.execute(
             text(
                 """
             INSERT INTO text_word_links (id, text_id, word_id, start_char, end_char, status, confidence, notes, created_by_id, verified_by_id, created_at, updated_at, verified_at)
-            VALUES ('9bde105e-f6c2-4520-b57d-2994e8bf5ba4'::uuid, 'd5edacf8-94fb-4739-9ff6-657139b1d8e1'::uuid, '9840df93-59e9-4274-9724-320e8680c9d5'::uuid, 4, 6, 'CONFIRMED', NULL, NULL, '5029c5d0-c4f6-401e-9257-a8d1055b121a'::uuid, '5029c5d0-c4f6-401e-9257-a8d1055b121a'::uuid, '2025-11-09 18:48:03.745113'::timestamp, '2025-11-09 18:48:19.555873'::timestamp, '2025-11-09 18:48:19.554686'::timestamp)
+            VALUES ('9bde105e-f6c2-4520-b57d-2994e8bf5ba4'::uuid, 'd5edacf8-94fb-4739-9ff6-657139b1d8e1'::uuid, '9840df93-59e9-4274-9724-320e8680c9d5'::uuid, 4, 6, 'confirmed', NULL, NULL, '5029c5d0-c4f6-401e-9257-a8d1055b121a'::uuid, '5029c5d0-c4f6-401e-9257-a8d1055b121a'::uuid, '2025-11-09 18:48:03.745113'::timestamp, '2025-11-09 18:48:19.555873'::timestamp, '2025-11-09 18:48:19.554686'::timestamp)
         """
             )
         )
@@ -450,7 +449,7 @@ def seed_database():
             text(
                 """
             INSERT INTO text_word_links (id, text_id, word_id, start_char, end_char, status, confidence, notes, created_by_id, verified_by_id, created_at, updated_at, verified_at)
-            VALUES ('dcc6e5ee-27da-4e7f-87e0-f8dedd0156cf'::uuid, 'd5edacf8-94fb-4739-9ff6-657139b1d8e1'::uuid, 'efe2c93b-6a75-40d5-8e45-13d9176542f2'::uuid, 0, 3, 'CONFIRMED', NULL, NULL, '5029c5d0-c4f6-401e-9257-a8d1055b121a'::uuid, '5029c5d0-c4f6-401e-9257-a8d1055b121a'::uuid, '2025-11-09 18:52:41.262537'::timestamp, '2025-11-09 18:52:41.262538'::timestamp, '2025-11-09 18:52:41.262282'::timestamp)
+            VALUES ('dcc6e5ee-27da-4e7f-87e0-f8dedd0156cf'::uuid, 'd5edacf8-94fb-4739-9ff6-657139b1d8e1'::uuid, 'efe2c93b-6a75-40d5-8e45-13d9176542f2'::uuid, 0, 3, 'confirmed', NULL, NULL, '5029c5d0-c4f6-401e-9257-a8d1055b121a'::uuid, '5029c5d0-c4f6-401e-9257-a8d1055b121a'::uuid, '2025-11-09 18:52:41.262537'::timestamp, '2025-11-09 18:52:41.262538'::timestamp, '2025-11-09 18:52:41.262282'::timestamp)
         """
             )
         )
@@ -458,7 +457,7 @@ def seed_database():
             text(
                 """
             INSERT INTO text_word_links (id, text_id, word_id, start_char, end_char, status, confidence, notes, created_by_id, verified_by_id, created_at, updated_at, verified_at)
-            VALUES ('c0a1b99f-31aa-4c51-b3a5-79dfdd29117c'::uuid, 'd5edacf8-94fb-4739-9ff6-657139b1d8e1'::uuid, 'adbc6a4e-988a-4ab6-8859-329a888891b9'::uuid, 9, 13, 'CONFIRMED', NULL, NULL, '5029c5d0-c4f6-401e-9257-a8d1055b121a'::uuid, '5029c5d0-c4f6-401e-9257-a8d1055b121a'::uuid, '2025-11-09 23:00:19.641187'::timestamp, '2025-11-09 23:00:19.641188'::timestamp, '2025-11-09 23:00:19.640575'::timestamp)
+            VALUES ('c0a1b99f-31aa-4c51-b3a5-79dfdd29117c'::uuid, 'd5edacf8-94fb-4739-9ff6-657139b1d8e1'::uuid, 'adbc6a4e-988a-4ab6-8859-329a888891b9'::uuid, 9, 13, 'confirmed', NULL, NULL, '5029c5d0-c4f6-401e-9257-a8d1055b121a'::uuid, '5029c5d0-c4f6-401e-9257-a8d1055b121a'::uuid, '2025-11-09 23:00:19.641187'::timestamp, '2025-11-09 23:00:19.641188'::timestamp, '2025-11-09 23:00:19.640575'::timestamp)
         """
             )
         )
@@ -466,7 +465,7 @@ def seed_database():
             text(
                 """
             INSERT INTO text_word_links (id, text_id, word_id, start_char, end_char, status, confidence, notes, created_by_id, verified_by_id, created_at, updated_at, verified_at)
-            VALUES ('a2c60687-6d4f-4f1b-aa4c-eccf57a91f2f'::uuid, 'd5edacf8-94fb-4739-9ff6-657139b1d8e1'::uuid, '2658e326-8ab7-4480-95e6-ac5f91458d77'::uuid, 30, 34, 'CONFIRMED', NULL, NULL, '5029c5d0-c4f6-401e-9257-a8d1055b121a'::uuid, '5029c5d0-c4f6-401e-9257-a8d1055b121a'::uuid, '2025-11-09 23:02:52.295535'::timestamp, '2025-11-09 23:03:49.545029'::timestamp, '2025-11-09 23:03:49.544100'::timestamp)
+            VALUES ('a2c60687-6d4f-4f1b-aa4c-eccf57a91f2f'::uuid, 'd5edacf8-94fb-4739-9ff6-657139b1d8e1'::uuid, '2658e326-8ab7-4480-95e6-ac5f91458d77'::uuid, 30, 34, 'confirmed', NULL, NULL, '5029c5d0-c4f6-401e-9257-a8d1055b121a'::uuid, '5029c5d0-c4f6-401e-9257-a8d1055b121a'::uuid, '2025-11-09 23:02:52.295535'::timestamp, '2025-11-09 23:03:49.545029'::timestamp, '2025-11-09 23:03:49.544100'::timestamp)
         """
             )
         )
@@ -474,7 +473,7 @@ def seed_database():
             text(
                 """
             INSERT INTO text_word_links (id, text_id, word_id, start_char, end_char, status, confidence, notes, created_by_id, verified_by_id, created_at, updated_at, verified_at)
-            VALUES ('f9366deb-731d-4d57-a206-18155b8ca8ce'::uuid, 'd5edacf8-94fb-4739-9ff6-657139b1d8e1'::uuid, '206d545e-a82f-4e41-9198-2c0afb5ea446'::uuid, 37, 40, 'CONFIRMED', NULL, NULL, '5029c5d0-c4f6-401e-9257-a8d1055b121a'::uuid, '5029c5d0-c4f6-401e-9257-a8d1055b121a'::uuid, '2025-11-09 23:04:28.618069'::timestamp, '2025-11-09 23:04:28.618071'::timestamp, '2025-11-09 23:04:28.617819'::timestamp)
+            VALUES ('f9366deb-731d-4d57-a206-18155b8ca8ce'::uuid, 'd5edacf8-94fb-4739-9ff6-657139b1d8e1'::uuid, '206d545e-a82f-4e41-9198-2c0afb5ea446'::uuid, 37, 40, 'confirmed', NULL, NULL, '5029c5d0-c4f6-401e-9257-a8d1055b121a'::uuid, '5029c5d0-c4f6-401e-9257-a8d1055b121a'::uuid, '2025-11-09 23:04:28.618069'::timestamp, '2025-11-09 23:04:28.618071'::timestamp, '2025-11-09 23:04:28.617819'::timestamp)
         """
             )
         )
@@ -482,11 +481,11 @@ def seed_database():
             text(
                 """
             INSERT INTO text_word_links (id, text_id, word_id, start_char, end_char, status, confidence, notes, created_by_id, verified_by_id, created_at, updated_at, verified_at)
-            VALUES ('4357d081-2d7c-4446-92f1-5dcdbcae69d1'::uuid, 'd5edacf8-94fb-4739-9ff6-657139b1d8e1'::uuid, 'f5e98ccc-8464-4282-b128-0f93652da13b'::uuid, 24, 29, 'CONFIRMED', NULL, NULL, '5029c5d0-c4f6-401e-9257-a8d1055b121a'::uuid, '5029c5d0-c4f6-401e-9257-a8d1055b121a'::uuid, '2025-11-09 23:06:21.610925'::timestamp, '2025-11-09 23:06:21.610927'::timestamp, '2025-11-09 23:06:21.610719'::timestamp)
+            VALUES ('4357d081-2d7c-4446-92f1-5dcdbcae69d1'::uuid, 'd5edacf8-94fb-4739-9ff6-657139b1d8e1'::uuid, 'f5e98ccc-8464-4282-b128-0f93652da13b'::uuid, 24, 29, 'confirmed', NULL, NULL, '5029c5d0-c4f6-401e-9257-a8d1055b121a'::uuid, '5029c5d0-c4f6-401e-9257-a8d1055b121a'::uuid, '2025-11-09 23:06:21.610925'::timestamp, '2025-11-09 23:06:21.610927'::timestamp, '2025-11-09 23:06:21.610719'::timestamp)
         """
             )
         )
-        print(f"  Inserted 6 text_word_link(s)")
+        print("  Inserted 6 text_word_link(s)")
 
         db.commit()
         print("Database seeding completed successfully!")

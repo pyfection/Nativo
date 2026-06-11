@@ -21,4 +21,6 @@ WORKDIR /app/backend
 EXPOSE 8000
 
 # Fly's release_command runs migrations; the web process just serves.
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# --proxy-headers makes Starlette honor X-Forwarded-For from Fly's edge so
+# rate limiting (and request.client.host) sees real client IPs.
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips=*"]

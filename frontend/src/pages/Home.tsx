@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Language } from '../App';
+import HomeDictionary from '../components/home/HomeDictionary';
 import { getStatistics, Statistics } from '../services/statisticsService';
 import './Home.css';
 
@@ -58,6 +59,9 @@ export default function Home({ selectedLanguage }: HomeProps) {
           </div>
         </div>
       </section>
+
+      {/* Dictionary widget */}
+      <HomeDictionary selectedLanguage={selectedLanguage} />
 
       {/* Stats Section */}
       <section className="stats-section">
@@ -131,4 +135,3 @@ export default function Home({ selectedLanguage }: HomeProps) {
     </div>
   );
 }
-

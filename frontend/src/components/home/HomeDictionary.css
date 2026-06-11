@@ -1,0 +1,135 @@
+.home-dictionary {
+  padding: 3rem 1rem;
+  background: var(--background, #fffaf3);
+}
+
+.home-dictionary-inner {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.home-dictionary-title {
+  margin: 0 0 0.25rem;
+  color: var(--primary, #333);
+  font-size: 1.5rem;
+}
+
+.home-dictionary-subtitle {
+  margin: 0 0 1.25rem;
+  color: #555;
+  font-size: 0.95rem;
+}
+
+.home-dictionary-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.home-dictionary-input {
+  flex: 1;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.home-dictionary-input:focus {
+  outline: none;
+  border-color: var(--primary, #0099cc);
+  box-shadow: 0 0 0 3px rgba(0, 153, 204, 0.15);
+}
+
+.home-dictionary-button {
+  padding: 0.65rem 1.25rem;
+  background: var(--primary, #0099cc);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.home-dictionary-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.home-dictionary-error {
+  margin: 0.5rem 0;
+  color: #b00020;
+  font-size: 0.9rem;
+}
+
+.home-dictionary-empty {
+  margin: 0.75rem 0 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.home-dictionary-results {
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.home-dictionary-result {
+  padding: 0.85rem 1rem;
+  background: white;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+}
+
+.home-dictionary-headword {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin-bottom: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.home-dictionary-word {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--primary, #333);
+}
+
+.home-dictionary-roman {
+  color: #888;
+  font-style: italic;
+  font-size: 0.95rem;
+}
+
+.home-dictionary-pos {
+  color: #999;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.home-dictionary-trans-group {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  padding: 0.15rem 0;
+}
+
+.home-dictionary-trans-lang {
+  color: #777;
+  font-weight: 500;
+  min-width: 7rem;
+}
+
+.home-dictionary-trans-words {
+  color: #222;
+}
+
+.home-dictionary-no-trans {
+  margin: 0;
+  color: #999;
+  font-size: 0.9rem;
+  font-style: italic;
+}

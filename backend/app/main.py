@@ -1,13 +1,17 @@
 """
 Main FastAPI application for Nativo endangered language preservation platform.
 """
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 from starlette.middleware.sessions import SessionMiddleware
 
-from app.config import settings
-from app.api.v1.router import router as api_v1_router
 from app.admin import create_admin
+from app.api.v1.router import router as api_v1_router
+from app.config import settings
+from app.limiter import limiter
 
 # Create FastAPI application
 app = FastAPI(
@@ -15,6 +19,8 @@ app = FastAPI(
     description="A platform for preserving endangered languages through digital archival",
     version="0.1.0",
 )
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Configure CORS
 # Use ["*"] to allow all origins (development only)
@@ -52,7 +58,7 @@ async def root():
         "message": "Welcome to Nativo API",
         "docs": "/docs",
         "admin": "/admin",
-        "version": "0.1.0"
+        "version": "0.1.0",
     }
 
 
@@ -60,4 +66,3 @@ async def root():
 async def health_check():
     """Health check endpoint"""
     return {"status": "healthy"}
-
