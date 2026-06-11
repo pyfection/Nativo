@@ -1,0 +1,33 @@
+.git
+.github
+.venv
+.idea
+.vscode
+.claude
+.pytest_cache
+.ruff_cache
+__pycache__
+*.pyc
+
+# Frontend — not built into the backend image
+frontend
+node_modules
+
+# Dev artifacts
+backend/uploads
+backend/nativo.db
+*.sqlite
+*.sqlite3
+*.db
+
+# Local env
+.env
+.env.local
+**/.env
+!**/.env.example
+
+# Docs / repo meta
+*.md
+!README.md
+docker-compose*.yml
+docker

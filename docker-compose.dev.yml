@@ -71,7 +71,7 @@ services:
     ports:
       - "5173:5173"
     environment:
-      - VITE_API_BASE_URL=http://localhost:8000
+      - VITE_API_URL=http://localhost:8000
       - CHOKIDAR_USEPOLLING=true  # Enable polling for file changes in Docker
     depends_on:
       - backend

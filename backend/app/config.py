@@ -1,31 +1,30 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import Optional
 
 
 class Settings(BaseSettings):
-    """Application settings loaded from environment variables"""
-    
+    """Application settings loaded from environment variables (or .env file)."""
+
     # Application
     APP_NAME: str = "Nativo"
     DEBUG: bool = False
-    
-    # Security
-    SECRET_KEY: str = "your-secret-key-change-in-production-min-32-chars-long"
+
+    # Security — must be provided. Generate with: openssl rand -hex 32
+    SECRET_KEY: str
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
-    
-    # Database
-    DATABASE_URL: str = "sqlite:///./nativo.db"
-    
-    # CORS - allow all localhost origins for development
-    BACKEND_CORS_ORIGINS: list[str] = ["*"]
-    
+
+    # Database — must be a Postgres URL. Alembic migrations use Postgres-only
+    # syntax and will fail against SQLite.
+    DATABASE_URL: str
+
+    # CORS — list of allowed origins. Use ["*"] for fully-open dev only.
+    BACKEND_CORS_ORIGINS: list[str] = ["http://localhost:5173"]
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
-        case_sensitive=True
+        case_sensitive=True,
     )
 
 
 settings = Settings()
-

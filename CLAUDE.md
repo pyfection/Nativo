@@ -8,7 +8,8 @@ Nativo — a web platform for preserving endangered languages: written texts (wi
 
 - **Backend**: FastAPI + SQLAlchemy 2.0 + Alembic, packaged with `uv`. Python `>=3.13`.
 - **Frontend**: React 18 + TypeScript + Vite.
-- **DB**: Postgres 16 via Docker. *(`app/config.py` defaults to sqlite, but the Alembic migrations use Postgres-only syntax (`::text` casts) and fail on sqlite — see "Known issues". For local dev use docker-compose or point `DATABASE_URL` at a Postgres.)*
+- **DB**: Postgres 16. Use docker-compose locally, or point `DATABASE_URL` at a Neon branch — Alembic migrations use Postgres-only syntax and won't run against sqlite.
+- **Deployment**: Neon (DB) + Fly.io (backend) + Cloudflare Pages (frontend). See [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ## Repo layout
 
@@ -73,10 +74,11 @@ docker compose -f docker-compose.dev.yml up --build
 
 These are real and will bite — fix or work around, don't ignore.
 
-- **Sqlite default is broken.** `DATABASE_URL` defaults to `sqlite:///./nativo.db` but Alembic migrations contain Postgres-only `::text` casts and fail on sqlite. Either (a) run via `docker compose -f docker-compose.dev.yml up` (recommended), or (b) point `DATABASE_URL` at a Postgres instance before `alembic upgrade head`.
+- **`DATABASE_URL` and `SECRET_KEY` are required** — `Settings` raises if either is missing. Copy `backend/.env.example` to `backend/.env` and fill in.
 - **Frontend `npm install`** requires `--legacy-peer-deps` only if you re-add an old `eslint-plugin-react-hooks@4`; we bumped to `^5` which is eslint-9-compatible.
 - **`datetime.utcnow()`** is still used as a column `default=` in ~30 places across `app/models/*` and a few service/endpoint call sites. Deprecated in 3.12+; replace with `default=lambda: datetime.now(UTC)` and `datetime.now(UTC)` respectively. Tests have been migrated.
 - **`npm run lint` has 5 pre-existing warnings** (4× `react-hooks/exhaustive-deps`, 1× `react-refresh/only-export-components`). Real code issues, not tooling — needs a per-hook review.
+- **File uploads (`backend/uploads/`) are ephemeral on Fly without a volume.** Attach `fly volumes create nativo_uploads --size 1` and mount, or move to object storage before scaling audio.
 - **`uv` resolved Python 3.14**, not 3.13. Constraint allows it but pin to 3.13 in `pyproject.toml` if you want stability.
 - **No `.env.example`** in `backend/` or `frontend/`, despite QUICKSTART telling you to `cp` them. Either add them or update QUICKSTART.
 

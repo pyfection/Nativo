@@ -1,0 +1,45 @@
+# Fly.io app config. Run `fly launch --copy-config` the first time to provision.
+#
+# Required secrets (set with `fly secrets set ...`):
+#   DATABASE_URL  — Neon pooled connection string (postgresql://...)
+#   SECRET_KEY    — output of `openssl rand -hex 32`
+#
+# Optional:
+#   BACKEND_CORS_ORIGINS  — JSON list, e.g. ["https://nativo.pages.dev"]
+
+app = "nativo-backend"        # change to whatever name `fly launch` assigned
+primary_region = "fra"         # nearest to your DB region; Neon free tier is in eu-central / us-east
+
+[build]
+  dockerfile = "Dockerfile"
+
+[deploy]
+  # Runs once after build, before swapping traffic. Idempotent if already up-to-date.
+  release_command = "alembic -c /app/backend/alembic.ini upgrade head"
+
+[env]
+  PORT = "8000"
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = "stop"      # spin down when idle (free tier friendly)
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 50
+    hard_limit = 100
+
+  [[http_service.checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "10s"
+    method = "GET"
+    path = "/health"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
