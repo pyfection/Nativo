@@ -108,7 +108,7 @@
 }
 
 .btn-primary:hover:not(:disabled) {
-  background-color: #723a0f;
+  filter: brightness(0.88);
 }
 
 .btn-primary:disabled {
@@ -130,4 +130,3 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
-

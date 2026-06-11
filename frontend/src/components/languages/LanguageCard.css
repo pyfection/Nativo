@@ -172,7 +172,7 @@
 }
 
 .btn-join:hover {
-  background-color: #723a0f;
+  filter: brightness(0.88);
   transform: translateY(-1px);
 }
 
@@ -202,4 +202,3 @@
     padding: 0.25rem 0.5rem;
   }
 }
-

@@ -50,7 +50,7 @@
 }
 
 .join-button:hover {
-  background-color: #723a0f;
+  filter: brightness(0.88);
   transform: translateY(-1px);
 }
 
@@ -124,4 +124,3 @@
     min-width: 200px;
   }
 }
-
