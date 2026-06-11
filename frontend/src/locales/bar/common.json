@@ -1,9 +1,9 @@
 {
   "hero": {
     "title": "Cbráha foa'm ascdeam rétn",
-    "title_language": "Dahóitung fo {{language}}",
+    "title_language": "{{language}} is fia iva dausnd iór gret voan.",
     "subtitle": "A digitale blátfoam fia's festhóitn und eahóitn fo de bedrotn cbráha af da veit - duah grimne dokument, voatsámlunga und tonafnáma.",
-    "subtitle_language": "Veataguad, tekst und tonafnáma fia {{language}} festhóitn."
+    "subtitle_language": "Mia nemas af befoas' nima gibt."
   },
   "dictionary": {
     "title_with_target": "A {{source}} voat ocaugn -> {{target}}",

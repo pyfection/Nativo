@@ -2,8 +2,8 @@
   "hero": {
     "title": "Preserving Endangered Languages",
     "subtitle": "A digital platform dedicated to documenting and preserving the world's endangered languages through written documents, vocabulary databases, and audio recordings.",
-    "title_language": "{{language}} Preservation Project",
-    "subtitle_language": "Document vocabulary, texts, and audio recordings for {{language}}."
+    "title_language": "{{language}} has been spoken for over a thousand years.",
+    "subtitle_language": "We're documenting it before it isn't."
   },
   "dictionary": {
     "title_with_target": "Look up a {{source}} word → {{target}}",
@@ -66,6 +66,10 @@
     "empty": "No words yet — be the first to add one.",
     "translate_cta": "Translate a word",
     "back": "Back to discover"
+  },
+  "endangerment": {
+    "headline": "UNESCO classifies {{language}} as {{level}}.",
+    "progress": "{{count}} of an estimated {{target}} core words documented."
   },
   "user_menu": {
     "aria_label": "Profile menu for {{username}}",

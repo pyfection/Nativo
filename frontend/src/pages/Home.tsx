@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
 import { Language } from '../App';
+import EndangermentPanel from '../components/home/EndangermentPanel';
 import LanguageActionPanel from '../components/home/LanguageActionPanel';
 import RecentActivity from '../components/home/RecentActivity';
 import StatCard from '../components/home/StatCard';
@@ -154,6 +155,13 @@ export default function Home({ selectedLanguage }: HomeProps) {
           </div>
         </div>
       </section>
+
+      {/* UNESCO endangerment + progress towards a core-vocabulary target */}
+      <EndangermentPanel
+        selectedLanguage={selectedLanguage}
+        wordCount={languageStats.total_words}
+        loading={statsLoading}
+      />
 
       {/* Random word spotlight (rotates every 3s; reveals the dictionary on Translate) */}
       <WordSpotlight selectedLanguage={selectedLanguage} />
