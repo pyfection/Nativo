@@ -39,7 +39,7 @@
 /* Hero Section */
 .hero {
   background: linear-gradient(135deg, var(--background) 0%, white 100%);
-  padding: 4rem 2rem;
+  padding: 2rem 2rem 1.75rem;
   transition: background 0.3s ease;
 }
 
@@ -50,68 +50,80 @@
 }
 
 .hero-title {
-  font-size: 3rem;
+  font-size: 2.25rem;
   font-weight: 800;
   color: #1a1a1a;
-  margin-bottom: 1rem;
+  margin: 0 0 0.5rem;
   line-height: 1.2;
 }
 
 .hero-subtitle {
-  font-size: 1.25rem;
+  font-size: 1.05rem;
   color: #555;
-  line-height: 1.6;
-  margin-bottom: 3rem;
+  line-height: 1.5;
+  margin: 0 0 1.25rem;
 }
 
 .hero-language-info {
   background-color: white;
   border-left: 4px solid var(--primary);
-  padding: 2rem;
+  padding: 1.25rem 1.5rem;
   border-radius: 12px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
+  text-align: left;
 }
 
 .language-name {
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: var(--primary);
-  margin-bottom: 0.5rem;
+  margin: 0 0 0.25rem;
   transition: color 0.3s ease;
 }
 
 .language-native {
-  font-size: 1.5rem;
+  font-size: 1.1rem;
   color: var(--secondary);
-  margin-bottom: 1rem;
+  margin: 0 0 0.5rem;
   font-style: italic;
   transition: color 0.3s ease;
 }
 
 .language-description {
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   color: #666;
-  line-height: 1.6;
+  line-height: 1.5;
+  margin: 0;
 }
 
 /* Stats Section */
 .stats-section {
-  padding: 4rem 2rem;
+  padding: 2.5rem 2rem;
   background-color: white;
+}
+
+.stats-heading {
+  max-width: 1200px;
+  margin: 0 auto 1.25rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #333;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
 }
 
 .stats-grid {
   max-width: 1200px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.25rem;
 }
 
 .stat-card {
   text-align: center;
-  padding: 2rem;
+  padding: 1.5rem;
   background: linear-gradient(135deg, var(--background) 0%, white 100%);
   border-radius: 12px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
@@ -124,7 +136,7 @@
 }
 
 .stat-number {
-  font-size: 3rem;
+  font-size: 2.25rem;
   font-weight: 800;
   color: var(--primary);
   margin-bottom: 0.5rem;
@@ -247,4 +259,3 @@
     font-size: 2rem;
   }
 }
-

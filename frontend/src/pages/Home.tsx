@@ -48,8 +48,12 @@ export default function Home({ selectedLanguage }: HomeProps) {
       {/* Hero Section */}
       <section className="hero">
         <div className="hero-content">
-          <h2 className="hero-title">{t('hero.title')}</h2>
-          <p className="hero-subtitle">{t('hero.subtitle')}</p>
+          <h2 className="hero-title">
+            {t('hero.title_language', { language: selectedLanguage.name })}
+          </h2>
+          <p className="hero-subtitle">
+            {t('hero.subtitle_language', { language: selectedLanguage.name })}
+          </p>
           <div className="hero-language-info">
             <h3 className="language-name">{selectedLanguage.name}</h3>
             <p className="language-native">{selectedLanguage.nativeName}</p>
@@ -63,6 +67,7 @@ export default function Home({ selectedLanguage }: HomeProps) {
 
       {/* Stats Section */}
       <section className="stats-section">
+        <h3 className="stats-heading">{t('stats.heading')}</h3>
         <div className="stats-grid">
           <div className="stat-card">
             <div className="stat-number">

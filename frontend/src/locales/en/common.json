@@ -1,7 +1,9 @@
 {
   "hero": {
     "title": "Preserving Endangered Languages",
-    "subtitle": "A digital platform dedicated to documenting and preserving the world's endangered languages through written documents, vocabulary databases, and audio recordings."
+    "subtitle": "A digital platform dedicated to documenting and preserving the world's endangered languages through written documents, vocabulary databases, and audio recordings.",
+    "title_language": "{{language}} Preservation Project",
+    "subtitle_language": "Document vocabulary, texts, and audio recordings for {{language}}."
   },
   "dictionary": {
     "title_with_target": "Look up a {{source}} word → {{target}}",
@@ -19,6 +21,7 @@
     "search_failed": "Search failed. Please try again."
   },
   "stats": {
+    "heading": "Platform overview",
     "languages": "Languages Preserved",
     "words": "Words Documented",
     "documents": "Documents Preserved",
@@ -37,7 +40,15 @@
     "share_body": "Make linguistic heritage accessible for future generations"
   },
   "header": {
-    "interface_language": "Interface language"
+    "interface_language": "Interface language",
+    "contribute": "Contribute",
+    "contribute_tooltip": "Contribute to {{language}}"
+  },
+  "nav": {
+    "words": "Words",
+    "dictionary": "Dictionary",
+    "documents": "Documents",
+    "languages": "Languages"
   },
   "footer": {
     "copyright": "© 2026 Nativo - Preserving Linguistic Heritage"

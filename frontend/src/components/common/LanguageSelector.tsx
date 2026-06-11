@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Language } from '../../App';
 import { useAuth } from '../../contexts/AuthContext';
@@ -18,6 +19,7 @@ export default function LanguageSelector({
   onLanguageChange,
   onLanguageJoined
 }: LanguageSelectorProps) {
+  const { t } = useTranslation();
   const { user, isAuthenticated } = useAuth();
   const [showJoinModal, setShowJoinModal] = useState(false);
 
@@ -92,9 +94,9 @@ export default function LanguageSelector({
               <button
                 onClick={handleJoinClick}
                 className="join-button"
-                title="Join this language"
+                title={t('header.contribute_tooltip', { language: selectedLanguage.name })}
               >
-                Join
+                {t('header.contribute')}
               </button>
             ) : (
               <div className="proficiency-badge" title={`Proficiency: ${userProficiency.proficiency_level}`}>
