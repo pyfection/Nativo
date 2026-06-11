@@ -1,7 +1,7 @@
 {
   "hero": {
     "title": "Cbráha foa'm ascdeam rétn",
-    "subtitle": "A digitale blátfoam fia's festhóitn und eahóitn fo de bedrotn cbráha af da veit - duah grimne dokument, voatsámlunga und tonafáma."
+    "subtitle": "A digitale blátfoam fia's festhóitn und eahóitn fo de bedrotn cbráha af da veit - duah grimne dokument, voatsámlunga und tonafnáma."
   },
   "dictionary": {
     "title_with_target": "A {{source}} voat ocaugn -> {{target}}",
@@ -17,5 +17,29 @@
     "search_aria_label": "Suah {{source}} veata",
     "rate_limited": "Ds'fui bitn - bitce ruiga, fasuah's in oana minutn numoi.",
     "search_failed": "D'suah is feigclógn. Bice numoi fasuaha."
+  },
+  "stats": {
+    "languages": "Dahóitne cbráha",
+    "words": "Dokumentiade veata",
+    "documents": "Dahóitne dokument",
+    "audio": "Tonafnáma",
+    "contributors": "Midheifa"
+  },
+  "mission": {
+    "title": "Unsa afdróg",
+    "document_title": "Festhóitn",
+    "document_body": "Gcrimne dokument in bedrotn crbáha festhóin und eahóitn",
+    "vocabulary_title": "Veataguad afbaun",
+    "vocabulary_body": "Umfángraihe voatsámlung mid ivasetsunga und ascbráha afbaun",
+    "audio_title": "Ton afnema",
+    "audio_body": "Ehde afnáma fo muadacbráhla cbaihan",
+    "share_title": "Visn tailn",
+    "share_body": "Cbráhlihs eab fia kemade genaradsiona dahóitn"
+  },
+  "header": {
+    "interface_language": "Bedincbráh"
+  },
+  "footer": {
+    "copyright": "© 2026 Nativo - Cbráhlihs eab dahóitn"
   }
 }
