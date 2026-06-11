@@ -8,8 +8,8 @@ export interface Statistics {
   total_contributors: number;
 }
 
-export const getStatistics = async (): Promise<Statistics> => {
-  const response = await api.get<Statistics>('/api/v1/statistics/');
+export const getStatistics = async (languageId?: string): Promise<Statistics> => {
+  const params = languageId ? { language_id: languageId } : undefined;
+  const response = await api.get<Statistics>('/api/v1/statistics/', { params });
   return response.data;
 };
-

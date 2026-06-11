@@ -22,11 +22,24 @@
   },
   "stats": {
     "heading": "Platform overview",
+    "language_heading": "{{language}} progress",
     "languages": "Languages Preserved",
     "words": "Words Documented",
     "documents": "Documents Preserved",
     "audio": "Audio Recordings",
     "contributors": "Contributors"
+  },
+  "action_panel": {
+    "view_words": "View words",
+    "view_documents": "View documents",
+    "upload_audio": "Upload audio",
+    "upload_audio_coming_soon": "Audio upload coming soon",
+    "contribute": "Contribute"
+  },
+  "activity": {
+    "heading": "Recent activity in {{language}}",
+    "loading": "Loading recent activity…",
+    "empty": "Nothing yet — be the first to add a word, document, or recording."
   },
   "mission": {
     "title": "Our Mission",

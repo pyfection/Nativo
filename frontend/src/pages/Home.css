@@ -103,6 +103,11 @@
   background-color: white;
 }
 
+.stats-section-platform {
+  background-color: #fafafa;
+  border-top: 1px solid #ececec;
+}
+
 .stats-heading {
   max-width: 1200px;
   margin: 0 auto 1.25rem;

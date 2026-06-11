@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 
 import { Language } from '../App';
 import HomeDictionary from '../components/home/HomeDictionary';
+import LanguageActionPanel from '../components/home/LanguageActionPanel';
+import RecentActivity from '../components/home/RecentActivity';
 import { getStatistics, Statistics } from '../services/statisticsService';
 import './Home.css';
 
@@ -12,39 +14,77 @@ interface HomeProps {
   languages: Language[];
 }
 
+const EMPTY_STATS: Statistics = {
+  total_languages: 0,
+  total_words: 0,
+  total_audio: 0,
+  total_documents: 0,
+  total_contributors: 0,
+};
+
 export default function Home({ selectedLanguage }: HomeProps) {
   const { t } = useTranslation();
-  const [stats, setStats] = useState<Statistics>({
-    total_languages: 0,
-    total_words: 0,
-    total_audio: 0,
-    total_documents: 0,
-    total_contributors: 0,
-  });
-  const [isLoading, setIsLoading] = useState(true);
+  const [languageStats, setLanguageStats] = useState<Statistics>(EMPTY_STATS);
+  const [platformStats, setPlatformStats] = useState<Statistics>(EMPTY_STATS);
+  const [statsLoading, setStatsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const data = await getStatistics();
-        setStats(data);
-      } catch (error) {
+    let cancelled = false;
+    setStatsLoading(true);
+    Promise.all([getStatistics(selectedLanguage.id), getStatistics()])
+      .then(([lang, platform]) => {
+        if (cancelled) return;
+        setLanguageStats(lang);
+        setPlatformStats(platform);
+      })
+      .catch((error) => {
+        // Network/CORS — leave defaults, log
         console.error('Failed to fetch statistics:', error);
-      } finally {
-        setIsLoading(false);
-      }
+      })
+      .finally(() => {
+        if (!cancelled) setStatsLoading(false);
+      });
+    return () => {
+      cancelled = true;
     };
+  }, [selectedLanguage.id]);
 
-    fetchStats();
-  }, []);
+  const renderStats = (stats: Statistics, includeLanguageCount: boolean) => {
+    const cells: Array<{ value: number; label: string }> = [];
+    if (includeLanguageCount) {
+      cells.push({ value: stats.total_languages, label: t('stats.languages') });
+    }
+    cells.push(
+      { value: stats.total_words, label: t('stats.words') },
+      { value: stats.total_documents, label: t('stats.documents') },
+      { value: stats.total_audio, label: t('stats.audio') },
+      { value: stats.total_contributors, label: t('stats.contributors') }
+    );
+
+    return (
+      <div className="stats-grid">
+        {cells.map((cell) => (
+          <div key={cell.label} className="stat-card">
+            <div className="stat-number">{statsLoading ? '…' : cell.value}</div>
+            <div className="stat-label">{cell.label}</div>
+          </div>
+        ))}
+      </div>
+    );
+  };
 
   return (
-    <div className="home-page" style={{
-      '--primary': selectedLanguage.colorScheme.primary,
-      '--secondary': selectedLanguage.colorScheme.secondary,
-      '--accent': selectedLanguage.colorScheme.accent,
-      '--background': selectedLanguage.colorScheme.background,
-    } as React.CSSProperties}>
+    <div
+      className="home-page"
+      style={
+        {
+          '--primary': selectedLanguage.colorScheme.primary,
+          '--secondary': selectedLanguage.colorScheme.secondary,
+          '--accent': selectedLanguage.colorScheme.accent,
+          '--background': selectedLanguage.colorScheme.background,
+        } as React.CSSProperties
+      }
+    >
       {/* Hero Section */}
       <section className="hero">
         <div className="hero-content">
@@ -58,6 +98,7 @@ export default function Home({ selectedLanguage }: HomeProps) {
             <h3 className="language-name">{selectedLanguage.name}</h3>
             <p className="language-native">{selectedLanguage.nativeName}</p>
             <p className="language-description">{selectedLanguage.description}</p>
+            <LanguageActionPanel />
           </div>
         </div>
       </section>
@@ -65,41 +106,21 @@ export default function Home({ selectedLanguage }: HomeProps) {
       {/* Dictionary widget */}
       <HomeDictionary selectedLanguage={selectedLanguage} />
 
-      {/* Stats Section */}
+      {/* Language-scoped stats */}
       <section className="stats-section">
+        <h3 className="stats-heading">
+          {t('stats.language_heading', { language: selectedLanguage.name })}
+        </h3>
+        {renderStats(languageStats, false)}
+      </section>
+
+      {/* Recent activity */}
+      <RecentActivity selectedLanguage={selectedLanguage} />
+
+      {/* Platform overview */}
+      <section className="stats-section stats-section-platform">
         <h3 className="stats-heading">{t('stats.heading')}</h3>
-        <div className="stats-grid">
-          <div className="stat-card">
-            <div className="stat-number">
-              {isLoading ? '...' : stats.total_languages}
-            </div>
-            <div className="stat-label">{t('stats.languages')}</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-number">
-              {isLoading ? '...' : stats.total_words}
-            </div>
-            <div className="stat-label">{t('stats.words')}</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-number">
-              {isLoading ? '...' : stats.total_documents}
-            </div>
-            <div className="stat-label">{t('stats.documents')}</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-number">
-              {isLoading ? '...' : stats.total_audio}
-            </div>
-            <div className="stat-label">{t('stats.audio')}</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-number">
-              {isLoading ? '...' : stats.total_contributors}
-            </div>
-            <div className="stat-label">{t('stats.contributors')}</div>
-          </div>
-        </div>
+        {renderStats(platformStats, true)}
       </section>
 
       {/* Mission Section */}

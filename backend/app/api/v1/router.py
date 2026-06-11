@@ -1,18 +1,20 @@
 """
 Main API router that includes all endpoint routers.
 """
+
 from fastapi import APIRouter
 
 from app.api.v1.endpoints import (
-    auth,
-    users,
-    languages,
-    words,
-    documents,
+    activity,
     audio,
+    auth,
+    documents,
+    languages,
     statistics,
-    user_languages,
     text_links,
+    user_languages,
+    users,
+    words,
 )
 
 router = APIRouter()
@@ -27,4 +29,4 @@ router.include_router(documents.router, prefix="/documents", tags=["Documents"])
 router.include_router(text_links.router, tags=["Text Links"])
 router.include_router(audio.router, prefix="/audio", tags=["Audio"])
 router.include_router(statistics.router, prefix="/statistics", tags=["Statistics"])
-
+router.include_router(activity.router, prefix="/activity", tags=["Activity"])
