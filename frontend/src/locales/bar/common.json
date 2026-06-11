@@ -1,7 +1,9 @@
 {
   "hero": {
     "title": "Cbráha foa'm ascdeam rétn",
-    "subtitle": "A digitale blátfoam fia's festhóitn und eahóitn fo de bedrotn cbráha af da veit - duah grimne dokument, voatsámlunga und tonafnáma."
+    "title_language": "Dahóitung fo {{language}}",
+    "subtitle": "A digitale blátfoam fia's festhóitn und eahóitn fo de bedrotn cbráha af da veit - duah grimne dokument, voatsámlunga und tonafnáma.",
+    "subtitle_language": "Veataguad, tekste und tonafnáma fia {{language}} festhóitn."
   },
   "dictionary": {
     "title_with_target": "A {{source}} voat ocaugn -> {{target}}",
@@ -23,7 +25,13 @@
     "words": "Dokumentiade veata",
     "documents": "Dahóitne dokument",
     "audio": "Tonafnáma",
-    "contributors": "Midheifa"
+    "contributors": "Midheifa",
+    "heading": "Blátfoam ivasiht",
+    "language_heading": "{{language}} foatcrit",
+    "cta_add_word": "S'easte voat datsuafign",
+    "cta_add_document": "S'easte dokument datsuafign",
+    "cta_audio_coming_soon": "Tonafnáma houhlón kumt bóid",
+    "cta_join_to_contribute": "Registria di um baidsumdrogn"
   },
   "mission": {
     "title": "Unsa afdróg",
@@ -37,7 +45,54 @@
     "share_body": "Cbráhlihs eab fia kemade genaradsiona dahóitn"
   },
   "header": {
-    "interface_language": "Bedincbráh"
+    "interface_language": "Bedincbráh",
+    "contribute": "Baidrógn",
+    "contribute_tooltip": "Dróg dsu {{language}} bai"
+  },
+  "action_panel": {
+    "view_words": "Veata ségn",
+    "view_documents": "Dokument ségn",
+    "upload_audio": "Tonafnáma houhlón",
+    "upload_audio_coming_soon": "Tonafnáma houhlón kumt bóid",
+    "contribute": "Baidrógn"
+  },
+  "nav": {
+    "words": "Veata",
+    "dictionary": "Veatabuah",
+    "documents": "Dokument",
+    "audio": "Ton",
+    "contributors": "Midheifa",
+    "languages": "Cbráha"
+  },
+  "activity": {
+    "heading": "Letsde duan in {{language}}",
+    "loading": "Duan lót...",
+    "empty": "No niks dó — sai da easte, dea a voat, dokument oda afnáma baidrógt."
+  },
+  "user_menu": {
+    "aria_label": "Profil meni fia {{username}}",
+    "sign_in": "Omein",
+    "register": "Registrian",
+    "admin_panel": "Adminblóds",
+    "sign_out": "Óbmein"
+  },
+  "audio_page": {
+    "title": "Tonafnáma fo {{language}}",
+    "subtitle": "Afnáma, de mid veata in dera cbráh fabundn san.",
+    "loading": "Ton lót...",
+    "empty_title": "No koa tonafnáma dó.",
+    "empty_hint": "Tonafnáma houhlón kumt bóid. Afnáma dsoagn si dó, ven's midheifa dadsuagém.",
+    "linked_words": "fabundne veata"
+  },
+  "contributors_page": {
+    "title": "Midheifa fo {{language}}",
+    "subtitle": "Ole, de midgmáhd oda baidrógn hóm tsua dera cbráh.",
+    "loading": "Midheifa lón...",
+    "empty": "No koa midheifa fia dera cbráh dó.",
+    "col_user": "Nutsa",
+    "col_proficiency": "Kentnis",
+    "col_words": "Veata",
+    "col_documents": "Dokument"
   },
   "footer": {
     "copyright": "© 2026 Nativo - Cbráhlihs eab dahóitn"
