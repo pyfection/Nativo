@@ -55,6 +55,11 @@
   font-family: inherit;
 }
 
+.user-menu-button-compact {
+  padding: 0.25rem 0.5rem 0.25rem 0.35rem;
+  gap: 0.3rem;
+}
+
 .user-menu-button:hover {
   border-color: var(--primary);
 }
@@ -191,4 +196,3 @@
     padding: 0.5rem;
   }
 }
-

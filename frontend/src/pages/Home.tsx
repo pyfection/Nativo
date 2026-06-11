@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Link } from 'react-router-dom';
+
 import { Language } from '../App';
 import HomeDictionary from '../components/home/HomeDictionary';
 import LanguageActionPanel from '../components/home/LanguageActionPanel';
 import RecentActivity from '../components/home/RecentActivity';
+import StatCard from '../components/home/StatCard';
 import { getStatistics, Statistics } from '../services/statisticsService';
 import './Home.css';
 
@@ -49,29 +52,53 @@ export default function Home({ selectedLanguage }: HomeProps) {
     };
   }, [selectedLanguage.id]);
 
-  const renderStats = (stats: Statistics, includeLanguageCount: boolean) => {
-    const cells: Array<{ value: number; label: string }> = [];
-    if (includeLanguageCount) {
-      cells.push({ value: stats.total_languages, label: t('stats.languages') });
-    }
-    cells.push(
-      { value: stats.total_words, label: t('stats.words') },
-      { value: stats.total_documents, label: t('stats.documents') },
-      { value: stats.total_audio, label: t('stats.audio') },
-      { value: stats.total_contributors, label: t('stats.contributors') }
-    );
+  const renderLanguageStats = (stats: Statistics) => (
+    <div className="stats-grid">
+      <StatCard
+        value={stats.total_words}
+        label={t('stats.words')}
+        href="/words"
+        loading={statsLoading}
+        zeroCta={
+          <Link className="stat-cta-link" to="/words/add">
+            {t('stats.cta_add_word')}
+          </Link>
+        }
+      />
+      <StatCard
+        value={stats.total_documents}
+        label={t('stats.documents')}
+        href="/documents"
+        loading={statsLoading}
+        zeroCta={
+          <Link className="stat-cta-link" to="/documents/add">
+            {t('stats.cta_add_document')}
+          </Link>
+        }
+      />
+      <StatCard
+        value={stats.total_audio}
+        label={t('stats.audio')}
+        loading={statsLoading}
+        zeroCta={
+          <span className="stat-cta-coming-soon" title={t('action_panel.upload_audio_coming_soon')}>
+            {t('stats.cta_audio_coming_soon')}
+          </span>
+        }
+      />
+      <StatCard value={stats.total_contributors} label={t('stats.contributors')} loading={statsLoading} />
+    </div>
+  );
 
-    return (
-      <div className="stats-grid">
-        {cells.map((cell) => (
-          <div key={cell.label} className="stat-card">
-            <div className="stat-number">{statsLoading ? '…' : cell.value}</div>
-            <div className="stat-label">{cell.label}</div>
-          </div>
-        ))}
-      </div>
-    );
-  };
+  const renderPlatformStats = (stats: Statistics) => (
+    <div className="stats-grid">
+      <StatCard value={stats.total_languages} label={t('stats.languages')} href="/languages" loading={statsLoading} />
+      <StatCard value={stats.total_words} label={t('stats.words')} href="/words" loading={statsLoading} />
+      <StatCard value={stats.total_documents} label={t('stats.documents')} href="/documents" loading={statsLoading} />
+      <StatCard value={stats.total_audio} label={t('stats.audio')} loading={statsLoading} />
+      <StatCard value={stats.total_contributors} label={t('stats.contributors')} loading={statsLoading} />
+    </div>
+  );
 
   return (
     <div
@@ -111,7 +138,7 @@ export default function Home({ selectedLanguage }: HomeProps) {
         <h3 className="stats-heading">
           {t('stats.language_heading', { language: selectedLanguage.name })}
         </h3>
-        {renderStats(languageStats, false)}
+        {renderLanguageStats(languageStats)}
       </section>
 
       {/* Recent activity */}
@@ -120,7 +147,7 @@ export default function Home({ selectedLanguage }: HomeProps) {
       {/* Platform overview */}
       <section className="stats-section stats-section-platform">
         <h3 className="stats-heading">{t('stats.heading')}</h3>
-        {renderStats(platformStats, true)}
+        {renderPlatformStats(platformStats)}
       </section>
 
       {/* Mission Section */}

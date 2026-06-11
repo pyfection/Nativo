@@ -133,11 +133,43 @@
   border-radius: 12px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
   transition: all 0.3s ease;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.stat-card-link {
+  cursor: pointer;
 }
 
 .stat-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+.stat-cta {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.stat-cta-link {
+  display: inline-block;
+  padding: 0.3rem 0.7rem;
+  background: var(--primary, #0099cc);
+  color: white !important;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: filter 0.15s ease;
+}
+
+.stat-cta-link:hover {
+  filter: brightness(1.1);
+}
+
+.stat-cta-coming-soon {
+  color: #999;
+  font-style: italic;
 }
 
 .stat-number {

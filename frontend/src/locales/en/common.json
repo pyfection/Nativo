@@ -27,7 +27,10 @@
     "words": "Words Documented",
     "documents": "Documents Preserved",
     "audio": "Audio Recordings",
-    "contributors": "Contributors"
+    "contributors": "Contributors",
+    "cta_add_word": "Add the first word",
+    "cta_add_document": "Add the first document",
+    "cta_audio_coming_soon": "Audio upload coming soon"
   },
   "action_panel": {
     "view_words": "View words",
@@ -56,6 +59,13 @@
     "interface_language": "Interface language",
     "contribute": "Contribute",
     "contribute_tooltip": "Contribute to {{language}}"
+  },
+  "user_menu": {
+    "aria_label": "Profile menu for {{username}}",
+    "sign_in": "Sign In",
+    "register": "Register",
+    "admin_panel": "Admin Panel",
+    "sign_out": "Sign Out"
   },
   "nav": {
     "words": "Words",
