@@ -6,7 +6,7 @@
   "dictionary": {
     "title_with_target": "A {{source}} voat ocaugn -> {{target}}",
     "title_no_target": "A voat in {{source}} ocaugn",
-    "subtitle_with_target": "Suah in de {{source}} veata und sig d'ivasetsung af {{target}}. De dsuicbróh endad ma om réhds.",
+    "subtitle_with_target": "Suah in de {{source}} veata und sig d'ivasetsung af {{target}}. De dsuicbráh endad ma om réhds.",
     "subtitle_no_target": "Suah in de {{source}} veata.",
     "placeholder": "A {{source}} voat eigém...",
     "search": "Suaha",
@@ -28,7 +28,7 @@
   "mission": {
     "title": "Unsa afdróg",
     "document_title": "Festhóitn",
-    "document_body": "Gcrimne dokument in bedrotn crbáha festhóin und eahóitn",
+    "document_body": "Gcrimne dokument in bedrotn cbráha festhóitn und eahóitn",
     "vocabulary_title": "Veataguad afbaun",
     "vocabulary_body": "Umfángraihe voatsámlung mid ivasetsunga und ascbráha afbaun",
     "audio_title": "Ton afnema",
