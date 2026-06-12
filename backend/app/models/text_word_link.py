@@ -1,21 +1,24 @@
 """
 Model representing a link between a span of text content and a dictionary word.
 """
+
 from __future__ import annotations
 
-from datetime import datetime
 import enum
 import uuid
+from datetime import datetime
 
 from sqlalchemy import (
     Column,
     DateTime,
-    Enum as SQLEnum,
     Float,
     ForeignKey,
     Integer,
     String,
     UniqueConstraint,
+)
+from sqlalchemy import (
+    Enum as SQLEnum,
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
@@ -50,14 +53,26 @@ class TextWordLink(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 
     text_id = Column(UUID(as_uuid=True), ForeignKey("texts.id"), nullable=False, index=True)
-    word_form_id = Column(UUID(as_uuid=True), ForeignKey("word_forms.id"), nullable=False, index=True)
+    word_form_id = Column(
+        UUID(as_uuid=True), ForeignKey("word_forms.id"), nullable=False, index=True
+    )
 
     # Character offsets within Text.content (start inclusive, end exclusive)
     start_char = Column(Integer, nullable=False)
     end_char = Column(Integer, nullable=False)
 
     status = Column(
-        SQLEnum(TextWordLinkStatus, name="textwordlinkstatus"),
+        # `textwordlinkstatus` was created with lowercase Postgres labels
+        # (matching `.value`), but SQLAlchemy's default storage uses the
+        # uppercase enum NAME. Without values_callable, every INSERT blows
+        # up with `invalid input value for enum textwordlinkstatus:
+        # "SUGGESTED"` — and that's what was killing the Regenerate
+        # suggestion endpoints + the Link button.
+        SQLEnum(
+            TextWordLinkStatus,
+            name="textwordlinkstatus",
+            values_callable=lambda e: [m.value for m in e],
+        ),
         nullable=False,
         default=TextWordLinkStatus.SUGGESTED,
     )
@@ -72,7 +87,9 @@ class TextWordLink(Base):
     verified_at = Column(DateTime, nullable=True)
 
     __table_args__ = (
-        UniqueConstraint("text_id", "start_char", "end_char", name="uq_text_word_links_unique_span"),
+        UniqueConstraint(
+            "text_id", "start_char", "end_char", name="uq_text_word_links_unique_span"
+        ),
     )
 
     text = relationship("Text", back_populates="word_links")
@@ -91,9 +108,7 @@ class TextWordLink(Base):
     @property
     def word_language_id(self):
         return (
-            self.word_form.lexeme.language_id
-            if self.word_form and self.word_form.lexeme
-            else None
+            self.word_form.lexeme.language_id if self.word_form and self.word_form.lexeme else None
         )
 
     def __repr__(self) -> str:
@@ -102,5 +117,3 @@ class TextWordLink(Base):
             f"word_form_id={self.word_form_id}, "
             f"span=({self.start_char}, {self.end_char}), status={self.status})>"
         )
-
-

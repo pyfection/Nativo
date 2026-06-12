@@ -3,7 +3,11 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import documentService from '../services/documentService';
 import wordLinkService from '../services/wordLinkService';
-import wordService, { CreateLexemeData, LexemeListItem } from '../services/wordService';
+import wordService, {
+  CreateLexemeData,
+  LexemeWithForms,
+  TranslationLink,
+} from '../services/wordService';
 import { DocumentWithLinks } from '../types/document';
 import {
   Text,
@@ -212,6 +216,18 @@ interface SelectionState {
   link?: TextWordLink;
 }
 
+/**
+ * Search result enriched with the data the user actually needs to
+ * confirm "yes, this is the right word":
+ * - IPA + romanization from the lemma form
+ * - POS, gender, register from the lexeme itself
+ * - notes (often a sense disambiguator like "3sg present indicative of sei")
+ * - translations into other languages (key signal for cross-language IDs)
+ */
+interface EnrichedSearchHit extends LexemeWithForms {
+  translations: TranslationLink[];
+}
+
 interface DocumentLinkingProps {
   selectedLanguage: Language;
   languages: Language[];
@@ -234,7 +250,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
   const [isSaving, setIsSaving] = useState(false);
   const [isSuggesting, setIsSuggesting] = useState(false);
 
-  const [searchResults, setSearchResults] = useState<LexemeListItem[]>([]);
+  const [searchResults, setSearchResults] = useState<EnrichedSearchHit[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
 
   const [showNewWordForm, setShowNewWordForm] = useState(false);
@@ -784,8 +800,21 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
         include_unpublished: true,
         limit: 10,
       });
-      setSearchResults(results);
-      if (results.length === 0) {
+      // Fetch each result's translations in parallel so the user sees
+      // the cross-language meaning right next to the lemma. Errors per
+      // result fall back to an empty translations list.
+      const enriched: EnrichedSearchHit[] = await Promise.all(
+        results.map(async (r) => {
+          try {
+            const translations = await wordService.listTranslations(r.id);
+            return { ...r, translations };
+          } catch {
+            return { ...r, translations: [] };
+          }
+        }),
+      );
+      setSearchResults(enriched);
+      if (enriched.length === 0) {
         setActionMessage('No similar words found for the current selection.');
       }
     } catch (err) {
@@ -964,7 +993,11 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
     <div className="document-linking-page">
       <div className="document-linking-header">
         <div>
-          <button className="btn-link" onClick={handleBackToDocument}>
+          <button
+            className="btn-link"
+            onClick={handleBackToDocument}
+            title="Return to the document detail page"
+          >
             ← Back to Document
           </button>
           <h1>Link Words · {activeText.title}</h1>
@@ -973,7 +1006,10 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
           </p>
         </div>
         <div className="document-linking-actions">
-          <label className="toggle-control">
+          <label
+            className="toggle-control"
+            title="When on, clicking a single word inside a longer phrase will expand the selection to the whole word boundary."
+          >
             <input
               type="checkbox"
               checked={autoExpandSelection}
@@ -985,6 +1021,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
             className="btn-secondary"
             onClick={handleRegenerateSuggestionsForText}
             disabled={!canEdit || isSuggesting}
+            title="Rebuild auto-suggested word links for THIS text only. Existing confirmed or rejected links are preserved; new suggestions appear where matching dictionary words are found."
           >
             {isSuggesting ? 'Rebuilding…' : 'Regenerate Text Suggestions'}
           </button>
@@ -992,6 +1029,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
             className="btn-secondary"
             onClick={handleRegenerateForDocument}
             disabled={!canEdit || isSuggesting}
+            title="Rebuild auto-suggested word links for EVERY text in this document (all translations). Existing confirmed or rejected links are preserved."
           >
             {isSuggesting ? 'Working…' : 'Regenerate Document Suggestions'}
           </button>
@@ -1052,7 +1090,10 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                 className={[
                   'linking-token',
                   token.type === 'whitespace' ? 'token-whitespace' : 'token-word',
-                  `status-${token.status}`,
+                  // Only colour-code linkable word tokens; whitespace and
+                  // punctuation runs render as plain text rather than
+                  // looking like an unlinked-yellow target.
+                  token.type === 'word' ? `status-${token.status}` : '',
                   selectedSpan &&
                   token.start >= selectedSpan.start &&
                   token.end <= selectedSpan.end
@@ -1080,7 +1121,12 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                   </span>
                 </div>
                 <div className="selection-toolbar">
-                  <button type="button" className="btn-link" onClick={clearSelection}>
+                  <button
+                    type="button"
+                    className="btn-link"
+                    onClick={clearSelection}
+                    title="Deselect the current span without changing any links"
+                  >
                     Clear selection
                   </button>
                 </div>
@@ -1095,6 +1141,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                         className="btn-primary"
                         onClick={() => handleConfirmLink(selectedSpan.link!)}
                         disabled={!canEdit || isSaving}
+                        title="Accept this suggested link — the span will be marked as a confirmed dictionary reference."
                       >
                         Confirm
                       </button>
@@ -1102,6 +1149,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                         className="btn-secondary"
                         onClick={() => handleRejectLink(selectedSpan.link!)}
                         disabled={!canEdit || isSaving}
+                        title="Mark this suggestion as wrong. It stays in the database (so it's not re-suggested) but no longer counts as a link."
                       >
                         Reject
                       </button>
@@ -1109,6 +1157,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                         className="btn-secondary"
                         onClick={() => handleRemoveLink(selectedSpan.link!)}
                         disabled={!canEdit || isSaving}
+                        title="Delete this link entirely. The span becomes unlinked, and the next Regenerate may suggest it again."
                       >
                         Unlink
                       </button>
@@ -1124,6 +1173,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                         className="btn-secondary"
                         onClick={runWordSearch}
                         disabled={!canEdit || searchLoading}
+                        title="Find dictionary entries that start with the selected text. Results show meanings; hover any for full detail."
                       >
                         {searchLoading ? 'Searching…' : 'Search existing words'}
                       </button>
@@ -1133,23 +1183,73 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                       {!searchLoading && searchResults.length === 0 && (
                         <p>No words found.</p>
                       )}
-                      {searchResults.map((word) => (
-                        <div key={word.id} className="search-result">
-                          <div>
-                            <strong>{word.lemma}</strong>
-                            {word.part_of_speech && (
-                              <div className="search-definition">{word.part_of_speech}</div>
-                            )}
-                          </div>
-                          <button
-                            className="btn-primary"
-                            onClick={() => handleLinkToWord(word.id)}
-                            disabled={!canEdit || isSaving}
+                      {searchResults.map((word) => {
+                        const lemmaForm =
+                          word.forms?.find((f) => f.is_lemma) ?? word.forms?.[0];
+                        const metaBits = [
+                          word.part_of_speech,
+                          word.gender,
+                          word.animacy,
+                        ].filter(Boolean) as string[];
+                        const translationsText = word.translations
+                          .map((t) => t.lemma)
+                          .join(', ');
+                        const tooltip = [
+                          word.lemma,
+                          metaBits.length > 0 ? `[${metaBits.join(' · ')}]` : '',
+                          lemmaForm?.romanization
+                            ? `Romanization: ${lemmaForm.romanization}`
+                            : '',
+                          lemmaForm?.ipa_pronunciation
+                            ? `IPA: /${lemmaForm.ipa_pronunciation}/`
+                            : '',
+                          translationsText ? `Translations: ${translationsText}` : '',
+                          word.notes ? `Notes: ${word.notes}` : '',
+                        ]
+                          .filter(Boolean)
+                          .join('\n');
+                        return (
+                          <div
+                            key={word.id}
+                            className="search-result"
+                            title={tooltip}
                           >
-                            Link
-                          </button>
-                        </div>
-                      ))}
+                            <div className="search-result-body">
+                              <div className="search-result-headline">
+                                <strong>{word.lemma}</strong>
+                                {lemmaForm?.romanization && (
+                                  <span className="search-result-roman">
+                                    /{lemmaForm.romanization}/
+                                  </span>
+                                )}
+                                {word.part_of_speech && (
+                                  <span className="search-result-pos">
+                                    {word.part_of_speech}
+                                  </span>
+                                )}
+                              </div>
+                              {translationsText && (
+                                <div className="search-definition">
+                                  {translationsText}
+                                </div>
+                              )}
+                              {word.notes && (
+                                <div className="search-result-notes">{word.notes}</div>
+                              )}
+                            </div>
+                            <button
+                              className="btn-primary"
+                              onClick={() => handleLinkToWord(word.id)}
+                              disabled={!canEdit || isSaving}
+                              title={`Link the selected text to "${word.lemma}"${
+                                translationsText ? ` (${translationsText})` : ''
+                              }`}
+                            >
+                              Link
+                            </button>
+                          </div>
+                        );
+                      })}
                     </div>
                     <div className="new-word-section">
                       {!showNewWordForm ? (
@@ -1179,6 +1279,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                             setShowNewWordForm(true);
                           }}
                           disabled={!canEdit}
+                          title="Open a form to add this span as a brand-new dictionary entry, then link the selection to it in one step."
                         >
                           Create new word
                         </button>
@@ -1435,6 +1536,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                                 isSaving ||
                                 !newWordData.lemma.trim()
                               }
+                              title="Save this as a new dictionary entry and immediately link the selected text to it."
                             >
                               Create & Link
                             </button>
@@ -1461,6 +1563,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                                 });
                               }}
                               disabled={isSaving}
+                              title="Close the form and discard the new-word details"
                             >
                               Cancel
                             </button>
@@ -1500,6 +1603,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                             link,
                           });
                         }}
+                        title="Jump to this span in the text and load it into the Selection panel for closer review."
                       >
                         Select
                       </button>
@@ -1507,6 +1611,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                         className="btn-primary"
                         onClick={() => handleConfirmLink(link)}
                         disabled={!canEdit || isSaving}
+                        title="Accept this suggestion as a confirmed link without leaving the suggestions list."
                       >
                         Confirm
                       </button>
@@ -1514,6 +1619,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                         className="btn-secondary"
                         onClick={() => handleRejectLink(link)}
                         disabled={!canEdit || isSaving}
+                        title="Mark this suggestion as wrong. It won't be re-proposed by future Regenerate runs."
                       >
                         Reject
                       </button>

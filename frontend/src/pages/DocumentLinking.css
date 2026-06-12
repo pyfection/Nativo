@@ -127,6 +127,15 @@
   font-weight: 500;
 }
 
+/* Whitespace and punctuation tokens render as plain text. The component
+   omits the status- class for these so the only thing they get is the
+   .linking-token base which has no background of its own. */
+.linking-token.token-whitespace {
+  background: transparent !important;
+  color: inherit;
+  border-color: transparent;
+}
+
 /* Token + chip colour rings — each status gets a hue */
 .legend-unlinked,
 .linking-token.status-unlinked,
@@ -286,13 +295,12 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 8px;
-  padding: 10px 12px;
-  border-radius: 10px;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.03);
   transition: 0.18s ease;
-  cursor: pointer;
   color: var(--cream);
 }
 
@@ -301,9 +309,57 @@
   background: color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
-.search-definition {
+.search-result-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.search-result-headline {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.search-result-headline strong {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--cream);
+  letter-spacing: -0.01em;
+}
+
+.search-result-roman {
   color: var(--cream-dim);
   font-size: 0.85rem;
+  font-style: italic;
+}
+
+.search-result-pos {
+  color: var(--sage);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 2px 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 999px;
+}
+
+.search-definition {
+  color: var(--cream-dim);
+  font-size: 0.9rem;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.search-result-notes {
+  color: var(--sage);
+  font-size: 0.8rem;
+  line-height: 1.4;
+  font-style: italic;
 }
 
 .new-word-section {
