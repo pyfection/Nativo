@@ -1,301 +1,38 @@
+/* Most page chrome (.page-header, .filters-section, .table-container,
+   .status-badge, .empty-state, .loading-state, .clickable-row) is shared
+   via App.css. This file only owns the bits that are WordList-specific. */
+
 .word-list-page {
-  padding: 2rem;
-  min-height: calc(100vh - 73px);
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 2rem;
-}
-
-.page-header h1 {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin-bottom: 0.5rem;
-}
-
-.page-header p {
-  font-size: 1.05rem;
-  color: #666;
-}
-
-.page-header .btn-primary {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.875rem 1.5rem;
-  font-size: 1rem;
-  font-weight: 600;
-  color: white;
-  background-color: var(--primary);
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.page-header .btn-primary:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-/* Filters */
-.filters-section {
-  background: white;
-  border-radius: 12px;
-  padding: 1.5rem;
-  margin-bottom: 2rem;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-}
-
-.filters {
-  display: flex;
-  gap: 1.5rem;
-  align-items: flex-end;
-  flex-wrap: wrap;
-}
-
-.filter-group {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  min-width: 200px;
-}
-
-.filter-group.search-group {
-  flex: 1;
-  min-width: 300px;
-}
-
-.filter-group label {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #666;
-}
-
-.filter-group select,
-.filter-group input[type="text"] {
-  padding: 0.75rem 1rem;
-  font-size: 1rem;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-  font-family: inherit;
-}
-
-.filter-group select {
-  cursor: pointer;
-}
-
-.filter-group select:focus,
-.filter-group input[type="text"]:focus {
-  outline: none;
-  border-color: var(--primary);
-}
-
-.btn-clear-filters {
-  padding: 0.75rem 1.25rem;
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: #666;
-  background-color: #f5f5f5;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-clear-filters:hover {
-  background-color: #e0e0e0;
-}
-
-/* Table */
-.table-container {
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-}
-
-.words-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.words-table thead {
-  background-color: var(--background);
-}
-
-.words-table th {
-  padding: 1rem 1.5rem;
-  text-align: left;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #555;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.words-table tbody tr {
-  border-bottom: 1px solid #e0e0e0;
-  transition: background-color 0.2s ease;
-}
-
-.clickable-row {
-  cursor: pointer;
-}
-
-.clickable-row:hover {
-  background-color: color-mix(in srgb, var(--primary) 8%, white);
-}
-
-.words-table td {
-  padding: 1.25rem 1.5rem;
-  color: #333;
+  padding-bottom: 60px;
 }
 
 .word-cell {
-  font-weight: 600;
+  font-family: var(--font-serif);
   font-size: 1.05rem;
-  color: var(--primary);
-  min-width: 120px;
-}
-
-.romanization-cell,
-.ipa-cell {
-  color: #666;
-  font-style: italic;
-  min-width: 100px;
+  color: var(--cream);
 }
 
 .pos-cell {
-  color: #666;
-  font-style: italic;
-  min-width: 100px;
-}
-
-.definition-cell {
-  max-width: 300px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.literal-cell {
-  max-width: 250px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: #666;
-  font-size: 0.95rem;
+  color: var(--cream-dim);
+  font-size: 0.9rem;
+  text-transform: lowercase;
 }
 
 .verified-cell {
   text-align: center;
 }
 
-.verified-badge {
-  color: #2e7d32;
-  font-weight: 700;
-  font-size: 1.2rem;
+/* The yellow "no permission" notice WordList shows when the user
+   can't edit the selected language. */
+.word-list-page > div[style*='fff3cd'] {
+  background: rgba(245, 158, 11, 0.1) !important;
+  border: 1px solid rgba(245, 158, 11, 0.3) !important;
+  color: #f6c25c !important;
+  border-radius: 12px !important;
+  margin: 16px clamp(20px, 5vw, 64px) !important;
 }
-
-.unverified-badge {
-  color: #ccc;
+.word-list-page > div[style*='fff3cd'] p {
+  color: #f6c25c !important;
 }
-
-.status-badge {
-  display: inline-block;
-  padding: 0.375rem 0.875rem;
-  border-radius: 12px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  text-transform: capitalize;
-}
-
-.status-draft {
-  background-color: #e0e0e0;
-  color: #666;
-}
-
-.status-pending_review {
-  background-color: #fff8e1;
-  color: #f57f17;
-}
-
-.status-published {
-  background-color: #e8f5e9;
-  color: #2e7d32;
-}
-
-/* States */
-.loading-state,
-.error-state,
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 4rem 2rem;
-  text-align: center;
-}
-
-.loading-spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid #e0e0e0;
-  border-top-color: var(--primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 1rem;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.empty-state h3 {
-  font-size: 1.5rem;
-  color: #333;
-  margin-bottom: 0.5rem;
-}
-
-.empty-state p {
-  color: #666;
-  margin-bottom: 1.5rem;
-}
-
-/* Mobile */
-@media (max-width: 768px) {
-  .word-list-page {
-    padding: 1rem;
-  }
-
-  .page-header {
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .filters {
-    flex-direction: column;
-  }
-
-  .filter-group {
-    width: 100%;
-  }
-
-  .table-container {
-    overflow-x: auto;
-  }
-
-  .words-table {
-    min-width: 600px;
-  }
-}
-

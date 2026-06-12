@@ -1,32 +1,33 @@
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  padding: 1rem;
+  padding: 16px;
 }
 
 .modal-content {
-  background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  max-width: 500px;
+  background: rgba(10, 39, 51, 0.96);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  box-shadow: 0 40px 80px -30px rgba(0, 0, 0, 0.7);
+  max-width: 520px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
-  animation: modalFadeIn 0.2s ease-out;
+  animation: modalFadeIn 0.22s ease-out;
+  color: var(--cream);
 }
 
 @keyframes modalFadeIn {
   from {
     opacity: 0;
-    transform: translateY(-20px);
+    transform: translateY(-12px);
   }
   to {
     opacity: 1;
@@ -38,43 +39,45 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.5rem;
-  border-bottom: 1px solid #e0e0e0;
+  padding: 22px 24px;
+  border-bottom: 1px solid var(--line);
 }
 
 .modal-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #1a1a1a;
+  font-family: var(--font-serif);
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: var(--cream);
   margin: 0;
+  letter-spacing: -0.01em;
 }
 
 .modal-close {
   background: none;
-  border: none;
-  padding: 0.5rem;
+  border: 1px solid transparent;
+  padding: 6px;
   cursor: pointer;
-  color: #666;
+  color: var(--cream-dim);
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
-  transition: all 0.2s ease;
+  border-radius: 8px;
+  transition: 0.18s ease;
 }
 
 .modal-close:hover {
-  background-color: #f5f5f5;
-  color: #333;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--cream);
+  border-color: var(--line);
 }
 
 .modal-body {
-  padding: 1.5rem;
+  padding: 22px 24px;
 }
 
 @media (max-width: 768px) {
   .modal-content {
     max-width: 100%;
-    margin: 1rem;
+    margin: 12px;
   }
 }
-

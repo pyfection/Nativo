@@ -39,7 +39,7 @@ export default function Login() {
     <div className="login-page">
       <div className="login-container">
         <div className="login-header">
-          <h1 className="login-logo">Nativo</h1>
+          <h1 className="login-logo">Nativo<b>.</b></h1>
           <h2 className="login-title">Welcome Back</h2>
           <p className="login-subtitle">Sign in to continue preserving languages</p>
         </div>
@@ -98,4 +98,3 @@ export default function Login() {
     </div>
   );
 }
-

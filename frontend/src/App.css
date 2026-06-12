@@ -214,3 +214,218 @@ textarea::placeholder {
     transform: rotate(360deg);
   }
 }
+
+/* ---------- Shared page chrome ---------- */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 28px clamp(20px, 5vw, 64px) 0;
+  max-width: 1180px;
+  margin: 0 auto;
+  width: 100%;
+  flex-wrap: wrap;
+}
+.page-header h1 {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: clamp(28px, 3.4vw, 38px);
+  color: var(--cream);
+  letter-spacing: -0.01em;
+  margin: 0 0 4px;
+}
+.page-header p {
+  margin: 0;
+  color: var(--cream-dim);
+  font-size: 0.98rem;
+}
+
+/* ---------- Filters bar ---------- */
+.filters-section {
+  padding: 20px clamp(20px, 5vw, 64px) 0;
+  max-width: 1180px;
+  margin: 0 auto;
+  width: 100%;
+}
+.filters {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: end;
+}
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.filter-group.search-group {
+  flex: 1;
+  min-width: 220px;
+}
+.filter-group label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--sage);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.filter-group input[type='text'],
+.filter-group select {
+  font-family: inherit;
+  font-size: 14px;
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 9px 12px;
+  color: var(--cream);
+  outline: none;
+  transition: 0.18s ease;
+  min-width: 160px;
+}
+.filter-group input[type='text']:focus,
+.filter-group select:focus {
+  border-color: var(--accent);
+}
+.filter-group select {
+  appearance: none;
+  padding-right: 30px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23A9C2BD' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+.filter-group select option {
+  color: #12222a;
+  background: var(--cream);
+}
+
+.btn-clear-filters {
+  font-family: inherit;
+  font-size: 13px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--cream-dim);
+  cursor: pointer;
+  transition: 0.18s ease;
+}
+.btn-clear-filters:hover {
+  border-color: rgba(245, 239, 226, 0.35);
+  color: var(--cream);
+}
+
+/* ---------- Tables ---------- */
+.table-container {
+  margin: 24px clamp(20px, 5vw, 64px);
+  max-width: 1180px;
+  width: auto;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.table-container table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.table-container th,
+.table-container td {
+  padding: 14px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+}
+.table-container th {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sage);
+  background: rgba(0, 0, 0, 0.15);
+}
+.table-container td {
+  color: var(--cream);
+  font-size: 0.95rem;
+}
+.table-container tr:last-child td {
+  border-bottom: none;
+}
+.clickable-row {
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.clickable-row:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* ---------- Status badges ---------- */
+.status-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--cream-dim);
+}
+.status-published {
+  color: #79d182;
+  border-color: rgba(76, 175, 80, 0.4);
+  background: rgba(76, 175, 80, 0.12);
+}
+.status-pending_review {
+  color: #f6c25c;
+  border-color: rgba(245, 158, 11, 0.4);
+  background: rgba(245, 158, 11, 0.12);
+}
+.status-draft {
+  color: var(--cream-dim);
+}
+.verified-badge {
+  color: #79d182;
+}
+.unverified-badge {
+  color: var(--sage);
+}
+
+/* ---------- Loading / empty / error states ---------- */
+.loading-state,
+.empty-state,
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 24px;
+  gap: 14px;
+  color: var(--cream-dim);
+  text-align: center;
+}
+.empty-state h3 {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: 1.4rem;
+  color: var(--cream);
+}
+.empty-state p {
+  color: var(--cream-dim);
+}
+.error-state {
+  color: #f08a8a;
+}
+
+/* ---------- Forms (page-level form-row pattern) ---------- */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 720px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}

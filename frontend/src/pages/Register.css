@@ -1,108 +1,118 @@
+/* Mirrors Login.css — uses the same dark card pattern for visual cohesion. */
+
 .register-page {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 2rem;
+  padding: clamp(20px, 5vw, 64px);
 }
 
 .register-container {
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-  padding: 3rem;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 40px clamp(28px, 4vw, 48px);
   width: 100%;
-  max-width: 450px;
+  max-width: 460px;
+  box-shadow: 0 30px 60px -34px rgba(0, 0, 0, 0.7);
 }
 
 .register-header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 28px;
 }
 
 .register-logo {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #667eea;
-  margin-bottom: 0.5rem;
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: 1.8rem;
+  color: var(--cream);
+  margin-bottom: 0.6rem;
+  letter-spacing: -0.01em;
+}
+.register-logo b {
+  color: var(--accent);
+  font-weight: 500;
 }
 
 .register-title {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #1a1a1a;
+  font-family: var(--font-serif);
+  font-size: 1.7rem;
+  font-weight: 500;
+  color: var(--cream);
   margin-bottom: 0.5rem;
+  letter-spacing: -0.01em;
 }
 
 .register-subtitle {
-  font-size: 1rem;
-  color: #666;
+  font-size: 0.98rem;
+  color: var(--cream-dim);
 }
 
 .register-form {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 16px;
 }
 
 .register-button {
-  padding: 1rem;
-  font-size: 1rem;
+  padding: 13px;
+  font-size: 15px;
   font-weight: 600;
-  color: white;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: var(--accent-deep);
+  background: var(--accent);
   border: none;
-  border-radius: 8px;
+  border-radius: 999px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  margin-top: 0.5rem;
+  transition: 0.18s ease;
+  margin-top: 4px;
+  font-family: inherit;
 }
 
 .register-button:hover:not(:disabled) {
+  filter: brightness(1.08);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
 .register-button:disabled {
-  background: #ccc;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--sage);
   cursor: not-allowed;
 }
 
 .register-footer {
-  margin-top: 2rem;
+  margin-top: 24px;
   text-align: center;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 12px;
 }
 
 .register-footer p {
-  font-size: 0.95rem;
-  color: #666;
+  font-size: 0.92rem;
+  color: var(--cream-dim);
 }
 
 .login-link,
 .home-link {
-  color: #667eea;
+  color: var(--accent);
   text-decoration: none;
-  font-weight: 600;
-  transition: color 0.2s ease;
+  font-weight: 500;
+  transition: 0.18s ease;
 }
 
 .login-link:hover,
 .home-link:hover {
-  color: #764ba2;
   text-decoration: underline;
+  filter: brightness(1.1);
 }
 
 @media (max-width: 768px) {
   .register-container {
-    padding: 2rem;
+    padding: 30px 24px;
   }
-
   .register-title {
     font-size: 1.5rem;
   }
 }
-

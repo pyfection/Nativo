@@ -58,7 +58,7 @@ export default function Register() {
     <div className="register-page">
       <div className="register-container">
         <div className="register-header">
-          <h1 className="register-logo">Nativo</h1>
+          <h1 className="register-logo">Nativo<b>.</b></h1>
           <h2 className="register-title">Join Our Community</h2>
           <p className="register-subtitle">Help preserve endangered languages for future generations</p>
         </div>
@@ -147,4 +147,3 @@ export default function Register() {
     </div>
   );
 }
-

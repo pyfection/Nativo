@@ -1,42 +1,47 @@
 .document-detail-page {
-  padding: 2rem;
+  padding: 28px clamp(20px, 5vw, 64px);
+  max-width: 1180px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
-  min-height: calc(100vh - 73px);
+  gap: 28px;
 }
 
 .document-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 1.5rem;
+  gap: 20px;
 }
 
 .document-header h1 {
-  margin-top: 0.5rem;
-  margin-bottom: 0.5rem;
-  color: #1f2933;
+  font-family: var(--font-serif);
+  font-weight: 500;
+  margin: 6px 0;
+  color: var(--cream);
+  font-size: clamp(28px, 3.2vw, 38px);
+  letter-spacing: -0.01em;
 }
 
 .document-subtitle {
   margin: 0;
-  color: #52606d;
+  color: var(--cream-dim);
 }
 
 .document-header-actions {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 12px;
 }
 
 .btn-link {
   background: none;
   border: none;
-  color: var(--primary);
-  font-weight: 600;
+  color: var(--accent);
+  font-weight: 500;
   cursor: pointer;
   padding: 0;
+  font-family: inherit;
 }
 
 .btn-link:hover {
@@ -46,21 +51,22 @@
 .document-content-grid {
   display: grid;
   grid-template-columns: minmax(220px, 280px) 1fr;
-  gap: 2rem;
+  gap: 24px;
 }
 
 .document-sidebar {
-  padding: 1.5rem;
-  background-color: #f8fafc;
+  padding: 22px;
+  background: rgba(255, 255, 255, 0.03);
   border-radius: 16px;
-  border: 1px solid #e1e8f0;
+  border: 1px solid var(--line);
 }
 
 .document-sidebar h2 {
-  margin-top: 0;
-  margin-bottom: 1rem;
+  font-family: var(--font-serif);
+  font-weight: 500;
+  margin: 0 0 14px;
   font-size: 1rem;
-  color: #334155;
+  color: var(--cream);
 }
 
 .translation-list {
@@ -69,77 +75,84 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 6px;
 }
 
 .translation-button {
   width: 100%;
   text-align: left;
-  padding: 0.75rem;
-  border-radius: 12px;
-  border: 1px solid transparent;
-  background-color: white;
-  transition: all 0.2s ease;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.02);
+  transition: 0.18s ease;
+  cursor: pointer;
+  color: var(--cream-dim);
+  font-family: inherit;
 }
 
 .translation-button:hover {
-  border-color: #cbd5e1;
-  background-color: #f1f5f9;
+  border-color: rgba(245, 239, 226, 0.25);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--cream);
 }
 
 .translation-button.active {
-  border-color: var(--primary);
-  background-color: color-mix(in srgb, var(--primary) 12%, white);
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
 }
 
 .translation-title {
   display: block;
   font-weight: 600;
-  color: #1f2933;
+  color: var(--cream);
+}
+.translation-button.active .translation-title {
+  color: var(--accent);
 }
 
 .translation-meta {
   display: block;
-  margin-top: 0.25rem;
-  font-size: 0.85rem;
-  color: #52606d;
+  margin-top: 4px;
+  font-size: 0.82rem;
+  color: var(--sage);
 }
 
 .document-content {
-  padding: 2rem;
-  background-color: white;
+  padding: 28px;
+  background: rgba(255, 255, 255, 0.03);
   border-radius: 16px;
-  border: 1px solid #e1e8f0;
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+  border: 1px solid var(--line);
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 18px;
 }
 
 .document-meta {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
+  gap: 14px;
 }
 
 .meta-label {
   display: block;
-  font-size: 0.85rem;
+  font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #9aa5b1;
-  margin-bottom: 0.25rem;
+  letter-spacing: 0.12em;
+  color: var(--sage);
+  margin-bottom: 4px;
 }
 
 .meta-value {
-  color: #1f2933;
+  color: var(--cream);
 }
 
 .document-body p {
   line-height: 1.7;
   font-size: 1rem;
-  color: #2f3a4a;
-  margin-bottom: 1rem;
+  color: var(--cream-dim);
+  margin-bottom: 16px;
 }
 
 .document-body p:last-child {
@@ -150,25 +163,17 @@
   .document-content-grid {
     grid-template-columns: 1fr;
   }
-
   .document-sidebar {
     order: 2;
   }
 }
 
 @media (max-width: 768px) {
-  .document-detail-page {
-    padding: 1rem;
-  }
-
   .document-header {
     flex-direction: column;
     align-items: stretch;
   }
-
   .document-header-actions {
     justify-content: flex-end;
   }
 }
-
-
