@@ -50,7 +50,7 @@ class TextWordLink(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 
     text_id = Column(UUID(as_uuid=True), ForeignKey("texts.id"), nullable=False, index=True)
-    word_id = Column(UUID(as_uuid=True), ForeignKey("words.id"), nullable=False, index=True)
+    word_form_id = Column(UUID(as_uuid=True), ForeignKey("word_forms.id"), nullable=False, index=True)
 
     # Character offsets within Text.content (start inclusive, end exclusive)
     start_char = Column(Integer, nullable=False)
@@ -76,21 +76,30 @@ class TextWordLink(Base):
     )
 
     text = relationship("Text", back_populates="word_links")
-    word = relationship("Word", back_populates="text_links")
+    word_form = relationship("WordForm", back_populates="text_links")
     created_by = relationship("User", foreign_keys=[created_by_id])
     verified_by = relationship("User", foreign_keys=[verified_by_id])
 
     @property
     def word_text(self) -> str | None:
-        return self.word.word if self.word else None
+        return self.word_form.form if self.word_form else None
+
+    @property
+    def lexeme_id(self):
+        return self.word_form.lexeme_id if self.word_form else None
 
     @property
     def word_language_id(self):
-        return self.word.language_id if self.word else None
+        return (
+            self.word_form.lexeme.language_id
+            if self.word_form and self.word_form.lexeme
+            else None
+        )
 
     def __repr__(self) -> str:
         return (
-            f"<TextWordLink(id={self.id}, text_id={self.text_id}, word_id={self.word_id}, "
+            f"<TextWordLink(id={self.id}, text_id={self.text_id}, "
+            f"word_form_id={self.word_form_id}, "
             f"span=({self.start_char}, {self.end_char}), status={self.status})>"
         )
 

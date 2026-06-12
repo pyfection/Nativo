@@ -3,7 +3,14 @@ import { useTranslation } from 'react-i18next';
 
 import { Language } from '../../App';
 import { useUILanguage } from '../../contexts/UILanguageContext';
-import wordService, { WordWithTranslations } from '../../services/wordService';
+import wordService, {
+  LexemeWithForms,
+  TranslationLink,
+} from '../../services/wordService';
+
+interface ResultWithTranslations extends LexemeWithForms {
+  translations: TranslationLink[];
+}
 import './HomeDictionary.css';
 
 interface HomeDictionaryProps {
@@ -19,7 +26,7 @@ export default function HomeDictionary({ selectedLanguage }: HomeDictionaryProps
     uiLanguage && uiLanguage.id !== selectedLanguage.id ? uiLanguage : null;
 
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<WordWithTranslations[]>([]);
+  const [results, setResults] = useState<ResultWithTranslations[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
@@ -34,9 +41,14 @@ export default function HomeDictionary({ selectedLanguage }: HomeDictionaryProps
       const data = await wordService.search({
         q: trimmed,
         language_ids: selectedLanguage.id,
-        include_translations: true,
       });
-      setResults(data);
+      const enriched = await Promise.all(
+        data.map(async (lexeme) => ({
+          ...lexeme,
+          translations: await wordService.listTranslations(lexeme.id),
+        })),
+      );
+      setResults(enriched);
     } catch (err: any) {
       if (err.response?.status === 429) {
         setError(t('dictionary.rate_limited'));
@@ -99,12 +111,13 @@ export default function HomeDictionary({ selectedLanguage }: HomeDictionaryProps
               const targetTranslations = targetLanguage
                 ? word.translations.filter((tr) => tr.language_id === targetLanguage.id)
                 : [];
+              const lemmaForm = word.forms?.find((f) => f.is_lemma) ?? word.forms?.[0];
               return (
                 <li key={word.id} className="home-dictionary-result">
                   <div className="home-dictionary-headword">
-                    <span className="home-dictionary-word">{word.word}</span>
-                    {word.romanization && (
-                      <span className="home-dictionary-roman">/{word.romanization}/</span>
+                    <span className="home-dictionary-word">{word.lemma}</span>
+                    {lemmaForm?.romanization && (
+                      <span className="home-dictionary-roman">/{lemmaForm.romanization}/</span>
                     )}
                     {word.part_of_speech && (
                       <span className="home-dictionary-pos">{word.part_of_speech}</span>
@@ -118,7 +131,7 @@ export default function HomeDictionary({ selectedLanguage }: HomeDictionaryProps
                     </p>
                   ) : (
                     <p className="home-dictionary-trans-words">
-                      {targetTranslations.map((tr) => tr.word).join(', ')}
+                      {targetTranslations.map((tr) => tr.lemma).join(', ')}
                     </p>
                   )}
                 </li>

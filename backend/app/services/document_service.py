@@ -1,5 +1,9 @@
 """
 Service utilities for document/text processing.
+
+Auto-link suggestions walk the text content, normalise each token, and
+look it up in an index built from `WordForm.form` for the text's language.
+Matches become `TextWordLink` rows pointing at the matched WordForm.
 """
 from __future__ import annotations
 
@@ -13,37 +17,32 @@ from sqlalchemy.orm import Session
 
 from app.models.text import Text
 from app.models.text_word_link import TextWordLink, TextWordLinkStatus
-from app.models.word import Word
+from app.models.word import Lexeme, WordForm
 
 TOKEN_PATTERN = re.compile(r"\b[\w'-]+\b", re.UNICODE)
 
 
 def _strip_diacritics(value: str) -> str:
-    """
-    Normalize a string by stripping diacritics and applying case-folding.
-    """
     normalized = unicodedata.normalize("NFD", value)
     without_marks = "".join(ch for ch in normalized if unicodedata.category(ch) != "Mn")
     return without_marks.casefold()
 
 
 def _iter_tokens(content: str) -> Iterable[Tuple[str, int, int]]:
-    """
-    Iterate over tokens in the content, yielding (token, start, end).
-    """
     for match in TOKEN_PATTERN.finditer(content or ""):
         yield match.group(0), match.start(), match.end()
 
 
-def _build_word_index(words: Iterable[Word]) -> Dict[str, List[Word]]:
-    """
-    Build a lookup from normalized token to list of Word objects.
-    """
-    index: Dict[str, List[Word]] = defaultdict(list)
-    for word in words:
-        normalized = _strip_diacritics(word.word)
+def _build_word_form_index(word_forms: Iterable[WordForm]) -> Dict[str, List[WordForm]]:
+    index: Dict[str, List[WordForm]] = defaultdict(list)
+    for wf in word_forms:
+        normalized = _strip_diacritics(wf.form)
         if normalized:
-            index[normalized].append(word)
+            index[normalized].append(wf)
+        if wf.romanization:
+            normalized_rom = _strip_diacritics(wf.romanization)
+            if normalized_rom and normalized_rom != normalized:
+                index[normalized_rom].append(wf)
     return index
 
 
@@ -54,19 +53,6 @@ def suggest_links_for_text(
     creator_id: Optional[UUID] = None,
     replace_existing_suggestions: bool = False,
 ) -> List[TextWordLink]:
-    """
-    Generate suggested TextWordLink records for a Text instance.
-
-    Args:
-        db: Database session.
-        text: Text record to analyze.
-        creator_id: Optional user ID attributed to auto-generated links.
-        replace_existing_suggestions: If True, existing suggested links will be removed
-            before generating new ones. Confirmed or rejected links remain untouched.
-
-    Returns:
-        List of TextWordLink suggestions added to the session.
-    """
     if not text.language_id or not text.content:
         return []
 
@@ -88,9 +74,14 @@ def suggest_links_for_text(
         if link.status == TextWordLinkStatus.REJECTED
     }
 
-    # Preload words for the text's language and build lookup.
-    words = db.query(Word).filter(Word.language_id == text.language_id).all()
-    word_index = _build_word_index(words)
+    # Preload all WordForms whose parent Lexeme is in this Text's language.
+    word_forms = (
+        db.query(WordForm)
+        .join(Lexeme, Lexeme.id == WordForm.lexeme_id)
+        .filter(Lexeme.language_id == text.language_id)
+        .all()
+    )
+    form_index = _build_word_form_index(word_forms)
 
     created_links: List[TextWordLink] = []
     for token, start, end in _iter_tokens(text.content):
@@ -100,19 +91,21 @@ def suggest_links_for_text(
             continue
 
         normalized = _strip_diacritics(token)
-        matches = word_index.get(normalized)
+        matches = form_index.get(normalized)
         if not matches:
             continue
 
-        # Prefer an exact case-insensitive match; fall back to first candidate.
-        selected_word = next(
-            (w for w in matches if w.word.casefold() == token.casefold()),
-            matches[0],
+        # Prefer an exact case-insensitive match; fall back to lemma; then first.
+        selected = next(
+            (wf for wf in matches if wf.form.casefold() == token.casefold()),
+            None,
         )
+        if selected is None:
+            selected = next((wf for wf in matches if wf.is_lemma), matches[0])
 
         link = TextWordLink(
             text_id=text.id,
-            word_id=selected_word.id,
+            word_form_id=selected.id,
             start_char=start,
             end_char=end,
             status=TextWordLinkStatus.SUGGESTED,
@@ -132,11 +125,6 @@ def refresh_document_suggestions(
     *,
     creator_id: Optional[UUID] = None,
 ) -> Dict[UUID, List[TextWordLink]]:
-    """
-    Rebuild link suggestions for all texts in a document.
-
-    Returns a dictionary mapping text IDs to lists of new suggestions.
-    """
     texts = db.query(Text).filter(Text.document_id == document_id).all()
     suggestions: Dict[UUID, List[TextWordLink]] = {}
 
@@ -151,4 +139,3 @@ def refresh_document_suggestions(
             suggestions[text.id] = created
 
     return suggestions
-

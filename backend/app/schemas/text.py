@@ -63,7 +63,7 @@ class TextWordLinkBase(BaseModel):
 
 class TextWordLinkCreate(TextWordLinkBase):
     """Schema for creating a link to an existing word"""
-    word_id: UUID
+    word_form_id: UUID
     status: TextWordLinkStatus = TextWordLinkStatus.CONFIRMED
 
 
@@ -71,14 +71,14 @@ class TextWordLinkUpdate(BaseModel):
     """Schema for updating link metadata or status"""
     status: Optional[TextWordLinkStatus] = None
     notes: Optional[str] = Field(None, max_length=500)
-    word_id: Optional[UUID] = None
+    word_form_id: Optional[UUID] = None
 
 
 class TextWordLink(BaseModel):
     """Complete schema for a link between text span and word"""
     id: UUID
     text_id: UUID
-    word_id: UUID
+    word_form_id: UUID
     start_char: int
     end_char: int
     status: TextWordLinkStatus

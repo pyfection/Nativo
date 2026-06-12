@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import documentService from '../services/documentService';
 import wordLinkService from '../services/wordLinkService';
-import wordService, { CreateWordData, WordListItem } from '../services/wordService';
+import wordService, { CreateLexemeData, LexemeListItem } from '../services/wordService';
 import { DocumentWithLinks } from '../types/document';
 import {
   Text,
@@ -234,15 +234,28 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
   const [isSaving, setIsSaving] = useState(false);
   const [isSuggesting, setIsSuggesting] = useState(false);
 
-  const [searchResults, setSearchResults] = useState<WordListItem[]>([]);
+  const [searchResults, setSearchResults] = useState<LexemeListItem[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
 
   const [showNewWordForm, setShowNewWordForm] = useState(false);
-  const [newWordData, setNewWordData] = useState<CreateWordData>({
-    word: '',
-    language_id: selectedLanguage.id,
+  const [newWordData, setNewWordData] = useState<{
+    lemma: string;
+    romanization?: string;
+    ipa_pronunciation?: string;
+    part_of_speech?: string;
+    gender?: string;
+    plurality?: string;
+    grammatical_case?: string;
+    verb_aspect?: string;
+    animacy?: string;
+    language_register?: string;
+    definition?: string;
+    literal_translation?: string;
+    context_notes?: string;
+    usage_examples?: string;
+  }>({
+    lemma: '',
     language_register: 'neutral',
-    definition: '',
   });
   const [newWordTagsInput, setNewWordTagsInput] = useState('');
 
@@ -640,13 +653,21 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
     });
   }, []);
 
-  const handleLinkToWord = async (wordId: string) => {
+  const handleLinkToWord = async (lexemeId: string) => {
     if (!activeText || !selectedSpan) return;
     setIsSaving(true);
     setActionError(null);
     try {
+      // Search results are Lexemes; the link points at a WordForm. Resolve
+      // the lexeme's lemma form on the fly.
+      const lexeme = await wordService.getById(lexemeId);
+      const lemmaForm = lexeme.forms.find((f) => f.is_lemma) ?? lexeme.forms[0];
+      if (!lemmaForm) {
+        setActionError('Lexeme has no forms to link');
+        return;
+      }
       const payload: TextWordLinkCreate = {
-        word_id: wordId,
+        word_form_id: lemmaForm.id,
         start_char: selectedSpan.start,
         end_char: selectedSpan.end,
         status: TextWordLinkStatus.CONFIRMED,
@@ -760,7 +781,6 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
       const results = await wordService.search({
         q: query.slice(0, 100),
         language_ids: selectedLanguage.id,
-        include_translations: false,
         include_unpublished: true,
         limit: 10,
       });
@@ -835,8 +855,8 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
   ]);
   const handleCreateWordAndLink = async () => {
     if (!activeText || !selectedSpan) return;
-    const trimmedWord = newWordData.word.trim();
-    if (!trimmedWord) {
+    const trimmedLemma = (newWordData.lemma ?? '').trim();
+    if (!trimmedLemma) {
       setActionError('Word is required before creating a new entry.');
       return;
     }
@@ -845,61 +865,46 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
     try {
       const targetLanguageId = activeText.language_id ?? selectedLanguage.id;
       const tags = parseTags(newWordTagsInput);
-      const payload: CreateWordData = {
-        word: trimmedWord,
+      const trim = (v?: string) => v?.trim() || undefined;
+
+      const payload: CreateLexemeData = {
         language_id: targetLanguageId,
+        lemma: trimmedLemma,
+        lemma_form: {
+          form: trimmedLemma,
+          is_lemma: true,
+          romanization: trim(newWordData.romanization),
+          ipa_pronunciation: trim(newWordData.ipa_pronunciation),
+          plurality: newWordData.plurality || undefined,
+          grammatical_case: newWordData.grammatical_case || undefined,
+          verb_aspect: newWordData.verb_aspect || undefined,
+        },
+        part_of_speech: newWordData.part_of_speech || undefined,
+        gender: newWordData.gender || undefined,
+        animacy: newWordData.animacy || undefined,
+        language_register: newWordData.language_register || undefined,
+        tags: tags.length > 0 ? tags : undefined,
       };
 
-      const optionalFields: Array<keyof CreateWordData> = [
-        'romanization',
-        'ipa_pronunciation',
-        'part_of_speech',
-        'gender',
-        'plurality',
-        'grammatical_case',
-        'verb_aspect',
-        'animacy',
-        'language_register',
-        'definition',
-        'literal_translation',
-        'context_notes',
-        'usage_examples',
-      ];
-
-      optionalFields.forEach((field) => {
-        const value = newWordData[field];
-        if (typeof value === 'string') {
-          const trimmed = value.trim();
-          if (trimmed) {
-            (payload as any)[field] = trimmed;
-          }
-        } else if (value) {
-          (payload as any)[field] = value;
-        }
-      });
-
-      if (tags.length > 0) {
-        payload.tags = tags;
-      }
-
       const newWord = await wordService.create(payload);
-      await handleLinkToWord(newWord.id);
+      // newWord is a LexemeWithForms; pick the lemma form for the link.
+      const lemmaForm = newWord.forms.find((f) => f.is_lemma) ?? newWord.forms[0];
+      if (!lemmaForm) {
+        setActionError('Created lexeme has no form to link to');
+        return;
+      }
+      const linkPayload: TextWordLinkCreate = {
+        word_form_id: lemmaForm.id,
+        start_char: selectedSpan.start,
+        end_char: selectedSpan.end,
+        status: TextWordLinkStatus.CONFIRMED,
+      };
+      const link = await wordLinkService.create(activeText.id, linkPayload);
+      applyLinkUpdate(link);
+
       setNewWordData({
-        word: '',
-        language_id: targetLanguageId,
-        romanization: '',
-        ipa_pronunciation: '',
-        part_of_speech: '',
-        gender: '',
-        plurality: '',
-        grammatical_case: '',
-        verb_aspect: '',
-        animacy: '',
+        lemma: '',
         language_register: 'neutral',
-        definition: '',
-        literal_translation: '',
-        context_notes: '',
-        usage_examples: '',
       });
       setNewWordTagsInput('');
       setShowNewWordForm(false);
@@ -1083,7 +1088,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                   <div className="selection-actions">
                     <div className="selection-meta">
                       <strong>Word:</strong>{' '}
-                      {selectedSpan.link.word_text ?? `#${selectedSpan.link.word_id}`}
+                      {selectedSpan.link.word_text ?? `#${selectedSpan.link.word_form_id}`}
                     </div>
                     <div className="selection-buttons">
                       <button
@@ -1131,8 +1136,10 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                       {searchResults.map((word) => (
                         <div key={word.id} className="search-result">
                           <div>
-                            <strong>{word.word}</strong>
-                            {word.definition && <div className="search-definition">{word.definition}</div>}
+                            <strong>{word.lemma}</strong>
+                            {word.part_of_speech && (
+                              <div className="search-definition">{word.part_of_speech}</div>
+                            )}
                           </div>
                           <button
                             className="btn-primary"
@@ -1151,9 +1158,9 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                           onClick={() => {
                             const targetLanguageId =
                               activeText?.language_id ?? selectedLanguage.id;
+                            void targetLanguageId;
                             setNewWordData({
-                              word: selectedSpan?.text?.trim() ?? '',
-                              language_id: targetLanguageId,
+                              lemma: selectedSpan?.text?.trim() ?? '',
                               romanization: '',
                               ipa_pronunciation: '',
                               part_of_speech: '',
@@ -1181,9 +1188,9 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                           <input
                             id="new-word"
                             type="text"
-                            value={newWordData.word}
+                            value={newWordData.lemma}
                             onChange={(event) =>
-                              setNewWordData((prev) => ({ ...prev, word: event.target.value }))
+                              setNewWordData((prev) => ({ ...prev, lemma: event.target.value }))
                             }
                             disabled={!canEdit}
                           />
@@ -1426,7 +1433,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                               disabled={
                                 !canEdit ||
                                 isSaving ||
-                                !newWordData.word.trim()
+                                !newWordData.lemma.trim()
                               }
                             >
                               Create & Link
@@ -1436,11 +1443,8 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                               onClick={() => {
                                 setShowNewWordForm(false);
                                 setNewWordTagsInput('');
-                                const targetLanguageId =
-                                  activeText?.language_id ?? selectedLanguage.id;
                                 setNewWordData({
-                                  word: selectedSpan?.text?.trim() ?? '',
-                                  language_id: targetLanguageId,
+                                  lemma: selectedSpan?.text?.trim() ?? '',
                                   romanization: '',
                                   ipa_pronunciation: '',
                                   part_of_speech: '',
@@ -1482,7 +1486,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                   <li key={link.id} className="suggestion-item">
                     <div className="suggestion-snippet">
                       <span>{activeText.content.slice(link.start_char, link.end_char)}</span>
-                      <small>{link.word_text ?? `Word #${link.word_id}`}</small>
+                      <small>{link.word_text ?? `Word #${link.word_form_id}`}</small>
                     </div>
                     <div className="suggestion-actions">
                       <button

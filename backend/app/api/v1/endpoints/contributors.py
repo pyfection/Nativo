@@ -14,7 +14,7 @@ from app.api.deps import get_db
 from app.models.text import Text
 from app.models.user import User
 from app.models.user_language import UserLanguage
-from app.models.word.word import Word
+from app.models.word import Lexeme
 
 router = APIRouter()
 
@@ -39,7 +39,7 @@ def list_contributors(
     """
     A user counts as a contributor for a language if any of:
       - has a UserLanguage row for that language
-      - has created at least one Word in that language
+      - has created at least one Lexeme in that language
       - has created at least one Text in that language
 
     Without `language_id`, returns any user who has created at least one
@@ -54,7 +54,7 @@ def list_contributors(
             .distinct()
         )
         word_user_ids = (
-            db.query(Word.created_by_id).filter(Word.language_id == language_id).distinct()
+            db.query(Lexeme.created_by_id).filter(Lexeme.language_id == language_id).distinct()
         )
         text_user_ids = (
             db.query(Text.created_by_id).filter(Text.language_id == language_id).distinct()
@@ -63,7 +63,7 @@ def list_contributors(
             User.id.in_(ul_user_ids) | User.id.in_(word_user_ids) | User.id.in_(text_user_ids)
         )
     else:
-        word_user_ids = db.query(Word.created_by_id).distinct()
+        word_user_ids = db.query(Lexeme.created_by_id).distinct()
         text_user_ids = db.query(Text.created_by_id).distinct()
         users_query = db.query(User).filter(User.id.in_(word_user_ids) | User.id.in_(text_user_ids))
 
@@ -74,12 +74,12 @@ def list_contributors(
     user_ids = [u.id for u in users]
 
     # Bulk word counts per user
-    word_count_query = db.query(Word.created_by_id, func.count(Word.id)).filter(
-        Word.created_by_id.in_(user_ids)
+    word_count_query = db.query(Lexeme.created_by_id, func.count(Lexeme.id)).filter(
+        Lexeme.created_by_id.in_(user_ids)
     )
     if language_id is not None:
-        word_count_query = word_count_query.filter(Word.language_id == language_id)
-    word_counts: dict[UUID, int] = dict(word_count_query.group_by(Word.created_by_id).all())
+        word_count_query = word_count_query.filter(Lexeme.language_id == language_id)
+    word_counts: dict[UUID, int] = dict(word_count_query.group_by(Lexeme.created_by_id).all())
 
     # Bulk text counts per user
     text_count_query = db.query(Text.created_by_id, func.count(Text.id)).filter(

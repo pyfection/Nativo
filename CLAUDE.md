@@ -37,9 +37,15 @@ The Word model is a **package** (`backend/app/models/word/`) containing `word.py
 - **Layered**: route → service → model. Endpoints should validate via Pydantic schemas and delegate to services; services own DB sessions and business logic.
 - **All IDs are UUIDs** (Postgres `UUID` columns).
 - **Document vs Text**: a `Document` groups one or more `Text` records (translations of the same content). Texts carry the title and content; Documents are the language-agnostic grouping. *(Older docs may still describe a "unified Document with content but no title" — that's pre-refactor; trust the code.)*
-- **Word ↔ Text typing**: `WordTextType` enum (in `models/word/associations.py`) currently has `LITERAL_TRANSLATION`, `CONTEXT_NOTE`, `USAGE_EXAMPLE`, `OTHER`. Update both the enum and the migration if adding a value.
+- **Lexeme vs WordForm**: a `Lexeme` is an abstract dictionary entry (a concept in one language — POS, gender, definitions, etymology, synonyms, antonyms, translations all hang here). A `WordForm` is a surface form of that lexeme (the actual string, IPA, case/plurality/aspect inflection, rhyme key, audio recordings, attested locations). One Lexeme has many WordForms, one of which is marked `is_lemma=True`. In-text mentions (`TextWordLink`) point at the specific `WordForm`. Synonym/antonym associations have `nuance` and (for antonyms) `antonym_type` columns, and are stored canonically with `lexeme_id < other_id` so the relation is undirected.
+- **Lexeme ↔ Text typing**: `WordTextType` enum (in `models/word/associations.py`) currently has `LITERAL_TRANSLATION`, `CONTEXT_NOTE`, `USAGE_EXAMPLE`, `OTHER`. These live at the Lexeme level (`lexeme_texts`). Update both the enum and the migration if adding a value.
+- **Rhyme keys**: `WordForm.rhyme_key` and `near_rhyme_key` are derived from `ipa_pronunciation` by `app.utils.rhyme.compute_rhyme_key`. They're plain indexed strings — querying "what rhymes with X" is a single equality lookup, not a stored M2M. Recompute on `ipa_pronunciation` change.
 - **Auth**: JWT + role-based (`PUBLIC` / `RESEARCHER` / `NATIVE_SPEAKER` / `ADMIN`). See [AUTH_GUIDE](backend/AUTH_GUIDE.md).
 - **Admin UI**: Starlette-Admin at `/admin`, gated to `is_superuser=True` or `role=ADMIN`. See [ADMIN_GUIDE](backend/ADMIN_GUIDE.md).
+
+## Deferred / open architectural decisions
+
+- **Dialect vs. attested location.** We do not model dialects as first-class entities. Instead, every `WordForm` has an M2M of `confirmed_at` `Location`s where that form/pronunciation was attested. A user querying "what do they say in Munich?" should geo-filter forms by attested location, not by a dialect label. Rationale: dialect boundaries are blurry, politically loaded, and rarely line up with the data we have. Revisit if we accumulate enough attestations that geo-filtering becomes noisy and a named dialect grouping (probably a many-to-many `WordForm.dialects` on top of locations, not replacing them) would help.
 
 ## Commands
 

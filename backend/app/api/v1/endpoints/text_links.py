@@ -99,7 +99,7 @@ async def create_text_link(
 
     link = TextWordLink(
         text_id=text_id,
-        word_id=link_data.word_id,
+        word_form_id=link_data.word_form_id,
         start_char=link_data.start_char,
         end_char=link_data.end_char,
         status=link_data.status,
@@ -136,8 +136,8 @@ async def update_text_link(
     if link_update.notes is not None:
         link.notes = link_update.notes
 
-    if link_update.word_id is not None:
-        link.word_id = link_update.word_id
+    if link_update.word_form_id is not None:
+        link.word_form_id = link_update.word_form_id
 
     if link_update.status is not None:
         link.status = link_update.status

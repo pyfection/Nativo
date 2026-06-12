@@ -45,43 +45,57 @@ from app.schemas.document import (
     DocumentStatistics,
 )
 
-# Word schemas (includes Location, Tag, Image schemas too)
+# Lexeme / WordForm schemas (Location, Tag, Image schemas also live in this module)
 from app.schemas.word import (
-    # Word schemas
-    WordBase,
-    WordCreate,
-    WordUpdate,
-    WordInDB,
-    Word,
-    WordListItem,
-    WordWithRelations,
-    WordFilter,
-    WordStatistics,
-    
-    # Location schemas
+    # Lexeme
+    Lexeme,
+    LexemeCreate,
+    LexemeUpdate,
+    LexemeListItem,
+    LexemeWithForms,
+    LexemeFilter,
+    LexemeStatistics,
+    # WordForm
+    WordForm,
+    WordFormCreate,
+    WordFormUpdate,
+    # Relationships
+    SynonymCreate,
+    AntonymCreate,
+    RelatedLexemeCreate,
+    TranslationCreate,
+    TranslationUpdate,
+    SynonymLink,
+    AntonymLink,
+    TranslationLink,
+    LexemeReference,
+    # Rhyme
+    RhymeMatch,
+    # Location
     LocationBase,
     LocationCreate,
     LocationUpdate,
     LocationInDB,
     Location,
-    
-    # Tag schemas
+    # Tag
     TagBase,
     TagCreate,
     TagUpdate,
     TagInDB,
     Tag,
-    
-    # Image schemas
+    # Image
     ImageBase,
     ImageCreate,
     ImageUpdate,
     ImageInDB,
     Image,
-    
-    # Relationship schemas
-    WordRelationshipCreate,
-    WordTextAssociation,
+    # Aliases for back-compat readers
+    Word,
+    WordCreate,
+    WordUpdate,
+    WordListItem,
+    WordFilter,
+    WordStatistics,
 )
 
 __all__ = [
@@ -120,39 +134,51 @@ __all__ = [
     "DocumentFilter",
     "DocumentStatistics",
     
-    # Word schemas
-    "WordBase",
-    "WordCreate",
-    "WordUpdate",
-    "WordInDB",
-    "Word",
-    "WordListItem",
-    "WordWithRelations",
-    "WordFilter",
-    "WordStatistics",
-    
-    # Location schemas
+    # Lexeme / WordForm
+    "Lexeme",
+    "LexemeCreate",
+    "LexemeUpdate",
+    "LexemeListItem",
+    "LexemeWithForms",
+    "LexemeFilter",
+    "LexemeStatistics",
+    "WordForm",
+    "WordFormCreate",
+    "WordFormUpdate",
+    # Relationships
+    "SynonymCreate",
+    "AntonymCreate",
+    "RelatedLexemeCreate",
+    "TranslationCreate",
+    "TranslationUpdate",
+    "SynonymLink",
+    "AntonymLink",
+    "TranslationLink",
+    "LexemeReference",
+    "RhymeMatch",
+    # Location
     "LocationBase",
     "LocationCreate",
     "LocationUpdate",
     "LocationInDB",
     "Location",
-    
-    # Tag schemas
+    # Tag
     "TagBase",
     "TagCreate",
     "TagUpdate",
     "TagInDB",
     "Tag",
-    
-    # Image schemas
+    # Image
     "ImageBase",
     "ImageCreate",
     "ImageUpdate",
     "ImageInDB",
     "Image",
-    
-    # Relationship schemas
-    "WordRelationshipCreate",
-    "WordTextAssociation",
+    # Back-compat
+    "Word",
+    "WordCreate",
+    "WordUpdate",
+    "WordListItem",
+    "WordFilter",
+    "WordStatistics",
 ]

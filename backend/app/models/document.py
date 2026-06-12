@@ -16,7 +16,7 @@ class Document(Base):
     a Document with multiple Text records - one in the indigenous language,
     one in English, one in Spanish, etc.
     
-    Words can link to Documents for definitions, etymology, and cultural significance
+    Lexemes can link to Documents for definitions, etymology, and cultural significance
     where the meaning is the same across translations.
     """
     __tablename__ = "documents"
@@ -31,8 +31,8 @@ class Document(Base):
     # Relationships
     texts = relationship("Text", back_populates="document", cascade="all, delete-orphan")
     created_by = relationship("User")
-    # Note: words_with_definition, words_with_etymology, and words_with_cultural_significance
-    # are created automatically via backrefs defined in the Word model
+    # Note: lexemes_with_definition, lexemes_with_etymology, and lexemes_with_cultural_significance
+    # are created automatically via backrefs defined in the Lexeme model
     
     def __repr__(self):
         return f"<Document(id={self.id}, texts_count={len(self.texts) if self.texts else 0})>"

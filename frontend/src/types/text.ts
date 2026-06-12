@@ -35,7 +35,7 @@ export enum TextWordLinkStatus {
 export interface TextWordLink {
   id: string;
   text_id: string;
-  word_id: string;
+  word_form_id: string;
   start_char: number;
   end_char: number;
   status: TextWordLinkStatus;
@@ -51,7 +51,7 @@ export interface TextWordLink {
 }
 
 export interface TextWordLinkCreate {
-  word_id: string;
+  word_form_id: string;
   start_char: number;
   end_char: number;
   status?: TextWordLinkStatus;
@@ -61,7 +61,7 @@ export interface TextWordLinkCreate {
 export interface TextWordLinkUpdate {
   status?: TextWordLinkStatus;
   notes?: string;
-  word_id?: string;
+  word_form_id?: string;
 }
 
 export interface Text {

@@ -32,8 +32,8 @@ class User(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
     
     # Relationships
-    words_created = relationship("Word", foreign_keys="Word.created_by_id", back_populates="created_by")
-    words_verified = relationship("Word", foreign_keys="Word.verified_by_id", back_populates="verified_by")
+    lexemes_created = relationship("Lexeme", foreign_keys="Lexeme.created_by_id", back_populates="created_by")
+    lexemes_verified = relationship("Lexeme", foreign_keys="Lexeme.verified_by_id", back_populates="verified_by")
     language_proficiencies = relationship("UserLanguage", back_populates="user", cascade="all, delete-orphan")
     
     def __repr__(self):

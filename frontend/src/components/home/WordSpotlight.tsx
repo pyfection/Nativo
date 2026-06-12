@@ -92,18 +92,12 @@ export default function WordSpotlight({ selectedLanguage }: WordSpotlightProps) 
           <div className="word-spotlight-empty">{t('spotlight.empty')}</div>
         ) : (
           <div className={`word-spotlight-card ${visible ? 'visible' : 'fading'}`}>
-            <div className="word-spotlight-word">{current?.word}</div>
+            <div className="word-spotlight-word">{current?.lemma}</div>
             <div className="word-spotlight-meta">
-              {current?.romanization && (
-                <span className="word-spotlight-roman">/{current.romanization}/</span>
-              )}
               {current?.part_of_speech && (
                 <span className="word-spotlight-pos">{current.part_of_speech}</span>
               )}
             </div>
-            {current?.definition && (
-              <div className="word-spotlight-definition">{current.definition}</div>
-            )}
           </div>
         )}
 

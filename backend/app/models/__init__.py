@@ -1,7 +1,7 @@
 """
-Database models for Nativo language preservation platform.
+Database models for the Nativo language-preservation platform.
 
-All models use UUID primary keys for better distributed system compatibility.
+All models use UUID primary keys.
 """
 
 from app.models.user import User, UserRole
@@ -13,30 +13,38 @@ from app.models.text import Text, DocumentType
 from app.models.text_word_link import TextWordLink, TextWordLinkStatus
 from app.models.location import Location
 from app.models.image import Image
-from app.models.tag import Tag, word_tags
+from app.models.tag import Tag
 from app.models.word import (
-    Word,
-    PartOfSpeech,
-    GrammaticalGender,
-    Plurality,
-    GrammaticalCase,
-    VerbAspect,
+    Lexeme,
+    WordForm,
+    # Enums
     Animacy,
+    AntonymType,
+    GrammaticalCase,
+    GrammaticalGender,
+    LexemeStatus,
+    PartOfSpeech,
+    Plurality,
     Register,
+    SynonymNuance,
+    VerbAspect,
     WordStatus,
     WordTextType,
-    word_audio,
-    word_image,
-    word_texts,
-    word_definitions,
-    word_synonyms,
-    word_antonyms,
-    word_related,
-    word_translations,
+    # Associations
+    lexeme_antonyms,
+    lexeme_definitions,
+    lexeme_images,
+    lexeme_related,
+    lexeme_synonyms,
+    lexeme_tags,
+    lexeme_texts,
+    lexeme_translations,
+    word_form_audio,
+    word_form_locations,
 )
 
 __all__ = [
-    # Core Models
+    # Core models
     "User",
     "Language",
     "UserLanguage",
@@ -46,18 +54,16 @@ __all__ = [
     "TextWordLink",
     "Location",
     "Tag",
-    "Word",
+    "Lexeme",
+    "WordForm",
     "Image",
-    
-    # User Enums
+    # User enums
     "UserRole",
     "ProficiencyLevel",
-    
-    # Document/Text Enum
+    # Document/Text enums
     "DocumentType",
     "TextWordLinkStatus",
-    
-    # Word Enums
+    # Lexeme enums
     "PartOfSpeech",
     "GrammaticalGender",
     "Plurality",
@@ -65,17 +71,20 @@ __all__ = [
     "VerbAspect",
     "Animacy",
     "Register",
+    "LexemeStatus",
     "WordStatus",
     "WordTextType",
-    
+    "SynonymNuance",
+    "AntonymType",
     # Association tables
-    "word_tags",
-    "word_audio",
-    "word_image",
-    "word_texts",
-    "word_definitions",
-    "word_synonyms",
-    "word_antonyms",
-    "word_related",
-    "word_translations",
+    "lexeme_antonyms",
+    "lexeme_definitions",
+    "lexeme_images",
+    "lexeme_related",
+    "lexeme_synonyms",
+    "lexeme_tags",
+    "lexeme_texts",
+    "lexeme_translations",
+    "word_form_audio",
+    "word_form_locations",
 ]

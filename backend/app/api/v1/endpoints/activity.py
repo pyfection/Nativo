@@ -17,7 +17,7 @@ from app.limiter import limiter
 from app.models.text import Text
 from app.models.user import User
 from app.models.user_language import UserLanguage
-from app.models.word.word import Word
+from app.models.word import Lexeme
 
 router = APIRouter()
 
@@ -52,9 +52,9 @@ def get_activity(
     over = max(limit * 2, 20)
 
     recent_words = (
-        db.query(Word)
-        .filter(Word.language_id == language_id)
-        .order_by(Word.created_at.desc())
+        db.query(Lexeme)
+        .filter(Lexeme.language_id == language_id)
+        .order_by(Lexeme.created_at.desc())
         .limit(over)
         .all()
     )
@@ -96,7 +96,7 @@ def get_activity(
                 type="word_added",
                 timestamp=w.created_at.isoformat(),
                 actor=actor,
-                summary=f'Word added: "{w.word}"',
+                summary=f'Word added: "{w.lemma}"',
             )
         )
     for t in recent_texts:
