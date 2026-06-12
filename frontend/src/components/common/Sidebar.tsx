@@ -14,18 +14,18 @@ const NAV_ITEMS: NavItem[] = [
     path: '/words',
     labelKey: 'nav.words',
     icon: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M4 7l3.2 10L12 7l4.8 10L20 7" />
+      <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+        <text
+          x="12"
+          y="17"
+          textAnchor="middle"
+          fontSize="16"
+          fontFamily="'Times New Roman', Georgia, serif"
+          fontWeight="600"
+          fill="currentColor"
+        >
+          Αω
+        </text>
       </svg>
     ),
   },
@@ -96,15 +96,25 @@ export default function Sidebar() {
           className="sidebar-toggle-button"
           onClick={handleToggle}
           aria-pressed={isExpanded}
+          aria-expanded={isExpanded}
           aria-label={isExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
           title={isExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
         >
-          <span className={`toggle-icon ${isExpanded ? 'open' : ''}`} aria-hidden="true">
-            <svg width="16" height="16" viewBox="0 0 16 16">
-              <path d="M5.5 3.5a.5.5 0 0 1 .832-.374l4 3.5a.5.5 0 0 1 0 .748l-4 3.5A.5.5 0 0 1 5 10.5v-7a.5.5 0 0 1 .5-.5z" />
-            </svg>
-          </span>
-          {isExpanded && <span className="toggle-label">Hide menu</span>}
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
         </button>
       </div>
       <nav className="sidebar-nav">
