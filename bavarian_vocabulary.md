@@ -1,23 +1,26 @@
 # Bavarian vocabulary — UI extraction
 
-## Done (190 entries inserted, 9 PATCHed)
+## Status (post Lexeme/WordForm refactor — 2026-06-12)
 
-- batch 1: 5 · batch 2: 5 · bulk: 120 · batch 3: 27 · batch 4: 3 · sai/sei cleanup: 4 · sau split: 2 · batch 5: 24
-- `bedincbráh` notes corrected to reference *bedina* (verb stem)
-- `sai`: verb → noun (PATCH), then singular → **plural "pigs"** (PATCH again)
-- English `pig` entry renamed to `pigs` (plural) to match the now-corrected `sai`
-- New `sau` (singular "pig") added with its own English `pig` (singular) link
-- `bin`, `bist`, `is`, `san`, `han` notes updated from *form-of:sai* → *form-of:sei*
-- `sig` notes updated to cover both imperative and 1sg-present senses
-- **Batch 5 (article paradigm + content nouns + máha):**
-  - Definite m sg acc article `'n` (NOT a contraction of *an*)
-  - Indefinite m sg acc article `an` (also covers n sg dat indef)
-  - Demonstratives `den` (m sg "that") and `dene` (pl all genders "these/those")
-  - Negation `koam` (m/n sg dat), `koana` (f sg dat)
-  - Cardinal `oa` (m/n/f "one")
-  - Contractions: `af'm`, `im`, `mid'm`, `fia'n`, `fom`
-  - Content nouns: `kinda`, `kind`, `frau`, `hund`, `dic`, `sesl`, `haus`
-  - Verb `máha` ("to do") + full conjugation: `máh`, `máhsd`, `máhds`, `máhd`
+The `Word` model was split into `Lexeme` + `WordForm` in commit `f0188f7`; the migration dropped all prior data. We re-inserted from scratch using the new shape via `scripts/reinsert_bavarian_vocab.py`.
+
+**Current prod state:** **176 Bavarian lexemes** (198 WordForms total) + **158 English lexemes** + **176 translation links**.
+
+The major regroupings vs. the old 197-row flat layout:
+
+- **Paradigm lexemes** (one lexeme, many forms):
+  - `sei` (to be): 7 forms — `sei` + `bin/bist/is/saids/san/han`
+  - `hóm` (to have): 5 forms — `hóm` + `hób/hóst/hód/hóbds`
+  - `máha` (to do): 5 forms — `máha` + `máh/máhsd/máhd/máhds`
+  - `ségn` (to see): 2 forms — `ségn` + `sig` (imperative + 1sg)
+  - `suaha` (to search): 3 forms — `suaha` + `suah/suaht`
+  - `gém` (to give): 2 forms — `gém` + `gibd`
+  - Noun pairs: `voat/veata`, `cbráh/cbráha`, `kind/kinda`, `sau/sai`
+- **Homographs kept distinct** (same surface, different lexeme): `si`×2, `es`×2, `de`×2, `suah`×2.
+- **Article paradigm** stays as separate lexemes (not forms of a master "the"): `da`, `de`, `dem`, `dera`, `'n`, `s'`, `d'`, `koa`, `koane`, `koam`, `koana`, `oa`, `oana`, `den`, `dene`, `an`, `a`, `des`.
+- **Contractions** (`af'm`, `im`, `mid'm`, `fia'n`, `fom`, `dsum`, `aus'm`) stay as distinct preposition lexemes.
+- **Past-participle adjectives** (`dahóitne`, `midgmáhd`, etc.) stay as distinct lexemes, not forms of the parent verb.
+- **Dropped:** day-1 smoke entries (the orphan `is`-with-no-paradigm and the literal "test" row… wait, `test` was kept as a placeholder for the test page).
 
 ## Case examples — for your B. question
 
