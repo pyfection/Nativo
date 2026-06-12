@@ -1,106 +1,178 @@
 """
-Association tables for Word model many-to-many relationships.
+Association tables for Lexeme and WordForm relationships.
+
+Conventions:
+- Lexeme-level associations attach to concept (definitions, synonyms,
+  antonyms, related, translations, tags, images, texts).
+- WordForm-level associations attach to surface form (audio recordings,
+  attested locations).
+- Symmetric self-referential M2Ms (synonyms, antonyms, related, translations)
+  store rows canonically with `lexeme_id < other_id` and a CHECK constraint
+  enforces that. Callers must swap the IDs at write time; readers see one
+  undirected row, not two.
 """
-from sqlalchemy import Table, Column, String, DateTime, Boolean, ForeignKey, Enum as SQLEnum
-from sqlalchemy.dialects.postgresql import UUID
-from datetime import datetime
 import enum
+from datetime import datetime
+
+from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    Column,
+    DateTime,
+    Enum as SQLEnum,
+    ForeignKey,
+    String,
+    Table,
+    Text,
+)
+from sqlalchemy.dialects.postgresql import UUID
 
 from app.database import Base
+from app.models.word.enums import AntonymType, SynonymNuance
 
 
 class WordTextType(str, enum.Enum):
-    """Types of word-text relationships (language-specific content)"""
+    """Types of Lexeme-Text relationships (language-specific commentary)."""
     LITERAL_TRANSLATION = "literal_translation"
     CONTEXT_NOTE = "context_note"
     USAGE_EXAMPLE = "usage_example"
     OTHER = "other"
 
 
-# Association table for Word-Audio many-to-many relationship
-word_audio = Table(
-    'word_audio',
+# ---------------------------------------------------------------------------
+# WordForm-level associations (one surface form)
+# ---------------------------------------------------------------------------
+
+
+word_form_audio = Table(
+    "word_form_audio",
     Base.metadata,
-    Column('word_id', UUID(as_uuid=True), ForeignKey('words.id'), primary_key=True),
-    Column('audio_id', UUID(as_uuid=True), ForeignKey('audio.id'), primary_key=True),
-    Column('is_primary', Boolean, default=False),  # Mark one as primary pronunciation
-    Column('created_at', DateTime, default=datetime.utcnow, nullable=False)
+    Column("word_form_id", UUID(as_uuid=True), ForeignKey("word_forms.id", ondelete="CASCADE"), primary_key=True),
+    Column("audio_id", UUID(as_uuid=True), ForeignKey("audio.id", ondelete="CASCADE"), primary_key=True),
+    Column("is_primary", Boolean, default=False, nullable=False),
+    Column("created_at", DateTime, nullable=False),
 )
 
 
-# Association table for Word-Image many-to-many relationship
-word_image = Table(
-    'word_image',
+word_form_locations = Table(
+    "word_form_locations",
     Base.metadata,
-    Column('word_id', UUID(as_uuid=True), ForeignKey('words.id'), primary_key=True),
-    Column('image_id', UUID(as_uuid=True), ForeignKey('images.id'), primary_key=True),
-    Column('is_primary', Boolean, default=False),  # Mark one as primary image
-    Column('created_at', DateTime, default=datetime.utcnow, nullable=False)
+    Column("word_form_id", UUID(as_uuid=True), ForeignKey("word_forms.id", ondelete="CASCADE"), primary_key=True),
+    Column("location_id", UUID(as_uuid=True), ForeignKey("locations.id", ondelete="CASCADE"), primary_key=True),
+    Column("notes", String(500), nullable=True),
+    Column("created_at", DateTime, nullable=False),
 )
 
 
-# Association table for Word-Text many-to-many relationship
-# Links words to texts with a relationship type (for language-specific content)
-word_texts = Table(
-    'word_texts',
+# ---------------------------------------------------------------------------
+# Lexeme-level associations (concept)
+# ---------------------------------------------------------------------------
+
+
+lexeme_images = Table(
+    "lexeme_images",
     Base.metadata,
-    Column('word_id', UUID(as_uuid=True), ForeignKey('words.id'), primary_key=True),
-    Column('text_id', UUID(as_uuid=True), ForeignKey('texts.id'), primary_key=True),
-    Column('relationship_type', SQLEnum(WordTextType), nullable=False, primary_key=True),
-    Column('created_at', DateTime, default=datetime.utcnow, nullable=False)
+    Column("lexeme_id", UUID(as_uuid=True), ForeignKey("lexemes.id", ondelete="CASCADE"), primary_key=True),
+    Column("image_id", UUID(as_uuid=True), ForeignKey("images.id", ondelete="CASCADE"), primary_key=True),
+    Column("is_primary", Boolean, default=False, nullable=False),
+    Column("created_at", DateTime, nullable=False),
 )
 
 
-# Association table for Word-Document many-to-many relationship for definitions
-# Links words to documents (definitions that exist across translations)
-word_definitions = Table(
-    'word_definitions',
+lexeme_tags = Table(
+    "lexeme_tags",
     Base.metadata,
-    Column('word_id', UUID(as_uuid=True), ForeignKey('words.id'), primary_key=True),
-    Column('document_id', UUID(as_uuid=True), ForeignKey('documents.id'), primary_key=True),
-    Column('created_at', DateTime, default=datetime.utcnow, nullable=False)
+    Column("lexeme_id", UUID(as_uuid=True), ForeignKey("lexemes.id", ondelete="CASCADE"), primary_key=True),
+    Column("tag_id", UUID(as_uuid=True), ForeignKey("tags.id", ondelete="CASCADE"), primary_key=True),
+    Column("created_at", DateTime, nullable=False),
 )
 
 
-# Association table for synonyms (Word-to-Word self-referential)
-word_synonyms = Table(
-    'word_synonyms',
+lexeme_definitions = Table(
+    "lexeme_definitions",
     Base.metadata,
-    Column('word_id', UUID(as_uuid=True), ForeignKey('words.id'), primary_key=True),
-    Column('synonym_id', UUID(as_uuid=True), ForeignKey('words.id'), primary_key=True),
-    Column('created_at', DateTime, default=datetime.utcnow, nullable=False)
+    Column("lexeme_id", UUID(as_uuid=True), ForeignKey("lexemes.id", ondelete="CASCADE"), primary_key=True),
+    Column("document_id", UUID(as_uuid=True), ForeignKey("documents.id", ondelete="CASCADE"), primary_key=True),
+    Column("created_at", DateTime, nullable=False),
 )
 
 
-# Association table for antonyms (Word-to-Word self-referential)
-word_antonyms = Table(
-    'word_antonyms',
+lexeme_texts = Table(
+    "lexeme_texts",
     Base.metadata,
-    Column('word_id', UUID(as_uuid=True), ForeignKey('words.id'), primary_key=True),
-    Column('antonym_id', UUID(as_uuid=True), ForeignKey('words.id'), primary_key=True),
-    Column('created_at', DateTime, default=datetime.utcnow, nullable=False)
+    Column("lexeme_id", UUID(as_uuid=True), ForeignKey("lexemes.id", ondelete="CASCADE"), primary_key=True),
+    Column("text_id", UUID(as_uuid=True), ForeignKey("texts.id", ondelete="CASCADE"), primary_key=True),
+    Column(
+        "relationship_type",
+        SQLEnum(WordTextType, name="wordtexttype"),
+        nullable=False,
+        primary_key=True,
+    ),
+    Column("created_at", DateTime, nullable=False),
 )
 
 
-# Association table for related words (Word-to-Word self-referential)
-word_related = Table(
-    'word_related',
+# ---------------------------------------------------------------------------
+# Symmetric self-referential M2Ms (Lexeme ↔ Lexeme)
+#
+# `lexeme_id < other_id` is enforced by a CHECK constraint so each pair is
+# stored exactly once. The lexeme service is responsible for swapping the IDs
+# before INSERT.
+# ---------------------------------------------------------------------------
+
+
+lexeme_synonyms = Table(
+    "lexeme_synonyms",
     Base.metadata,
-    Column('word_id', UUID(as_uuid=True), ForeignKey('words.id'), primary_key=True),
-    Column('related_word_id', UUID(as_uuid=True), ForeignKey('words.id'), primary_key=True),
-    Column('relationship_type', String(100), nullable=True),  # e.g., 'derived_from', 'compound_part'
-    Column('created_at', DateTime, default=datetime.utcnow, nullable=False)
+    Column("lexeme_id", UUID(as_uuid=True), ForeignKey("lexemes.id", ondelete="CASCADE"), primary_key=True),
+    Column("synonym_id", UUID(as_uuid=True), ForeignKey("lexemes.id", ondelete="CASCADE"), primary_key=True),
+    Column(
+        "nuance",
+        SQLEnum(SynonymNuance, name="synonymnuance"),
+        nullable=True,
+    ),
+    Column("notes", String(500), nullable=True),
+    Column("created_at", DateTime, nullable=False),
+    CheckConstraint("lexeme_id < synonym_id", name="ck_lexeme_synonyms_ordered"),
 )
 
 
-# Association table for word translations (Word-to-Word self-referential for cross-language translations)
-word_translations = Table(
-    'word_translations',
+lexeme_antonyms = Table(
+    "lexeme_antonyms",
     Base.metadata,
-    Column('word_id', UUID(as_uuid=True), ForeignKey('words.id'), primary_key=True),
-    Column('translation_id', UUID(as_uuid=True), ForeignKey('words.id'), primary_key=True),
-    Column('notes', String(500), nullable=True),  # Additional context about the translation
-    Column('created_at', DateTime, default=datetime.utcnow, nullable=False),
-    Column('created_by_id', UUID(as_uuid=True), ForeignKey('users.id'), nullable=True)
+    Column("lexeme_id", UUID(as_uuid=True), ForeignKey("lexemes.id", ondelete="CASCADE"), primary_key=True),
+    Column("antonym_id", UUID(as_uuid=True), ForeignKey("lexemes.id", ondelete="CASCADE"), primary_key=True),
+    Column(
+        "antonym_type",
+        SQLEnum(AntonymType, name="antonymtype"),
+        nullable=True,
+    ),
+    Column("notes", String(500), nullable=True),
+    Column("created_at", DateTime, nullable=False),
+    CheckConstraint("lexeme_id < antonym_id", name="ck_lexeme_antonyms_ordered"),
 )
 
+
+lexeme_related = Table(
+    "lexeme_related",
+    Base.metadata,
+    Column("lexeme_id", UUID(as_uuid=True), ForeignKey("lexemes.id", ondelete="CASCADE"), primary_key=True),
+    Column("related_lexeme_id", UUID(as_uuid=True), ForeignKey("lexemes.id", ondelete="CASCADE"), primary_key=True),
+    # Directional relationships (derived_from, compound_part_of) are allowed
+    # here; the type column carries the direction so we don't need to
+    # canonicalize.
+    Column("relationship_type", String(100), nullable=True),
+    Column("created_at", DateTime, nullable=False),
+)
+
+
+lexeme_translations = Table(
+    "lexeme_translations",
+    Base.metadata,
+    Column("lexeme_id", UUID(as_uuid=True), ForeignKey("lexemes.id", ondelete="CASCADE"), primary_key=True),
+    Column("translation_id", UUID(as_uuid=True), ForeignKey("lexemes.id", ondelete="CASCADE"), primary_key=True),
+    Column("notes", Text, nullable=True),
+    Column("created_at", DateTime, nullable=False),
+    Column("created_by_id", UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True),
+    CheckConstraint("lexeme_id < translation_id", name="ck_lexeme_translations_ordered"),
+)

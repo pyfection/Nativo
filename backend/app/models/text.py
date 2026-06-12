@@ -73,8 +73,13 @@ class Text(Base):
     language = relationship("Language", back_populates="texts")
     document = relationship("Document", back_populates="texts")
     created_by = relationship("User")
-    # Words linked in this text's content
-    linked_words = relationship("Word", secondary="word_texts", back_populates="texts", viewonly=True)
+    # Lexemes whose definition / usage example / context note this Text fills.
+    linked_lexemes = relationship(
+        "Lexeme",
+        secondary="lexeme_texts",
+        back_populates="texts",
+        viewonly=True,
+    )
     word_links = relationship(
         "TextWordLink",
         back_populates="text",

@@ -1,83 +1,185 @@
 import api from './api';
 
-export interface Word {
+// -----------------------------------------------------------------------------
+// Lexeme + WordForm types (matches backend/app/schemas/word.py)
+// -----------------------------------------------------------------------------
+
+export interface WordForm {
   id: string;
-  word: string;
-  language_id: string;
+  lexeme_id: string;
+  form: string;
   romanization?: string;
   ipa_pronunciation?: string;
-  part_of_speech?: string;
-  gender?: string;
+  rhyme_key?: string;
+  near_rhyme_key?: string;
+  is_lemma: boolean;
   plurality?: string;
   grammatical_case?: string;
   verb_aspect?: string;
-  animacy?: string;
-  language_register?: string;
-  definition?: string;
-  literal_translation?: string;
-  context_notes?: string;
-  usage_examples?: string;
-  tags?: string[];
-  status: string;
-  is_verified: boolean;
+  notes?: string;
   created_at: string;
   updated_at: string;
 }
 
-export interface WordListItem {
+export interface Lexeme {
   id: string;
-  word: string;
   language_id: string;
-  romanization?: string;
-  ipa_pronunciation?: string;
-  part_of_speech?: string;
-  definition?: string;
-  literal_translation?: string;
-  status: string;
-  is_verified?: boolean;
-}
-
-export interface CreateWordData {
-  word: string;
-  language_id: string;
-  romanization?: string;
-  ipa_pronunciation?: string;
+  lemma: string;
   part_of_speech?: string;
   gender?: string;
+  animacy?: string;
+  language_register?: string;
+  source?: string;
+  notes?: string;
+  created_by_id: string;
+  verified_by_id?: string;
+  is_verified: boolean;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LexemeWithForms extends Lexeme {
+  forms: WordForm[];
+}
+
+export interface LexemeListItem {
+  id: string;
+  lemma: string;
+  language_id: string;
+  part_of_speech?: string;
+  is_verified: boolean;
+  status: string;
+  created_at: string;
+}
+
+export interface CreateWordFormNested {
+  form: string;
+  romanization?: string;
+  ipa_pronunciation?: string;
+  is_lemma?: boolean;
   plurality?: string;
   grammatical_case?: string;
   verb_aspect?: string;
+  notes?: string;
+  confirmed_at_location_ids?: string[];
+}
+
+export interface CreateLexemeData {
+  language_id: string;
+  lemma: string;
+  lemma_form: CreateWordFormNested;
+  additional_forms?: CreateWordFormNested[];
+  part_of_speech?: string;
+  gender?: string;
   animacy?: string;
   language_register?: string;
-  definition?: string;
-  literal_translation?: string;
-  context_notes?: string;
-  usage_examples?: string;
+  source?: string;
+  notes?: string;
   tags?: string[];
 }
 
-export interface WordTranslation {
-  id: string;
-  word: string;
+export interface UpdateLexemeData {
+  lemma?: string;
+  part_of_speech?: string;
+  gender?: string;
+  animacy?: string;
+  language_register?: string;
+  source?: string;
+  notes?: string;
+  status?: string;
+  tags?: string[];
+}
+
+export interface CreateWordFormData extends CreateWordFormNested {
+  lexeme_id: string;
+}
+
+export interface UpdateWordFormData {
+  form?: string;
   romanization?: string;
+  ipa_pronunciation?: string;
+  is_lemma?: boolean;
+  plurality?: string;
+  grammatical_case?: string;
+  verb_aspect?: string;
+  notes?: string;
+  confirmed_at_location_ids?: string[];
+}
+
+// -----------------------------------------------------------------------------
+// Relations
+// -----------------------------------------------------------------------------
+
+export interface LexemeReference {
+  id: string;
+  lemma: string;
   language_id: string;
   language_name?: string;
   part_of_speech?: string;
+}
+
+export interface SynonymLink extends LexemeReference {
+  nuance?: string;
   notes?: string;
 }
 
-export interface WordWithTranslations extends Word {
-  translations: WordTranslation[];
+export interface AntonymLink extends LexemeReference {
+  antonym_type?: string;
+  notes?: string;
 }
 
-export interface TranslationCreate {
-  translation_id: string;
+export interface TranslationLink extends LexemeReference {
+  notes?: string;
+}
+
+export interface SynonymCreate {
+  other_lexeme_id: string;
+  nuance?: string;
+  notes?: string;
+}
+
+export interface AntonymCreate {
+  other_lexeme_id: string;
+  antonym_type?: string;
+  notes?: string;
+}
+
+export interface TranslationCreatePayload {
+  other_lexeme_id: string;
   notes?: string;
 }
 
 export interface TranslationUpdate {
   notes?: string;
 }
+
+export interface RhymeMatch {
+  word_form_id: string;
+  lexeme_id: string;
+  form: string;
+  lemma: string;
+  ipa_pronunciation?: string;
+  language_id: string;
+}
+
+// -----------------------------------------------------------------------------
+// Back-compat aliases used by some screens during the transition.
+// New code should use the Lexeme / WordForm types above.
+// -----------------------------------------------------------------------------
+
+export type Word = Lexeme;
+export type WordListItem = LexemeListItem;
+export type CreateWordData = CreateLexemeData;
+export type WordTranslation = TranslationLink;
+export interface WordWithTranslations extends LexemeWithForms {
+  translations: TranslationLink[];
+}
+export type TranslationCreate = TranslationCreatePayload;
+
+// -----------------------------------------------------------------------------
+// Service
+// -----------------------------------------------------------------------------
 
 export const wordService = {
   async getAll(params?: {
@@ -86,23 +188,23 @@ export const wordService = {
     language_id?: string;
     status_filter?: string;
     include_all_statuses?: boolean;
-  }): Promise<WordListItem[]> {
-    const response = await api.get<WordListItem[]>('/api/v1/words/', { params });
+  }): Promise<LexemeListItem[]> {
+    const response = await api.get<LexemeListItem[]>('/api/v1/words/', { params });
     return response.data;
   },
 
-  async getById(id: string): Promise<Word> {
-    const response = await api.get<Word>(`/api/v1/words/${id}`);
+  async getById(id: string): Promise<LexemeWithForms> {
+    const response = await api.get<LexemeWithForms>(`/api/v1/words/${id}`);
     return response.data;
   },
 
-  async create(data: CreateWordData): Promise<Word> {
-    const response = await api.post<Word>('/api/v1/words/', data);
+  async create(data: CreateLexemeData): Promise<LexemeWithForms> {
+    const response = await api.post<LexemeWithForms>('/api/v1/words/', data);
     return response.data;
   },
 
-  async update(id: string, data: Partial<CreateWordData>): Promise<Word> {
-    const response = await api.put<Word>(`/api/v1/words/${id}`, data);
+  async update(id: string, data: UpdateLexemeData): Promise<Lexeme> {
+    const response = await api.put<Lexeme>(`/api/v1/words/${id}`, data);
     return response.data;
   },
 
@@ -110,36 +212,107 @@ export const wordService = {
     await api.delete(`/api/v1/words/${id}`);
   },
 
-  async verify(id: string): Promise<Word> {
-    const response = await api.post<Word>(`/api/v1/words/${id}/verify`);
+  async verify(id: string): Promise<Lexeme> {
+    const response = await api.post<Lexeme>(`/api/v1/words/${id}/verify`);
     return response.data;
   },
 
-  // Translation management
-  async addTranslation(wordId: string, data: TranslationCreate): Promise<Word> {
-    const response = await api.post<Word>(`/api/v1/words/${wordId}/translations/`, data);
+  // Forms
+  async listForms(lexemeId: string): Promise<WordForm[]> {
+    const response = await api.get<WordForm[]>(`/api/v1/words/${lexemeId}/forms`);
     return response.data;
   },
 
-  async removeTranslation(wordId: string, translationId: string): Promise<void> {
-    await api.delete(`/api/v1/words/${wordId}/translations/${translationId}`);
-  },
-
-  async updateTranslationNotes(wordId: string, translationId: string, data: TranslationUpdate): Promise<Word> {
-    const response = await api.put<Word>(`/api/v1/words/${wordId}/translations/${translationId}`, data);
+  async addForm(lexemeId: string, data: CreateWordFormData): Promise<WordForm> {
+    const response = await api.post<WordForm>(`/api/v1/words/${lexemeId}/forms`, data);
     return response.data;
   },
 
-  // Dictionary search
+  async updateForm(formId: string, data: UpdateWordFormData): Promise<WordForm> {
+    const response = await api.put<WordForm>(`/api/v1/words/forms/${formId}`, data);
+    return response.data;
+  },
+
+  async deleteForm(formId: string): Promise<void> {
+    await api.delete(`/api/v1/words/forms/${formId}`);
+  },
+
+  // Synonyms / antonyms
+  async listSynonyms(lexemeId: string): Promise<SynonymLink[]> {
+    const response = await api.get<SynonymLink[]>(`/api/v1/words/${lexemeId}/synonyms`);
+    return response.data;
+  },
+
+  async addSynonym(lexemeId: string, data: SynonymCreate): Promise<SynonymLink> {
+    const response = await api.post<SynonymLink>(`/api/v1/words/${lexemeId}/synonyms`, data);
+    return response.data;
+  },
+
+  async removeSynonym(lexemeId: string, otherId: string): Promise<void> {
+    await api.delete(`/api/v1/words/${lexemeId}/synonyms/${otherId}`);
+  },
+
+  async listAntonyms(lexemeId: string): Promise<AntonymLink[]> {
+    const response = await api.get<AntonymLink[]>(`/api/v1/words/${lexemeId}/antonyms`);
+    return response.data;
+  },
+
+  async addAntonym(lexemeId: string, data: AntonymCreate): Promise<AntonymLink> {
+    const response = await api.post<AntonymLink>(`/api/v1/words/${lexemeId}/antonyms`, data);
+    return response.data;
+  },
+
+  async removeAntonym(lexemeId: string, otherId: string): Promise<void> {
+    await api.delete(`/api/v1/words/${lexemeId}/antonyms/${otherId}`);
+  },
+
+  // Translations
+  async listTranslations(lexemeId: string): Promise<TranslationLink[]> {
+    const response = await api.get<TranslationLink[]>(`/api/v1/words/${lexemeId}/translations`);
+    return response.data;
+  },
+
+  async addTranslation(lexemeId: string, data: TranslationCreatePayload): Promise<TranslationLink> {
+    const response = await api.post<TranslationLink>(
+      `/api/v1/words/${lexemeId}/translations`,
+      data,
+    );
+    return response.data;
+  },
+
+  async removeTranslation(lexemeId: string, otherId: string): Promise<void> {
+    await api.delete(`/api/v1/words/${lexemeId}/translations/${otherId}`);
+  },
+
+  async updateTranslationNotes(
+    lexemeId: string,
+    otherId: string,
+    data: TranslationUpdate,
+  ): Promise<TranslationLink> {
+    const response = await api.put<TranslationLink>(
+      `/api/v1/words/${lexemeId}/translations/${otherId}`,
+      data,
+    );
+    return response.data;
+  },
+
+  // Rhymes
+  async findRhymes(formId: string, near = false, limit = 50): Promise<RhymeMatch[]> {
+    const response = await api.get<RhymeMatch[]>(`/api/v1/words/forms/${formId}/rhymes`, {
+      params: { near, limit },
+    });
+    return response.data;
+  },
+
+  // Search
   async search(params: {
     q: string;
-    language_ids?: string;  // Comma-separated language IDs
-    include_translations?: boolean;
+    language_ids?: string;
     include_unpublished?: boolean;
     skip?: number;
     limit?: number;
-  }): Promise<WordWithTranslations[]> {
-    const response = await api.get<WordWithTranslations[]>('/api/v1/words/search', { params });
+  }): Promise<LexemeWithForms[]> {
+    const response = await api.get<LexemeWithForms[]>('/api/v1/words/search', { params });
     return response.data;
   },
 };

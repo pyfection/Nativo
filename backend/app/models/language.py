@@ -29,7 +29,7 @@ class Language(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
     
     # Relationships
-    words = relationship("Word", back_populates="language")
+    lexemes = relationship("Lexeme", back_populates="language", cascade="all, delete-orphan")
     texts = relationship("Text", back_populates="language")
     user_proficiencies = relationship("UserLanguage", back_populates="language", cascade="all, delete-orphan")
     

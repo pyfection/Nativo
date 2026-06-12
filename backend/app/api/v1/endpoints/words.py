@@ -1,476 +1,378 @@
 """
-Word management endpoints.
-"""
+Lexeme + WordForm endpoints (formerly /words).
 
-from datetime import datetime
+A Lexeme is the dictionary entry; WordForms are its surface forms. The
+public URL prefix stays at `/words` so older clients keep working — the
+underlying resource is the Lexeme.
+"""
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from sqlalchemy import and_, delete, func, insert, or_, select, update
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
-from app.api.deps import (
-    require_admin,
-    require_contributor,
-    require_native_speaker,
-)
+from app.api.deps import require_admin, require_contributor, require_native_speaker
 from app.database import get_db
 from app.limiter import limiter
-from app.models.language import Language
-from app.models.tag import Tag
 from app.models.user import User
-from app.models.word import Word, WordStatus, word_translations
+from app.models.word import Lexeme, LexemeStatus, WordForm
 from app.schemas.word import (
+    AntonymCreate,
+    AntonymLink,
+    Lexeme as LexemeSchema,
+    LexemeCreate,
+    LexemeListItem,
+    LexemeUpdate,
+    LexemeWithForms,
+    RhymeMatch,
+    SynonymCreate,
+    SynonymLink,
     TranslationCreate,
+    TranslationLink,
     TranslationUpdate,
-    WordCreate,
-    WordListItem,
-    WordTranslation,
-    WordUpdate,
-    WordWithTranslations,
+    WordForm as WordFormSchema,
+    WordFormCreate,
+    WordFormUpdate,
 )
-from app.schemas.word import Word as WordSchema
+from app.services import lexeme_service
 from app.services.auth_service import require_resource_owner
 
 router = APIRouter()
 
 
-def _resolve_tags(db: Session, tag_names: list[str]) -> list[Tag]:
-    resolved: list[Tag] = []
-    seen = set()
-
-    for raw_name in tag_names or []:
-        if raw_name is None:
-            continue
-        cleaned = raw_name.strip()
-        if not cleaned:
-            continue
-        key = cleaned.lower()
-        if key in seen:
-            continue
-        seen.add(key)
-        tag = db.query(Tag).filter(func.lower(Tag.name) == key).first()
-        if not tag:
-            tag = Tag(name=cleaned)
-            db.add(tag)
-            db.flush()
-        resolved.append(tag)
-
-    return resolved
+# ---------------------------------------------------------------------------
+# Lexeme CRUD
+# ---------------------------------------------------------------------------
 
 
-@router.get("/", response_model=list[WordListItem])
-async def list_words(
+@router.get("/", response_model=list[LexemeListItem])
+async def list_lexemes(
     skip: int = 0,
     limit: int = 100,
-    language_id: UUID = None,
-    status_filter: WordStatus = None,
+    language_id: UUID | None = None,
+    status_filter: LexemeStatus | None = None,
     include_all_statuses: bool = False,
     db: Session = Depends(get_db),
 ):
-    """
-    List words (public access).
-
-    - Anyone can view published words
-    - Filter by language, status, etc.
-    """
-    query = db.query(Word)
-
+    query = db.query(Lexeme)
     if language_id:
-        query = query.filter(Word.language_id == language_id)
-
+        query = query.filter(Lexeme.language_id == language_id)
     if status_filter:
-        query = query.filter(Word.status == status_filter)
+        query = query.filter(Lexeme.status == status_filter)
     elif not include_all_statuses:
-        # By default, show only published words to public
-        query = query.filter(Word.status == WordStatus.PUBLISHED)
-
-    words = query.offset(skip).limit(limit).all()
-    return words
+        query = query.filter(Lexeme.status == LexemeStatus.PUBLISHED)
+    return query.offset(skip).limit(limit).all()
 
 
-@router.get("/search", response_model=list[WordWithTranslations])
+@router.get("/search", response_model=list[LexemeWithForms])
 @limiter.limit("30/minute")
-async def search_words(
+async def search_lexemes(
     request: Request,
     q: str,
-    language_ids: str = None,  # Comma-separated list of language UUIDs
-    include_translations: bool = True,
+    language_ids: str | None = None,
     include_unpublished: bool = False,
     skip: int = 0,
     limit: int = 50,
     db: Session = Depends(get_db),
 ):
     """
-    Search for words and optionally include their translations.
-
-    - q: Search query (searches word and romanization)
-    - language_ids: Comma-separated language IDs to search in
-    - include_translations: Whether to include translation data
-    - Returns words matching the search with their translations
+    Full-ish text search over lemma + any WordForm's `form` / `romanization`.
     """
-    query = db.query(Word)
+    query = db.query(Lexeme).distinct()
     if include_unpublished:
         query = query.filter(
-            Word.status.in_([WordStatus.PUBLISHED, WordStatus.PENDING_REVIEW, WordStatus.DRAFT])
+            Lexeme.status.in_(
+                [LexemeStatus.PUBLISHED, LexemeStatus.PENDING_REVIEW, LexemeStatus.DRAFT]
+            )
         )
     else:
-        query = query.filter(Word.status == WordStatus.PUBLISHED)
+        query = query.filter(Lexeme.status == LexemeStatus.PUBLISHED)
 
-    # Apply search filter
     if q:
-        search_filter = or_(Word.word.ilike(f"%{q}%"), Word.romanization.ilike(f"%{q}%"))
-        query = query.filter(search_filter)
+        like = f"%{q}%"
+        query = query.outerjoin(WordForm, WordForm.lexeme_id == Lexeme.id).filter(
+            or_(
+                Lexeme.lemma.ilike(like),
+                WordForm.form.ilike(like),
+                WordForm.romanization.ilike(like),
+            )
+        )
 
-    # Apply language filter
     if language_ids:
         try:
-            lang_id_list = [UUID(lid.strip()) for lid in language_ids.split(",") if lid.strip()]
-            if lang_id_list:
-                query = query.filter(Word.language_id.in_(lang_id_list))
+            ids = [UUID(s.strip()) for s in language_ids.split(",") if s.strip()]
+            if ids:
+                query = query.filter(Lexeme.language_id.in_(ids))
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid language ID format")
 
-    words = query.offset(skip).limit(limit).all()
-
-    if not include_translations:
-        return words
-
-    # Fetch translations for each word — bidirectional. word_translations
-    # rows are stored one-way (word_id → translation_id), but the relation is
-    # symmetric: if A links to B, B should also see A as a translation.
-    result = []
-    for word in words:
-        forward_rows = db.execute(
-            select(
-                word_translations.c.translation_id.label("other_id"),
-                word_translations.c.notes,
-            ).where(word_translations.c.word_id == word.id)
-        ).fetchall()
-        reverse_rows = db.execute(
-            select(
-                word_translations.c.word_id.label("other_id"),
-                word_translations.c.notes,
-            ).where(word_translations.c.translation_id == word.id)
-        ).fetchall()
-
-        # Dedupe by other_id (a translation could exist in both directions).
-        seen_ids = set()
-        translation_rows = []
-        for row in (*forward_rows, *reverse_rows):
-            if row.other_id in seen_ids:
-                continue
-            seen_ids.add(row.other_id)
-            translation_rows.append(row)
-
-        translations = []
-        for trans_row in translation_rows:
-            trans_word = db.query(Word).filter(Word.id == trans_row.other_id).first()
-            if trans_word:
-                # Get language name
-                lang = db.query(Language).filter(Language.id == trans_word.language_id).first()
-
-                translations.append(
-                    WordTranslation(
-                        id=trans_word.id,
-                        word=trans_word.word,
-                        romanization=trans_word.romanization,
-                        language_id=trans_word.language_id,
-                        language_name=lang.name if lang else None,
-                        part_of_speech=trans_word.part_of_speech,
-                        notes=trans_row.notes,
-                    )
-                )
-
-        # Create WordWithTranslations instance
-        word_dict = {
-            **{c.name: getattr(word, c.name) for c in Word.__table__.columns},
-            "translations": translations,
-        }
-        result.append(WordWithTranslations(**word_dict))
-
-    return result
+    return query.offset(skip).limit(limit).all()
 
 
-@router.get("/{word_id}", response_model=WordSchema)
-async def get_word(word_id: UUID, db: Session = Depends(get_db)):
-    """
-    Get a specific word by ID (public access for published words).
-    """
-    word = db.query(Word).filter(Word.id == word_id).first()
-
-    if not word:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Word not found")
-
-    return word
+@router.get("/{lexeme_id}", response_model=LexemeWithForms)
+async def get_lexeme(lexeme_id: UUID, db: Session = Depends(get_db)):
+    lexeme = db.query(Lexeme).filter(Lexeme.id == lexeme_id).first()
+    if not lexeme:
+        raise HTTPException(status_code=404, detail="Lexeme not found")
+    return lexeme
 
 
-@router.post("/", response_model=WordSchema, status_code=status.HTTP_201_CREATED)
-async def create_word(
-    word_data: WordCreate,
+@router.post("/", response_model=LexemeWithForms, status_code=status.HTTP_201_CREATED)
+async def create_lexeme(
+    data: LexemeCreate,
     current_user: User = Depends(require_contributor),
     db: Session = Depends(get_db),
 ):
-    """
-    Create a new word.
-
-    Requires: NATIVE_SPEAKER, RESEARCHER, or ADMIN role
-    """
-    payload = word_data.model_dump(exclude_unset=True, exclude={"tags"})
-    new_word = Word(**payload, created_by_id=current_user.id)
-
-    db.add(new_word)
-    db.flush()
-
-    if word_data.tags:
-        new_word.tags = _resolve_tags(db, word_data.tags)
-
-    db.commit()
-    db.refresh(new_word)
-
-    return new_word
+    return lexeme_service.create_lexeme(db, data, creator_id=current_user.id)
 
 
-@router.put("/{word_id}", response_model=WordSchema)
-async def update_word(
-    word_id: UUID,
-    word_data: WordUpdate,
+@router.put("/{lexeme_id}", response_model=LexemeSchema)
+async def update_lexeme(
+    lexeme_id: UUID,
+    data: LexemeUpdate,
     current_user: User = Depends(require_contributor),
     db: Session = Depends(get_db),
 ):
-    """
-    Update a word.
-
-    - Users can update their own words
-    - ADMIN can update any word
-    """
-    word = db.query(Word).filter(Word.id == word_id).first()
-
-    if not word:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Word not found")
-
-    # Check ownership (user must own the word or be admin)
-    require_resource_owner(current_user, word.created_by_id)
-
-    # Update word fields
-    update_data = word_data.model_dump(exclude_unset=True)
-    tag_names = update_data.pop("tags", None)
-
-    for field, value in update_data.items():
-        setattr(word, field, value)
-
-    if tag_names is not None:
-        word.tags = _resolve_tags(db, tag_names)
-
-    db.commit()
-    db.refresh(word)
-
-    return word
+    lexeme = db.query(Lexeme).filter(Lexeme.id == lexeme_id).first()
+    if not lexeme:
+        raise HTTPException(status_code=404, detail="Lexeme not found")
+    require_resource_owner(current_user, lexeme.created_by_id)
+    return lexeme_service.update_lexeme(db, lexeme, data)
 
 
-@router.delete("/{word_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_word(
-    word_id: UUID, current_user: User = Depends(require_admin), db: Session = Depends(get_db)
+@router.delete("/{lexeme_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_lexeme(
+    lexeme_id: UUID,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
 ):
-    """
-    Delete a word (admin only).
-    """
-    word = db.query(Word).filter(Word.id == word_id).first()
-
-    if not word:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Word not found")
-
-    db.delete(word)
+    lexeme = db.query(Lexeme).filter(Lexeme.id == lexeme_id).first()
+    if not lexeme:
+        raise HTTPException(status_code=404, detail="Lexeme not found")
+    db.delete(lexeme)
     db.commit()
-
     return None
 
 
-@router.post("/{word_id}/verify", response_model=WordSchema)
-async def verify_word(
-    word_id: UUID,
+@router.post("/{lexeme_id}/verify", response_model=LexemeSchema)
+async def verify_lexeme(
+    lexeme_id: UUID,
     current_user: User = Depends(require_native_speaker),
     db: Session = Depends(get_db),
 ):
-    """
-    Verify a word as accurate.
-
-    Requires: NATIVE_SPEAKER or ADMIN role
-    """
-    word = db.query(Word).filter(Word.id == word_id).first()
-
-    if not word:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Word not found")
-
-    word.is_verified = True
-    word.verified_by_id = current_user.id
-    word.status = WordStatus.PUBLISHED
-
+    lexeme = db.query(Lexeme).filter(Lexeme.id == lexeme_id).first()
+    if not lexeme:
+        raise HTTPException(status_code=404, detail="Lexeme not found")
+    lexeme.is_verified = True
+    lexeme.verified_by_id = current_user.id
+    lexeme.status = LexemeStatus.PUBLISHED
     db.commit()
-    db.refresh(word)
+    db.refresh(lexeme)
+    return lexeme
 
-    return word
+
+# ---------------------------------------------------------------------------
+# WordForm CRUD (nested under lexeme)
+# ---------------------------------------------------------------------------
 
 
-# ============================================================================
-# Translation Endpoints
-# ============================================================================
+@router.get("/{lexeme_id}/forms", response_model=list[WordFormSchema])
+async def list_forms(lexeme_id: UUID, db: Session = Depends(get_db)):
+    return (
+        db.query(WordForm)
+        .filter(WordForm.lexeme_id == lexeme_id)
+        .order_by(WordForm.is_lemma.desc(), WordForm.form.asc())
+        .all()
+    )
 
 
 @router.post(
-    "/{word_id}/translations/", response_model=WordSchema, status_code=status.HTTP_201_CREATED
+    "/{lexeme_id}/forms",
+    response_model=WordFormSchema,
+    status_code=status.HTTP_201_CREATED,
 )
-async def add_translation(
-    word_id: UUID,
-    translation_data: TranslationCreate,
+async def add_form(
+    lexeme_id: UUID,
+    data: WordFormCreate,
     current_user: User = Depends(require_contributor),
     db: Session = Depends(get_db),
 ):
-    """
-    Add a translation link between two words.
-
-    Creates a bidirectional relationship: if Word A translates to Word B,
-    then Word B translates to Word A.
-
-    Requires: NATIVE_SPEAKER, RESEARCHER, or ADMIN role
-    """
-    # Verify both words exist
-    word = db.query(Word).filter(Word.id == word_id).first()
-    if not word:
-        raise HTTPException(status_code=404, detail="Word not found")
-
-    translation = db.query(Word).filter(Word.id == translation_data.translation_id).first()
-    if not translation:
-        raise HTTPException(status_code=404, detail="Translation word not found")
-
-    # Check if words are in different languages
-    if word.language_id == translation.language_id:
-        raise HTTPException(status_code=400, detail="Translation must be in a different language")
-
-    # Check if translation already exists
-    existing = db.execute(
-        select(word_translations).where(
-            or_(
-                and_(
-                    word_translations.c.word_id == word_id,
-                    word_translations.c.translation_id == translation_data.translation_id,
-                ),
-                and_(
-                    word_translations.c.word_id == translation_data.translation_id,
-                    word_translations.c.translation_id == word_id,
-                ),
-            )
-        )
-    ).first()
-
-    if existing:
-        raise HTTPException(status_code=400, detail="Translation already exists")
-
-    # Add bidirectional translation
-    now = datetime.utcnow()
-
-    # Forward translation
-    db.execute(
-        insert(word_translations).values(
-            word_id=word_id,
-            translation_id=translation_data.translation_id,
-            notes=translation_data.notes,
-            created_at=now,
-            created_by_id=current_user.id,
-        )
-    )
-
-    # Reverse translation
-    db.execute(
-        insert(word_translations).values(
-            word_id=translation_data.translation_id,
-            translation_id=word_id,
-            notes=translation_data.notes,
-            created_at=now,
-            created_by_id=current_user.id,
-        )
-    )
-
-    db.commit()
-    db.refresh(word)
-
-    return word
+    if data.lexeme_id != lexeme_id:
+        raise HTTPException(status_code=400, detail="Path lexeme_id does not match payload")
+    return lexeme_service.create_word_form(db, data)
 
 
-@router.delete("/{word_id}/translations/{translation_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def remove_translation(
-    word_id: UUID,
-    translation_id: UUID,
+@router.put("/forms/{form_id}", response_model=WordFormSchema)
+async def update_form(
+    form_id: UUID,
+    data: WordFormUpdate,
     current_user: User = Depends(require_contributor),
     db: Session = Depends(get_db),
 ):
-    """
-    Remove a translation link between two words.
+    word_form = db.query(WordForm).filter(WordForm.id == form_id).first()
+    if not word_form:
+        raise HTTPException(status_code=404, detail="WordForm not found")
+    require_resource_owner(current_user, word_form.lexeme.created_by_id)
+    return lexeme_service.update_word_form(db, word_form, data)
 
-    Removes both directions of the relationship.
 
-    Requires: NATIVE_SPEAKER, RESEARCHER, or ADMIN role
-    """
-    # Delete both directions
-    result = db.execute(
-        delete(word_translations).where(
-            or_(
-                and_(
-                    word_translations.c.word_id == word_id,
-                    word_translations.c.translation_id == translation_id,
-                ),
-                and_(
-                    word_translations.c.word_id == translation_id,
-                    word_translations.c.translation_id == word_id,
-                ),
-            )
+@router.delete("/forms/{form_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_form(
+    form_id: UUID,
+    current_user: User = Depends(require_contributor),
+    db: Session = Depends(get_db),
+):
+    word_form = db.query(WordForm).filter(WordForm.id == form_id).first()
+    if not word_form:
+        raise HTTPException(status_code=404, detail="WordForm not found")
+    require_resource_owner(current_user, word_form.lexeme.created_by_id)
+    if word_form.is_lemma:
+        raise HTTPException(
+            status_code=400,
+            detail="Refusing to delete the canonical lemma form — promote another form first",
         )
-    )
-
-    if result.rowcount == 0:
-        raise HTTPException(status_code=404, detail="Translation not found")
-
+    db.delete(word_form)
     db.commit()
     return None
 
 
-@router.put("/{word_id}/translations/{translation_id}", response_model=WordSchema)
-async def update_translation_notes(
-    word_id: UUID,
-    translation_id: UUID,
-    translation_data: TranslationUpdate,
+# ---------------------------------------------------------------------------
+# Relations
+# ---------------------------------------------------------------------------
+
+
+@router.get("/{lexeme_id}/synonyms", response_model=list[SynonymLink])
+async def list_synonyms(lexeme_id: UUID, db: Session = Depends(get_db)):
+    return lexeme_service.list_synonyms(db, lexeme_id)
+
+
+@router.post(
+    "/{lexeme_id}/synonyms",
+    response_model=SynonymLink,
+    status_code=status.HTTP_201_CREATED,
+)
+async def add_synonym(
+    lexeme_id: UUID,
+    data: SynonymCreate,
     current_user: User = Depends(require_contributor),
     db: Session = Depends(get_db),
 ):
-    """
-    Update the notes for a translation.
+    return lexeme_service.add_synonym(db, lexeme_id, data)
 
-    Updates both directions of the relationship with the same notes.
 
-    Requires: NATIVE_SPEAKER, RESEARCHER, or ADMIN role
-    """
-    # Update both directions
-    result = db.execute(
-        update(word_translations)
-        .where(
-            or_(
-                and_(
-                    word_translations.c.word_id == word_id,
-                    word_translations.c.translation_id == translation_id,
-                ),
-                and_(
-                    word_translations.c.word_id == translation_id,
-                    word_translations.c.translation_id == word_id,
-                ),
+@router.delete(
+    "/{lexeme_id}/synonyms/{other_id}", status_code=status.HTTP_204_NO_CONTENT
+)
+async def remove_synonym(
+    lexeme_id: UUID,
+    other_id: UUID,
+    current_user: User = Depends(require_contributor),
+    db: Session = Depends(get_db),
+):
+    lexeme_service.remove_synonym(db, lexeme_id, other_id)
+    return None
+
+
+@router.get("/{lexeme_id}/antonyms", response_model=list[AntonymLink])
+async def list_antonyms(lexeme_id: UUID, db: Session = Depends(get_db)):
+    return lexeme_service.list_antonyms(db, lexeme_id)
+
+
+@router.post(
+    "/{lexeme_id}/antonyms",
+    response_model=AntonymLink,
+    status_code=status.HTTP_201_CREATED,
+)
+async def add_antonym(
+    lexeme_id: UUID,
+    data: AntonymCreate,
+    current_user: User = Depends(require_contributor),
+    db: Session = Depends(get_db),
+):
+    return lexeme_service.add_antonym(db, lexeme_id, data)
+
+
+@router.delete(
+    "/{lexeme_id}/antonyms/{other_id}", status_code=status.HTTP_204_NO_CONTENT
+)
+async def remove_antonym(
+    lexeme_id: UUID,
+    other_id: UUID,
+    current_user: User = Depends(require_contributor),
+    db: Session = Depends(get_db),
+):
+    lexeme_service.remove_antonym(db, lexeme_id, other_id)
+    return None
+
+
+@router.get("/{lexeme_id}/translations", response_model=list[TranslationLink])
+async def list_translations(lexeme_id: UUID, db: Session = Depends(get_db)):
+    return lexeme_service.list_translations(db, lexeme_id)
+
+
+@router.post(
+    "/{lexeme_id}/translations",
+    response_model=TranslationLink,
+    status_code=status.HTTP_201_CREATED,
+)
+async def add_translation(
+    lexeme_id: UUID,
+    data: TranslationCreate,
+    current_user: User = Depends(require_contributor),
+    db: Session = Depends(get_db),
+):
+    return lexeme_service.add_translation(db, lexeme_id, data, creator_id=current_user.id)
+
+
+@router.put(
+    "/{lexeme_id}/translations/{other_id}", response_model=TranslationLink
+)
+async def update_translation(
+    lexeme_id: UUID,
+    other_id: UUID,
+    data: TranslationUpdate,
+    current_user: User = Depends(require_contributor),
+    db: Session = Depends(get_db),
+):
+    return lexeme_service.update_translation_notes(db, lexeme_id, other_id, data.notes)
+
+
+@router.delete(
+    "/{lexeme_id}/translations/{other_id}", status_code=status.HTTP_204_NO_CONTENT
+)
+async def remove_translation(
+    lexeme_id: UUID,
+    other_id: UUID,
+    current_user: User = Depends(require_contributor),
+    db: Session = Depends(get_db),
+):
+    lexeme_service.remove_translation(db, lexeme_id, other_id)
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Rhymes
+# ---------------------------------------------------------------------------
+
+
+@router.get("/forms/{form_id}/rhymes", response_model=list[RhymeMatch])
+async def find_rhymes(
+    form_id: UUID,
+    near: bool = False,
+    limit: int = 50,
+    db: Session = Depends(get_db),
+):
+    forms = lexeme_service.find_rhymes(db, form_id, near=near, limit=limit)
+    out: list[RhymeMatch] = []
+    for wf in forms:
+        out.append(
+            RhymeMatch(
+                word_form_id=wf.id,
+                lexeme_id=wf.lexeme_id,
+                form=wf.form,
+                lemma=wf.lexeme.lemma,
+                ipa_pronunciation=wf.ipa_pronunciation,
+                language_id=wf.lexeme.language_id,
             )
         )
-        .values(notes=translation_data.notes)
-    )
-
-    if result.rowcount == 0:
-        raise HTTPException(status_code=404, detail="Translation not found")
-
-    db.commit()
-
-    word = db.query(Word).filter(Word.id == word_id).first()
-    return word
+    return out

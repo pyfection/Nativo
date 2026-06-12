@@ -35,7 +35,6 @@ export default function WordList({ selectedLanguage }: WordListProps) {
       setLoading(true);
       const params: any = {};
 
-      // Always filter by selected language
       if (selectedLanguage) {
         params.language_id = selectedLanguage.id;
       }
@@ -45,23 +44,17 @@ export default function WordList({ selectedLanguage }: WordListProps) {
       } else {
         params.include_all_statuses = true;
       }
-      if (filters.part_of_speech) params.part_of_speech = filters.part_of_speech;
 
       const data = await wordService.getAll(params);
 
-      // Client-side search if needed
+      // Client-side filter on lemma + POS.
       let filtered = data;
+      if (filters.part_of_speech) {
+        filtered = filtered.filter((w) => w.part_of_speech === filters.part_of_speech);
+      }
       if (filters.search) {
-        const searchLower = filters.search.toLowerCase();
-        filtered = data.filter(word => {
-          const definition = word.definition?.toLowerCase() ?? '';
-          const romanization = word.romanization?.toLowerCase() ?? '';
-          return (
-            word.word.toLowerCase().includes(searchLower) ||
-            definition.includes(searchLower) ||
-            romanization.includes(searchLower)
-          );
-        });
+        const q = filters.search.toLowerCase();
+        filtered = filtered.filter((w) => w.lemma.toLowerCase().includes(q));
       }
 
       setWords(filtered);
@@ -194,12 +187,8 @@ export default function WordList({ selectedLanguage }: WordListProps) {
           <table className="words-table">
             <thead>
               <tr>
-                <th>Word</th>
-                <th>Romanization</th>
-                <th>IPA</th>
+                <th>Lemma</th>
                 <th>Part of Speech</th>
-                <th>Definition</th>
-                <th>Literal Translation</th>
                 <th>Status</th>
                 <th>Verified</th>
               </tr>
@@ -207,12 +196,8 @@ export default function WordList({ selectedLanguage }: WordListProps) {
             <tbody>
               {words.map((word) => (
                 <tr key={word.id} onClick={() => navigate(`/words/${word.id}`)} className="clickable-row">
-                  <td className="word-cell">{word.word}</td>
-                  <td className="romanization-cell">{word.romanization || '—'}</td>
-                  <td className="ipa-cell">{word.ipa_pronunciation || '—'}</td>
+                  <td className="word-cell">{word.lemma}</td>
                   <td className="pos-cell">{word.part_of_speech || '—'}</td>
-                  <td className="definition-cell">{word.definition || '—'}</td>
-                  <td className="literal-cell">{word.literal_translation || '—'}</td>
                   <td>
                     <span className={`status-badge status-${word.status}`}>
                       {word.status.replace('_', ' ')}

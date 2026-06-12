@@ -10,7 +10,7 @@ from app.models.language import Language  # noqa: E402
 from app.models.text import DocumentType, Text  # noqa: E402
 from app.models.text_word_link import TextWordLink, TextWordLinkStatus  # noqa: E402
 from app.models.user import User, UserRole  # noqa: E402
-from app.models.word import Word, WordStatus  # noqa: E402
+from app.models.word import Lexeme, LexemeStatus, WordForm  # noqa: E402
 from app.services.document_service import (  # noqa: E402
     refresh_document_suggestions,
     suggest_links_for_text,
@@ -39,8 +39,12 @@ def db_session() -> Session:
         session.close()
 
 
+def _now() -> datetime:
+    return datetime.now(UTC)
+
+
 def _seed_user(session: Session) -> User:
-    now = datetime.now(UTC)
+    now = _now()
     user = User(
         id=uuid.uuid4(),
         email="test@example.com",
@@ -57,7 +61,7 @@ def _seed_user(session: Session) -> User:
 
 
 def _seed_language(session: Session) -> Language:
-    now = datetime.now(UTC)
+    now = _now()
     language = Language(
         id=uuid.uuid4(),
         name="Test Language",
@@ -72,7 +76,7 @@ def _seed_language(session: Session) -> Language:
 
 
 def _seed_document(session: Session, user: User) -> Document:
-    now = datetime.now(UTC)
+    now = _now()
     document = Document(
         id=uuid.uuid4(),
         created_by_id=user.id,
@@ -86,7 +90,7 @@ def _seed_document(session: Session, user: User) -> Document:
 def _seed_text(
     session: Session, document: Document, language: Language, user: User, content: str
 ) -> Text:
-    now = datetime.now(UTC)
+    now = _now()
     text = Text(
         id=uuid.uuid4(),
         title="Sample Text",
@@ -103,34 +107,46 @@ def _seed_text(
     return text
 
 
-def _seed_word(session: Session, language: Language, user: User, word_value: str) -> Word:
-    now = datetime.now(UTC)
-    word = Word(
+def _seed_lexeme_with_form(
+    session: Session, language: Language, user: User, form_value: str
+) -> WordForm:
+    now = _now()
+    lexeme = Lexeme(
         id=uuid.uuid4(),
-        word=word_value,
         language_id=language.id,
+        lemma=form_value,
         created_by_id=user.id,
-        status=WordStatus.DRAFT,
+        status=LexemeStatus.DRAFT,
         created_at=now,
         updated_at=now,
     )
-    session.add(word)
-    return word
+    session.add(lexeme)
+    session.flush()
+    word_form = WordForm(
+        id=uuid.uuid4(),
+        lexeme_id=lexeme.id,
+        form=form_value,
+        is_lemma=True,
+        created_at=now,
+        updated_at=now,
+    )
+    session.add(word_form)
+    return word_form
 
 
-def prepare_text_with_word(session: Session, content: str, word_value: str) -> Text:
+def prepare_text_with_form(session: Session, content: str, form_value: str) -> Text:
     user = _seed_user(session)
     language = _seed_language(session)
     document = _seed_document(session, user)
     text = _seed_text(session, document, language, user, content)
-    _seed_word(session, language, user, word_value)
+    _seed_lexeme_with_form(session, language, user, form_value)
     session.commit()
     session.refresh(text)
     return text
 
 
 def test_suggest_links_for_text_creates_suggestion(db_session: Session):
-    text = prepare_text_with_word(db_session, content="Hello world", word_value="Hello")
+    text = prepare_text_with_form(db_session, content="Hello world", form_value="Hello")
 
     created = suggest_links_for_text(db_session, text)
     db_session.commit()
@@ -142,27 +158,24 @@ def test_suggest_links_for_text_creates_suggestion(db_session: Session):
     assert link.status == TextWordLinkStatus.SUGGESTED
     assert link.start_char == 0
     assert text.content[link.start_char : link.end_char] == "Hello"
+    assert link.word_form_id is not None
 
 
 def test_suggest_links_skips_existing_span(db_session: Session):
-    text = prepare_text_with_word(db_session, content="Hello world", word_value="Hello")
+    text = prepare_text_with_form(db_session, content="Hello world", form_value="Hello")
 
-    # First suggestion
     suggest_links_for_text(db_session, text)
     db_session.commit()
 
-    # Run again without replacing existing suggestions
     created_again = suggest_links_for_text(db_session, text)
     db_session.commit()
 
-    # No duplicate suggestions should be added
     assert len(created_again) == 0
-    total_links = db_session.query(TextWordLink).count()
-    assert total_links == 1
+    assert db_session.query(TextWordLink).count() == 1
 
 
 def test_suggest_links_respects_rejected_spans(db_session: Session):
-    text = prepare_text_with_word(db_session, content="Hello world", word_value="Hello")
+    text = prepare_text_with_form(db_session, content="Hello world", form_value="Hello")
 
     suggest_links_for_text(db_session, text)
     db_session.commit()
@@ -174,10 +187,8 @@ def test_suggest_links_respects_rejected_spans(db_session: Session):
     created = suggest_links_for_text(db_session, text)
     db_session.commit()
 
-    # No new suggestion should be created for rejected span
     assert len(created) == 0
-    total_links = db_session.query(TextWordLink).count()
-    assert total_links == 1
+    assert db_session.query(TextWordLink).count() == 1
     refreshed = db_session.get(TextWordLink, link.id)
     assert refreshed.status == TextWordLinkStatus.REJECTED
 
@@ -188,13 +199,12 @@ def test_refresh_document_suggestions_rebuilds_for_all_texts(db_session: Session
     document = _seed_document(db_session, user)
     text_primary = _seed_text(db_session, document, language, user, "Hello friend")
     text_secondary = _seed_text(db_session, document, language, user, "Friend of hello")
-    _seed_word(db_session, language, user, "Hello")
-    _seed_word(db_session, language, user, "Friend")
+    _seed_lexeme_with_form(db_session, language, user, "Hello")
+    _seed_lexeme_with_form(db_session, language, user, "Friend")
     db_session.commit()
 
     suggestions = refresh_document_suggestions(db_session, document.id, creator_id=user.id)
     db_session.commit()
 
     assert set(suggestions.keys()) == {text_primary.id, text_secondary.id}
-    total_links = db_session.query(TextWordLink).count()
-    assert total_links >= 2
+    assert db_session.query(TextWordLink).count() >= 2

@@ -1,55 +1,63 @@
 """
-Word package - models, enums, and associations for word management.
+Lexicographic models — Lexemes (concept-level dictionary entries) and
+WordForms (surface forms with inflection, IPA, rhyme keys, audio, attestations).
 """
-
 from app.models.word.enums import (
-    PartOfSpeech,
-    GrammaticalGender,
-    Plurality,
-    GrammaticalCase,
-    VerbAspect,
     Animacy,
+    AntonymType,
+    GrammaticalCase,
+    GrammaticalGender,
+    LexemeStatus,
+    PartOfSpeech,
+    Plurality,
     Register,
-    WordStatus,
+    SynonymNuance,
+    VerbAspect,
+    WordStatus,  # alias for LexemeStatus, kept for downstream readability
 )
-
-from app.models.word.word import Word
 
 from app.models.word.associations import (
-    word_audio,
-    word_image,
-    word_texts,
-    word_definitions,
-    word_synonyms,
-    word_antonyms,
-    word_related,
-    word_translations,
     WordTextType,
+    lexeme_antonyms,
+    lexeme_definitions,
+    lexeme_images,
+    lexeme_related,
+    lexeme_synonyms,
+    lexeme_tags,
+    lexeme_texts,
+    lexeme_translations,
+    word_form_audio,
+    word_form_locations,
 )
 
+from app.models.word.lexeme import Lexeme
+from app.models.word.word_form import WordForm
+
 __all__ = [
-    # Models
-    "Word",
-    
+    "Lexeme",
+    "WordForm",
     # Enums
-    "PartOfSpeech",
-    "GrammaticalGender",
-    "Plurality",
-    "GrammaticalCase",
-    "VerbAspect",
     "Animacy",
+    "AntonymType",
+    "GrammaticalCase",
+    "GrammaticalGender",
+    "LexemeStatus",
+    "PartOfSpeech",
+    "Plurality",
     "Register",
+    "SynonymNuance",
+    "VerbAspect",
     "WordStatus",
     "WordTextType",
-    
-    # Association tables
-    "word_audio",
-    "word_image",
-    "word_texts",
-    "word_definitions",
-    "word_synonyms",
-    "word_antonyms",
-    "word_related",
-    "word_translations",
+    # Associations
+    "lexeme_antonyms",
+    "lexeme_definitions",
+    "lexeme_images",
+    "lexeme_related",
+    "lexeme_synonyms",
+    "lexeme_tags",
+    "lexeme_texts",
+    "lexeme_translations",
+    "word_form_audio",
+    "word_form_locations",
 ]
-

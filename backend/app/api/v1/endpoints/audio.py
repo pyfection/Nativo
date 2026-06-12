@@ -1,8 +1,9 @@
 """
 Audio listing endpoints.
 
-Upload, streaming, and edit endpoints are out of scope for now — this module
-exposes a read-only listing so the Audio stats card and listing page work.
+Read-only listing so the Audio stats card and audio page work; upload and
+streaming are still out of scope. Audio recordings attach to WordForms
+(pronunciation varies per surface form).
 """
 
 from uuid import UUID
@@ -14,8 +15,7 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_db
 from app.models.audio import Audio
 from app.models.user import User
-from app.models.word.associations import word_audio
-from app.models.word.word import Word
+from app.models.word import Lexeme, WordForm, word_form_audio
 
 router = APIRouter()
 
@@ -35,21 +35,20 @@ class AudioListItem(BaseModel):
 @router.get("/", response_model=list[AudioListItem])
 def list_audio(
     language_id: UUID | None = Query(
-        None, description="Optional filter — only audio linked to a word in this language"
+        None, description="Optional filter — only audio linked to a form whose lexeme is in this language"
     ),
     skip: int = 0,
     limit: int = Query(50, ge=1, le=200),
     db: Session = Depends(get_db),
 ) -> list[AudioListItem]:
-    """List audio recordings, optionally filtered to those linked to words
-    in `language_id`."""
     query = db.query(Audio).order_by(Audio.created_at.desc())
 
     if language_id is not None:
         query = (
-            query.join(word_audio, word_audio.c.audio_id == Audio.id)
-            .join(Word, Word.id == word_audio.c.word_id)
-            .filter(Word.language_id == language_id)
+            query.join(word_form_audio, word_form_audio.c.audio_id == Audio.id)
+            .join(WordForm, WordForm.id == word_form_audio.c.word_form_id)
+            .join(Lexeme, Lexeme.id == WordForm.lexeme_id)
+            .filter(Lexeme.language_id == language_id)
             .distinct()
         )
 
@@ -63,7 +62,11 @@ def list_audio(
     }
 
     audio_ids = [a.id for a in audios]
-    link_rows = db.query(word_audio.c.audio_id).filter(word_audio.c.audio_id.in_(audio_ids)).all()
+    link_rows = (
+        db.query(word_form_audio.c.audio_id)
+        .filter(word_form_audio.c.audio_id.in_(audio_ids))
+        .all()
+    )
     word_counts: dict[UUID, int] = {}
     for (aid,) in link_rows:
         word_counts[aid] = word_counts.get(aid, 0) + 1

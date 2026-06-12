@@ -12,8 +12,7 @@ from starlette.responses import Response
 from app.database import engine, SessionLocal
 from app.models.user import User, UserRole
 from app.models.language import Language
-from app.models.word.word import Word
-from app.models.word.associations import word_translations
+from app.models.word import Lexeme, WordForm
 from app.models.document import Document
 from app.models.text import Text
 from app.models.audio import Audio
@@ -117,22 +116,28 @@ class LanguageAdmin(ModelView):
     page_size_options = [25, 50, 100]
 
 
-class WordAdmin(ModelView):
-    """Admin view for Word model"""
-    exclude_fields_from_create = ["created_at", "updated_at", "translated_from"]
-    exclude_fields_from_edit = ["created_at", "updated_at", "translated_from"]
-    
-    searchable_fields = ["word", "romanization"]
-    sortable_fields = ["word", "part_of_speech", "is_verified", "status", "created_at"]
-    
-    # Fields to show in the list view
-    fields_default_sort = ["word", "language_id", "part_of_speech", "is_verified", "status"]
-    
+class LexemeAdmin(ModelView):
+    """Admin view for Lexeme model (dictionary entries)."""
+    exclude_fields_from_create = ["created_at", "updated_at"]
+    exclude_fields_from_edit = ["created_at", "updated_at"]
+
+    searchable_fields = ["lemma"]
+    sortable_fields = ["lemma", "part_of_speech", "is_verified", "status", "created_at"]
+
     page_size = 25
     page_size_options = [25, 50, 100]
-    
-    # Note: The 'translations' relationship will be automatically available
-    # in the detail and edit views as a many-to-many field
+
+
+class WordFormAdmin(ModelView):
+    """Admin view for WordForm model (surface forms of a lexeme)."""
+    exclude_fields_from_create = ["created_at", "updated_at", "rhyme_key", "near_rhyme_key"]
+    exclude_fields_from_edit = ["created_at", "updated_at", "rhyme_key", "near_rhyme_key"]
+
+    searchable_fields = ["form", "romanization", "ipa_pronunciation"]
+    sortable_fields = ["form", "is_lemma", "created_at"]
+
+    page_size = 25
+    page_size_options = [25, 50, 100]
 
 
 class DocumentAdmin(ModelView):
@@ -239,7 +244,8 @@ def create_admin(app):
     # Register model views
     admin.add_view(UserAdmin(User, icon="fa fa-users"))
     admin.add_view(LanguageAdmin(Language, icon="fa fa-language"))
-    admin.add_view(WordAdmin(Word, icon="fa fa-book"))
+    admin.add_view(LexemeAdmin(Lexeme, icon="fa fa-book"))
+    admin.add_view(WordFormAdmin(WordForm, icon="fa fa-font"))
     admin.add_view(DocumentAdmin(Document, icon="fa fa-file-text"))
     admin.add_view(TextAdmin(Text, icon="fa fa-file"))
     admin.add_view(AudioAdmin(Audio, icon="fa fa-volume-up"))
