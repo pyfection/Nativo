@@ -1,31 +1,44 @@
 .ui-language-selector {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  padding: 0.2rem 0.4rem;
-  border: 1px solid #d0d0d0;
-  border-radius: 6px;
-  background: white;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.03);
   cursor: pointer;
+  transition: 0.18s ease;
+}
+
+.ui-language-selector:hover {
+  border-color: rgba(245, 239, 226, 0.35);
 }
 
 .ui-language-icon {
-  font-size: 0.9rem;
-  opacity: 0.7;
+  font-size: 0.85rem;
+  opacity: 0.8;
+  color: var(--cream-dim);
 }
 
 .ui-language-select {
   border: none;
   background: transparent;
-  font-size: 0.9rem;
-  color: #333;
+  font-size: 14px;
+  color: var(--cream);
   cursor: pointer;
-  padding: 0.15rem 0.1rem;
+  padding: 2px 4px;
   outline: none;
+  font-family: inherit;
+  appearance: none;
+}
+
+.ui-language-select option {
+  color: #12222a;
+  background: var(--cream);
 }
 
 .ui-language-select:focus {
-  outline: 2px solid var(--primary, #0099cc);
-  outline-offset: 2px;
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
   border-radius: 3px;
 }

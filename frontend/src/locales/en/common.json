@@ -5,6 +5,29 @@
     "title_language": "{{language}} has been spoken for over a thousand years.",
     "subtitle_language": "We're documenting it before it isn't."
   },
+  "hero_v2": {
+    "eyebrow": "A language falls silent every two weeks",
+    "heading_pre": "Save the",
+    "heading_emphasis": "words",
+    "heading_post": "before they're gone.",
+    "sub": "Nativo documents the world's endangered languages — their vocabulary, their writing, and the voices that speak them. Every word you add to {{language}} keeps it alive a little longer.",
+    "cta_start": "Start contributing",
+    "cta_explore": "Explore languages",
+    "reassure": "Free, open, and built by communities like yours."
+  },
+  "hero_card": {
+    "title": "Look up a word in {{language}}",
+    "hint": "Search the dictionary, or watch words drift by while you think.",
+    "placeholder": "Type a word…",
+    "search_aria": "Search the dictionary",
+    "label_result": "Result",
+    "label_rotating": "From the dictionary",
+    "view_in_dictionary": "View in dictionary",
+    "no_entry": "No entry for \"{{query}}\" yet.",
+    "no_entry_body": "This word hasn't been documented in {{language}}. You could be the first to add it.",
+    "add_this_word": "Add this word",
+    "no_translation_in_target": "No {{target}} translation yet"
+  },
   "dictionary": {
     "title_with_target": "Look up a {{source}} word → {{target}}",
     "title_no_target": "Look up a word in {{source}}",

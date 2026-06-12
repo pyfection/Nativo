@@ -1,0 +1,172 @@
+/* Hero card — rotating spotlight + search in one widget. */
+
+.hero-card {
+  padding: 26px 28px 24px;
+}
+
+.hero-card-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--cream);
+  margin-bottom: 4px;
+}
+
+.hero-card-hint {
+  font-size: 13px;
+  color: var(--sage);
+  margin-bottom: 18px;
+}
+
+/* ---------- Search bar ---------- */
+.hero-card-search {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.hero-card-input {
+  flex: 1;
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--cream);
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 13px 15px;
+  outline: none;
+  transition: 0.18s ease;
+  min-width: 0;
+}
+
+.hero-card-input::placeholder {
+  color: var(--sage);
+}
+
+.hero-card-input:focus {
+  border-color: var(--accent);
+}
+
+.hero-card-go {
+  border-radius: 12px;
+  padding: 0 18px;
+}
+
+/* ---------- Panel ---------- */
+.hero-card-panel {
+  min-height: 150px;
+  position: relative;
+}
+
+.hero-card-label {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--sage);
+  margin-bottom: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.hero-card-entry {
+  transition: opacity 0.45s ease;
+}
+.hero-card-entry.fade,
+.hero-card-entry:not(.visible) {
+  opacity: 0;
+}
+
+.hero-card-word {
+  font-family: var(--font-serif);
+  font-size: clamp(36px, 4.2vw, 44px);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--cream);
+  word-break: break-word;
+}
+
+.hero-card-ipa {
+  color: var(--cream-dim);
+  font-size: 15px;
+  margin: 7px 0 16px;
+  min-height: 1.4em;
+}
+.hero-card-ipa b {
+  font-weight: 400;
+  color: var(--sage);
+  font-style: italic;
+  margin-left: 8px;
+}
+
+.hero-card-gloss {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 0;
+  border-top: 1px solid var(--line);
+  font-size: 15px;
+}
+.hero-card-gloss-key {
+  color: var(--sage);
+}
+.hero-card-gloss-val {
+  color: var(--cream);
+  text-align: right;
+}
+
+.hero-card-footer {
+  margin-top: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13.5px;
+}
+
+.hero-card-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: color 0.35s ease;
+}
+.hero-card-link:hover {
+  text-decoration: underline;
+}
+
+.hero-card-rotctl {
+  color: var(--sage);
+  font-size: 12px;
+}
+
+/* ---------- Empty / error states ---------- */
+.hero-card-empty {
+  text-align: center;
+  padding: 14px 0;
+}
+.hero-card-empty-big {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  margin-bottom: 6px;
+  color: var(--cream);
+}
+.hero-card-empty p {
+  font-size: 14px;
+  color: var(--cream-dim);
+  margin-bottom: 16px;
+}
+
+.hero-card-empty-quiet {
+  font-size: 14px;
+  color: var(--cream-dim);
+  padding: 24px 0;
+  text-align: center;
+}
+
+.hero-card-error {
+  color: #f08a8a;
+  font-size: 14px;
+  margin-bottom: 12px;
+}

@@ -1,41 +1,46 @@
 .recent-activity {
-  padding: 2rem 2rem 1rem;
-  background: white;
+  padding: 28px clamp(20px, 5vw, 64px);
+  max-width: 1180px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .recent-activity-heading {
-  max-width: 1200px;
-  margin: 0 auto 1rem;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #333;
-  letter-spacing: 0.01em;
-  text-transform: uppercase;
+  font-family: var(--font-serif);
+  margin: 0 0 16px;
+  font-size: clamp(20px, 2.2vw, 26px);
+  font-weight: 500;
+  color: var(--cream);
+  letter-spacing: -0.01em;
 }
 
 .recent-activity-list {
-  max-width: 1200px;
-  margin: 0 auto;
   padding: 0;
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 8px;
 }
 
 .recent-activity-item {
   display: flex;
   align-items: flex-start;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  background: #fafafa;
-  border-radius: 8px;
-  border: 1px solid #ececec;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.025);
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  transition: border-color 0.18s ease;
+}
+
+.recent-activity-item:hover {
+  border-color: rgba(245, 239, 226, 0.2);
 }
 
 .recent-activity-icon {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   line-height: 1;
+  padding-top: 1px;
 }
 
 .recent-activity-body {
@@ -43,26 +48,24 @@
 }
 
 .recent-activity-summary {
-  margin: 0 0 0.15rem;
-  color: #222;
+  margin: 0 0 3px;
+  color: var(--cream);
   font-size: 0.95rem;
 }
 
 .recent-activity-meta {
   margin: 0;
-  color: #777;
-  font-size: 0.8rem;
+  color: var(--sage);
+  font-size: 0.78rem;
 }
 
 .recent-activity-loading,
 .recent-activity-empty,
 .recent-activity-error {
-  max-width: 1200px;
-  margin: 0 auto;
-  color: #666;
+  color: var(--cream-dim);
   font-size: 0.95rem;
 }
 
 .recent-activity-error {
-  color: #b00020;
+  color: #f08a8a;
 }

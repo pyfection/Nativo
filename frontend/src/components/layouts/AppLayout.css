@@ -4,44 +4,52 @@
   min-height: 100vh;
 }
 
-/* Header */
+/* ---------- Header ---------- */
 .app-header {
-  background-color: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   position: sticky;
   top: 0;
   z-index: 100;
+  background: rgba(10, 39, 51, 0.6);
+  backdrop-filter: saturate(140%) blur(14px);
+  -webkit-backdrop-filter: saturate(140%) blur(14px);
+  border-bottom: 1px solid var(--line);
 }
 
 .app-header-content {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 1.25rem 2rem;
+  padding: 22px clamp(20px, 5vw, 64px);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 1rem;
 }
 
 .app-logo {
-  font-size: 1.75rem;
-  font-weight: 700;
-  letter-spacing: -0.5px;
-  margin: 0;
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: 24px;
+  letter-spacing: -0.01em;
+  color: var(--cream) !important;
   text-decoration: none;
   transition: opacity 0.2s ease;
 }
-
+.app-logo b {
+  color: var(--accent);
+  font-weight: 500;
+  transition: color 0.35s ease;
+}
 .app-logo:hover {
-  opacity: 0.8;
+  opacity: 0.9;
 }
 
 .app-header-right {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 10px;
 }
 
-/* Content Wrapper */
+/* ---------- Content area ---------- */
 .app-content-wrapper {
   display: flex;
   flex: 1;
@@ -49,23 +57,23 @@
 
 .app-main {
   flex: 1;
-  background-color: #fafafa;
   min-height: 100%;
+  color: var(--cream);
+  background: transparent; /* body gradient shows through */
 }
 
 .app-main.with-sidebar {
   margin-left: 0;
 }
 
-/* Ensure content doesn't overflow */
+/* ---------- Mobile ---------- */
 @media (max-width: 768px) {
   .app-header-content {
     flex-direction: column;
     gap: 1rem;
+    padding: 14px 16px;
   }
-
   .app-content-wrapper {
     flex-direction: column;
   }
 }
-

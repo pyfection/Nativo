@@ -19,6 +19,7 @@ import AudioList from './pages/AudioList';
 import ContributorsList from './pages/ContributorsList';
 import languageService, { LanguageResponse } from './services/languageService';
 import { API_URL } from './services/api';
+import { getThemeStyles } from './styles/theme';
 import './App.css';
 
 // Frontend Language type with color scheme
@@ -180,7 +181,7 @@ function App() {
     <Router basename={import.meta.env.BASE_URL}>
       <AuthProvider>
         <UILanguageProvider languages={languages}>
-        <div className="app" style={{ '--primary': selectedLanguage?.colorScheme.primary } as React.CSSProperties}>
+        <div className="app" style={selectedLanguage ? getThemeStyles(selectedLanguage) : undefined}>
           <Routes>
             <Route
               path="/"

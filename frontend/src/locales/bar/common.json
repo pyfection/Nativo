@@ -5,6 +5,29 @@
     "subtitle": "A digitale blátfoam fia's festhóitn und eahóitn fo de bedrotn cbráha af da veit - duah grimne dokument, voatsámlunga und tonafnáma.",
     "subtitle_language": "Mia nemas af befoas' nima gibt."
   },
+  "hero_v2": {
+    "eyebrow": "Olle dsvoa vohan vad a cbráh cdui",
+    "heading_pre": "Réts de",
+    "heading_emphasis": "veata",
+    "heading_post": "befoas' nima gibt.",
+    "sub": "Nativo dokumentiad de bedrotn cbráha af da veit — eahna veata, eahna grimas, und de cdimas, de's réd'n. Iads voat, vos du dadsuagibst, hoid {{language}} a véng lénga lebendig.",
+    "cta_start": "Foanga ó dsu midmáha",
+    "cta_explore": "Cbráha umcaugn",
+    "reassure": "Frei, ofa, und baut fo gmoanscoftn vià dera, vo'st du."
+  },
+  "hero_card": {
+    "title": "A voat in {{language}} ocaugn",
+    "hint": "Suah'n im veatabuah, oda lós voata fobei dréng vaihrnt's nóhdengst.",
+    "placeholder": "Schreib a voat…",
+    "search_aria": "Im veatabuah suaha",
+    "label_result": "Tréfa",
+    "label_rotating": "Aus'm veatabuah",
+    "view_in_dictionary": "Im veatabuah ocaugn",
+    "no_entry": "Koa eindrog fia \"{{query}}\" nó.",
+    "no_entry_body": "Des voat is nó ned dokumentiad in {{language}}. Du kantsd 's easte sai, dea's eidrógt.",
+    "add_this_word": "Des voat dadsuaduan",
+    "no_translation_in_target": "Nó koa {{target}}-ivasetsung"
+  },
   "dictionary": {
     "title_with_target": "A {{source}} voat ocaugn -> {{target}}",
     "title_no_target": "A voat in {{source}} ocaugn",

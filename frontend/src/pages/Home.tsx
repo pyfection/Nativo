@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-
 import { Link } from 'react-router-dom';
 
 import { Language } from '../App';
 import EndangermentPanel from '../components/home/EndangermentPanel';
+import HomeHeroCard from '../components/home/HomeHeroCard';
 import LanguageActionPanel from '../components/home/LanguageActionPanel';
 import RecentActivity from '../components/home/RecentActivity';
 import StatCard from '../components/home/StatCard';
-import WordSpotlight from '../components/home/WordSpotlight';
 import { useAuth } from '../contexts/AuthContext';
 import { getStatistics, Statistics } from '../services/statisticsService';
 import './Home.css';
@@ -44,7 +43,6 @@ export default function Home({ selectedLanguage }: HomeProps) {
         setPlatformStats(platform);
       })
       .catch((error) => {
-        // Network/CORS — leave defaults, log
         console.error('Failed to fetch statistics:', error);
       })
       .finally(() => {
@@ -127,32 +125,54 @@ export default function Home({ selectedLanguage }: HomeProps) {
   );
 
   return (
-    <div
-      className="home-page"
-      style={
-        {
-          '--primary': selectedLanguage.colorScheme.primary,
-          '--secondary': selectedLanguage.colorScheme.secondary,
-          '--accent': selectedLanguage.colorScheme.accent,
-          '--background': selectedLanguage.colorScheme.background,
-        } as React.CSSProperties
-      }
-    >
-      {/* Hero Section */}
+    <div className="home-page">
+      {/* ---------- Hero ---------- */}
       <section className="hero">
-        <div className="hero-content">
-          <h2 className="hero-title">
-            {t('hero.title_language', { language: selectedLanguage.name })}
-          </h2>
-          <p className="hero-subtitle">
-            {t('hero.subtitle_language', { language: selectedLanguage.name })}
-          </p>
-          <div className="hero-language-info">
-            <h3 className="language-name">{selectedLanguage.name}</h3>
-            <p className="language-native">{selectedLanguage.nativeName}</p>
-            <p className="language-description">{selectedLanguage.description}</p>
-            <LanguageActionPanel />
+        <div className="hero-copy">
+          <div className="eyebrow">
+            <span className="dot"></span>
+            {t('hero_v2.eyebrow')}
           </div>
+          <h1 className="hero-h1">
+            {t('hero_v2.heading_pre')}{' '}
+            <em>{t('hero_v2.heading_emphasis')}</em>
+            <br />
+            {t('hero_v2.heading_post')}
+          </h1>
+          <p className="hero-sub">
+            {t('hero_v2.sub', { language: selectedLanguage.name })}
+          </p>
+          <div className="hero-actions">
+            {isAuthenticated ? (
+              <Link to="/words/add" className="btn btn-accent btn-lg">
+                {t('hero_v2.cta_start')}
+              </Link>
+            ) : (
+              <Link to="/register" className="btn btn-accent btn-lg">
+                {t('hero_v2.cta_start')}
+              </Link>
+            )}
+            <Link to="/languages" className="btn btn-ghost btn-lg">
+              {t('hero_v2.cta_explore')}
+            </Link>
+          </div>
+          <div className="hero-reassure">
+            <i>✦</i> {t('hero_v2.reassure')}
+          </div>
+        </div>
+
+        <HomeHeroCard selectedLanguage={selectedLanguage} />
+      </section>
+
+      {/* ---------- The selected language ---------- */}
+      <section className="language-strip">
+        <div className="language-strip-inner">
+          <h3 className="language-strip-name">{selectedLanguage.name}</h3>
+          <p className="language-strip-native">{selectedLanguage.nativeName}</p>
+          {selectedLanguage.description && (
+            <p className="language-strip-desc">{selectedLanguage.description}</p>
+          )}
+          <LanguageActionPanel />
         </div>
       </section>
 
@@ -162,9 +182,6 @@ export default function Home({ selectedLanguage }: HomeProps) {
         wordCount={languageStats.total_words}
         loading={statsLoading}
       />
-
-      {/* Random word spotlight (rotates every 3s; reveals the dictionary on Translate) */}
-      <WordSpotlight selectedLanguage={selectedLanguage} />
 
       {/* Language-scoped stats */}
       <section className="stats-section">
@@ -212,7 +229,6 @@ export default function Home({ selectedLanguage }: HomeProps) {
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="footer">
         <p>{t('footer.copyright')}</p>
       </footer>

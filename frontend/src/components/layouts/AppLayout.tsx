@@ -26,12 +26,8 @@ export default function AppLayout({ children, selectedLanguage, onLanguageChange
       {/* Top Header */}
       <header className="app-header">
         <div className="app-header-content">
-          <Link
-            to="/"
-            className="app-logo"
-            style={{ color: selectedLanguage.colorScheme.primary }}
-          >
-            Nativo
+          <Link to="/" className="app-logo">
+            Nativo<b>.</b>
           </Link>
           <div className="app-header-right">
             <LanguageSelector
