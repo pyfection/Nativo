@@ -1,38 +1,75 @@
 # Bavarian vocabulary — UI extraction
 
-## Done (157 entries inserted)
+## Done (160 entries inserted, 1 PATCHed)
 
-- batch 1: 5
-- batch 2: 5
-- bulk pass: 120
-- batch 3 (corrections + compound parts + conjugations + pronouns + new lemmas): 27
-
-That covers everything from the UI plus all the compound parts and conjugations you've described so far.
+- batch 1: 5 · batch 2: 5 · bulk: 120 · batch 3: 27 · batch 4: 3
+- `bedincbráh` notes corrected to reference *bedina* (verb stem).
 
 ## Still pending
 
-### A. "You all" (2pl) — am I missing anything?
+### A. *to-be* 2pl form — and formal "you"
 
-You asked. Yes — both paradigms are missing the 2pl ("you all"):
+`hóbds` (2pl of *hóm*, dual *es hóbds* / plural *ia hóbds*) is in.
 
-**to have** — what's *"you all have"*?
+Two follow-ups:
+1. *to be* — what's *"you two are"* and *"you all are"*? My guess: *es seids* / *ia seids* (same root, *-s* ending pattern). Confirm.
+2. Bavarian formal/polite *"you"* (German *Sie*) — does Bavarian distinguish, or just use 3pl forms?
 
-**to be** — what's *"you all are"*?
+### B. Article paradigm — please correct
 
-Bavarian sources I've seen use forms like *es habts* / *eß habts* / *ihr habts* depending on region. Once you give me the standard form, I'll insert as the 2pl form of *hóm* and *sai*.
+You asked for the whole picture. Below is what I'd expect for Bavarian articles. Cells with ⚠️ are uncertain; cells already in the DB are marked ✓.
 
-(For the formal/polite *"you"* — capital *Sie* in German — let me know if Bavarian distinguishes that or just uses the 3pl forms.)
+#### Definite article — *the*
 
-### B. Clarification you asked for
+| Case | Masc sg | Fem sg | Neut sg | Plural |
+| --- | --- | --- | --- | --- |
+| **Nominative** | `da` ✓ | `d'` ✓ | `s'` ✓ | `de` ✓ (or `d'` ✓ contracted) |
+| **Accusative** | ⚠️ `an` / `'n`? | ⚠️ `d'` (same as nom)? | ⚠️ `s'` (same as nom)? | ⚠️ `de` (same as nom)? |
+| **Dative** | `am` / `'m` ✓ (via *am, aus'm, foa'm*) — bare form `dem` ✓ | ⚠️ `da`? `dera`? | `dem` ✓ | ⚠️ `de`? `dene`? |
+| **Genitive** | ⚠️ uses *fo* + dat? bare form? | `dera` ✓ | ⚠️ uses *fo* + dat? | ⚠️ `dera`? |
 
-> 1. oans / oana — I don't understand the question.
+#### Indefinite article — *a / an*
 
-Re-asked: *oans* is in the DB now as a **pronoun** (sense: "one, someone"). The same word also functions as the **numeral** "one" (the number 1). The DB has one `Word` row per lemma+POS, so right now only the pronoun sense is searchable.
+| Case | Masc sg | Fem sg | Neut sg | (no pl) |
+| --- | --- | --- | --- | --- |
+| **Nominative** | `a` ✓ | `a` ✓ / `oana` ✓ | `a` ✓ | — |
+| **Accusative** | ⚠️ `an` / `'n`? | ⚠️ `a`? `oana`? | ⚠️ `a`? | — |
+| **Dative** | ⚠️ `am` / `'m`? | ⚠️ `oana`? `ana`? | ⚠️ `am`? | — |
+| **Genitive** | ⚠️ usually rephrased with *fo*? | ⚠️ same? | ⚠️ same? | — |
 
-**Question**: should we also create a second `Word` row for *oans* with `pos = numeral`, so that a future search for "the number one" finds it? Or skip — one row is enough for now and the numeral sense is implicit?
+#### Negation — *no / none* (kein paradigm)
 
-Same question for *oana* (currently a determiner; also "a (one) feminine").
+| Case | Masc sg | Fem sg | Neut sg | Plural |
+| --- | --- | --- | --- | --- |
+| **Nominative** | `koa` ✓ | `koa` ✓ | `koa` ✓ | `koane` ✓ |
+| **Accusative** | ⚠️ `koan`? | ⚠️ `koa`? | ⚠️ `koa`? | ⚠️ `koane`? |
+| **Dative** | ⚠️ `koam`? | ⚠️ `koana`? | ⚠️ `koam`? | ⚠️ `koane`? `koanen`? |
+| **Genitive** | ⚠️ ? | ⚠️ `koana`? | ⚠️ ? | ⚠️ ? |
 
-## Side note — followup item
+#### Numeral *"one"*
 
-You corrected *bedin* → it's the stem of the verb *bedina* "to control", not a noun. I inserted *bedina* as a verb (done) but the **existing `bedincbráh` entry's notes** still say `"compound bedin+cbráh"`. I'd like to update them to say `"compound: verb stem of bedina + cbráh"`. Want me to PATCH that record? (Same kind of fix may be useful on a few other compounds as we learn more.)
+| Form | Use | English | In DB? |
+| --- | --- | --- | --- |
+| `oans` | cardinal (the number 1) | one | ✓ (as pronoun, sense "someone") |
+| `oa` | masc/neut counting | one | ⚠️ — does this form exist standalone? |
+| `oana` | feminine counting | one | ✓ (as determiner, sense "a (f)") |
+
+#### Common preposition + article contractions
+
+Already in DB: `aus'm` (from the), `foa'm` (before the), `dsum` (to the).
+
+Likely missing (please confirm I should add):
+
+| Contraction | = preposition + article | English |
+| --- | --- | --- |
+| `af'm` | af + dem | on the (m/n dat) |
+| `in'm` | in + dem | in the (m/n dat) |
+| `fia'n` | fia + an | for the (m acc) |
+| `mid'm` | mid + dem | with the (m/n dat) |
+| `fom` | fo + dem | of the / from the |
+| `in'a` | in + a | in a (indef m/n) |
+| `af'a` | af + a | on a (indef m/n) |
+
+---
+
+When you mark up the table (fill the ⚠️ cells, fix anything wrong, strike rows that don't make sense in the standard), I'll insert the missing forms as `Word` rows with `pos = determiner`, gender/case/plurality set per the cell, and link each to the appropriate English equivalent.
