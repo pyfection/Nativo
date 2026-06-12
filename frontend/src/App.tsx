@@ -145,6 +145,18 @@ function App() {
     }
   }, [selectedLanguage]);
 
+  // Push the per-language theme onto <html> so `body` (which paints the
+  // radial gradient) picks up the new --base1 / --base2 / --glow / --accent
+  // values. Setting them on a `.app` wrapper alone misses the body element.
+  useEffect(() => {
+    if (!selectedLanguage) return;
+    const styles = getThemeStyles(selectedLanguage) as Record<string, string>;
+    const root = document.documentElement;
+    Object.entries(styles).forEach(([key, value]) => {
+      root.style.setProperty(key, value);
+    });
+  }, [selectedLanguage]);
+
   // Show loading state
   if (loading) {
     return (
@@ -181,7 +193,7 @@ function App() {
     <Router basename={import.meta.env.BASE_URL}>
       <AuthProvider>
         <UILanguageProvider languages={languages}>
-        <div className="app" style={selectedLanguage ? getThemeStyles(selectedLanguage) : undefined}>
+        <div className="app">
           <Routes>
             <Route
               path="/"

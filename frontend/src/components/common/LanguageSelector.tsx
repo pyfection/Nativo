@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Language } from '../../App';
 import { useAuth } from '../../contexts/AuthContext';
+import Dropdown, { DropdownOption } from './Dropdown';
 import JoinLanguageModal from './JoinLanguageModal';
 import './LanguageSelector.css';
 
@@ -26,6 +27,27 @@ export default function LanguageSelector({
   // Split languages into managed and other
   const managedLanguages = languages.filter(lang => lang.managed);
   const otherLanguages = languages.filter(lang => !lang.managed);
+
+  const dropdownOptions = useMemo<DropdownOption<string>[]>(() => {
+    const opts: DropdownOption<string>[] = [];
+    managedLanguages.forEach((lang, i) => {
+      opts.push({
+        value: lang.id,
+        label: lang.name,
+        hint: lang.nativeName !== lang.name ? lang.nativeName : undefined,
+        // Separator after the last managed language, if there are 'others' to follow.
+        separatorAfter: i === managedLanguages.length - 1 && otherLanguages.length > 0,
+      });
+    });
+    otherLanguages.forEach((lang) => {
+      opts.push({
+        value: lang.id,
+        label: lang.name,
+        hint: lang.nativeName !== lang.name ? lang.nativeName : undefined,
+      });
+    });
+    return opts;
+  }, [managedLanguages, otherLanguages]);
 
   // Check if user is a member of the selected language
   const userProficiency = user?.language_proficiencies?.find(
@@ -51,42 +73,17 @@ export default function LanguageSelector({
   return (
     <>
       <div className="language-selector">
-        <label htmlFor="language-select" className="selector-label">
-          Language:
-        </label>
-        <select
-          id="language-select"
+        <Dropdown
           value={selectedLanguage.id}
-          onChange={(e) => {
-            const language = languages.find(lang => lang.id === e.target.value);
-            if (language) {
-              onLanguageChange(language);
-            }
+          options={dropdownOptions}
+          onChange={(id) => {
+            const language = languages.find((lang) => lang.id === id);
+            if (language) onLanguageChange(language);
           }}
-          className="selector-dropdown"
-        >
-          {managedLanguages.length > 0 && (
-            <>
-              {managedLanguages.map((language) => (
-                <option
-                  key={language.id}
-                  value={language.id}
-                  style={{ backgroundColor: language.colorScheme.background }}
-                >
-                  {language.name} ({language.nativeName})
-                </option>
-              ))}
-              {otherLanguages.length > 0 && (
-                <option disabled>────────────────</option>
-              )}
-            </>
-          )}
-          {otherLanguages.map((language) => (
-            <option key={language.id} value={language.id}>
-              {language.name} ({language.nativeName})
-            </option>
-          ))}
-        </select>
+          label="Language:"
+          ariaLabel="Select language"
+          minWidth={220}
+        />
 
         {isAuthenticated && (
           <>

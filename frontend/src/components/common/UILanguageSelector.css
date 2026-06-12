@@ -1,44 +1,13 @@
-.ui-language-selector {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.03);
-  cursor: pointer;
-  transition: 0.18s ease;
-}
+/* Small refinements over the base Dropdown styles. */
 
-.ui-language-selector:hover {
-  border-color: rgba(245, 239, 226, 0.35);
+.ui-language-selector .dropdown-trigger {
+  padding-left: 12px;
+  padding-right: 32px;
+  gap: 6px;
 }
 
 .ui-language-icon {
-  font-size: 0.85rem;
-  opacity: 0.8;
+  font-size: 0.95rem;
   color: var(--cream-dim);
-}
-
-.ui-language-select {
-  border: none;
-  background: transparent;
-  font-size: 14px;
-  color: var(--cream);
-  cursor: pointer;
-  padding: 2px 4px;
-  outline: none;
-  font-family: inherit;
-  appearance: none;
-}
-
-.ui-language-select option {
-  color: #12222a;
-  background: var(--cream);
-}
-
-.ui-language-select:focus {
-  outline: 2px solid var(--accent);
-  outline-offset: 3px;
-  border-radius: 3px;
+  line-height: 1;
 }
