@@ -1,14 +1,23 @@
 # Bavarian vocabulary — UI extraction
 
-## Done (166 entries inserted, 8 PATCHed)
+## Done (190 entries inserted, 9 PATCHed)
 
-- batch 1: 5 · batch 2: 5 · bulk: 120 · batch 3: 27 · batch 4: 3 · sai/sei cleanup: 4 · sau split: 2
+- batch 1: 5 · batch 2: 5 · bulk: 120 · batch 3: 27 · batch 4: 3 · sai/sei cleanup: 4 · sau split: 2 · batch 5: 24
 - `bedincbráh` notes corrected to reference *bedina* (verb stem)
 - `sai`: verb → noun (PATCH), then singular → **plural "pigs"** (PATCH again)
 - English `pig` entry renamed to `pigs` (plural) to match the now-corrected `sai`
 - New `sau` (singular "pig") added with its own English `pig` (singular) link
 - `bin`, `bist`, `is`, `san`, `han` notes updated from *form-of:sai* → *form-of:sei*
-- New: **`sei`** (verb, "to be"), **`saids`** (2pl form of *sei*; dual/plural), **`se`** (formal-polite "you")
+- `sig` notes updated to cover both imperative and 1sg-present senses
+- **Batch 5 (article paradigm + content nouns + máha):**
+  - Definite m sg acc article `'n` (NOT a contraction of *an*)
+  - Indefinite m sg acc article `an` (also covers n sg dat indef)
+  - Demonstratives `den` (m sg "that") and `dene` (pl all genders "these/those")
+  - Negation `koam` (m/n sg dat), `koana` (f sg dat)
+  - Cardinal `oa` (m/n/f "one")
+  - Contractions: `af'm`, `im`, `mid'm`, `fia'n`, `fom`
+  - Content nouns: `kinda`, `kind`, `frau`, `hund`, `dic`, `sesl`, `haus`
+  - Verb `máha` ("to do") + full conjugation: `máh`, `máhsd`, `máhds`, `máhd`
 
 ## Case examples — for your B. question
 
