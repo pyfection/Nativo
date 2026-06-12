@@ -1,62 +1,38 @@
 # Bavarian vocabulary — UI extraction
 
-## Done (130 entries inserted)
+## Done (157 entries inserted)
 
-5 from batch 1 + 5 from batch 2 + 120 in the bulk pass. All Bavarian words have a matching English Word entry and a translation link.
+- batch 1: 5
+- batch 2: 5
+- bulk pass: 120
+- batch 3 (corrections + compound parts + conjugations + pronouns + new lemmas): 27
 
-## Still pending — need your input
+That covers everything from the UI plus all the compound parts and conjugations you've described so far.
 
-These items have something I couldn't decide alone. Once you confirm, I'll insert and remove from this doc. Same workflow as before.
+## Still pending
 
-### A. Infinitive uncertain
+### A. "You all" (2pl) — am I missing anything?
 
-I'd inferred each Bavarian infinitive from an attested non-infinitive form. Need confirmation.
+You asked. Yes — both paradigms are missing the 2pl ("you all"):
 
-| Attested form | What I see it as | Inferred infinitive | Notes |
-| --- | --- | --- | --- |
-| *dadsuaduad* | 3rd sg present (UI: *vo oans dadsuaduad*) | **dadsuaduan**? | one of several "to add" verbs (alongside *datsuafign*, *dadsuagém* already inserted) |
-| *klasifidsiad* | 3rd sg present (UI: *UNESCO klasifidsiad …*) | **klasifidsian**? | "to classify" |
-| *midgmáhd* | past participle (UI: *de midgmáhd …*) | **midmáhn**? | "to participate / join in" |
+**to have** — what's *"you all have"*?
 
-### B. The verb "to be" + present forms
+**to be** — what's *"you all are"*?
 
-`sai` (imperative), `is` (3rd sg "is"), `san` (3rd pl "are") all appear in the UI as separate forms. Per your "separate rows for inflections" decision, I'd insert each as its own `Word`, but I need the **infinitive** to set as the canonical lemma:
+Bavarian sources I've seen use forms like *es habts* / *eß habts* / *ihr habts* depending on region. Once you give me the standard form, I'll insert as the 2pl form of *hóm* and *sai*.
 
-- Bavarian "to be" infinitive — **sai**? **sain**? Something else? Please confirm and I'll create the lemma + the three inflected entries linked back to it.
+(For the formal/polite *"you"* — capital *Sie* in German — let me know if Bavarian distinguishes that or just uses the 3pl forms.)
 
-### C. The verb "to have" / "to give" — infinitive uncertain
+### B. Clarification you asked for
 
-| Attested form | What I see it as | Inferred infinitive | Notes |
-| --- | --- | --- | --- |
-| *gibt* | 3rd sg (UI: *Mia nemas af befoas' nima gibt*) | **gem**? **gebm**? | "to give / there is" |
-| *hóm* | 1st/3rd pl (UI: *…hóm tsua dera cbráh*) | **hóm**? **hobm**? | "to have" |
+> 1. oans / oana — I don't understand the question.
 
-### D. Nouns with one form attested
+Re-asked: *oans* is in the DB now as a **pronoun** (sense: "one, someone"). The same word also functions as the **numeral** "one" (the number 1). The DB has one `Word` row per lemma+POS, so right now only the pronoun sense is searchable.
 
-| Attested | Need | Notes |
-| --- | --- | --- |
-| *bitn* | singular form | English "request"; UI: *Ds'fui bitn* uses plural |
+**Question**: should we also create a second `Word` row for *oans* with `pos = numeral`, so that a future search for "the number one" finds it? Or skip — one row is enough for now and the numeral sense is implicit?
 
-### E. Compound parts to add (per your "also add compound parts" decision)
+Same question for *oana* (currently a determiner; also "a (one) feminine").
 
-These are the second elements of compound nouns I've already inserted. Each needs a standalone entry — please confirm English gloss + gender:
+## Side note — followup item
 
-| Bavarian | Comes from | Proposed English | Proposed gender | Confirm? |
-| --- | --- | --- | --- | --- |
-| **muada** | *muadacbráhla* (native speaker) | mother | feminine | |
-| **cbráhla** | *muadacbráhla* (native speaker) | speaker | masculine | also: gender-neutral by convention? |
-| **dsui** | *dsuicbráh* (target language) | target / goal | neuter | |
-| **bedin** | *bedincbráh* (interface language) | use / operation / interface | feminine | |
-| **blóds** | *adminblóds* (admin panel) | space / place / panel | masculine | |
-| **kean** | *keanveata* (core words) | core | masculine | also adjective sense "core"? |
-
-### F. Missed in the bulk pass — need to add
-
-| Bavarian | English | Notes |
-| --- | --- | --- |
-| **muadacbráhla** | native speaker | compound *muada* + *cbráhla*. Was on my list but not inserted in the bulk pass — my error. Will go in once compound parts are confirmed. |
-
-### G. Quick checks
-
-1. **oans / oana** were inserted as a pronoun and a determiner respectively. They're also numerals ("one"). Skip the duplicate numeral entries, or insert *oans* / *oana* a second time with `pos = numeral`?
-2. **dea** — relative pronoun "who/that" alternate to *vo*. Not in the current `bar/common.json`. **Drop** unless you want it.
+You corrected *bedin* → it's the stem of the verb *bedina* "to control", not a noun. I inserted *bedina* as a verb (done) but the **existing `bedincbráh` entry's notes** still say `"compound bedin+cbráh"`. I'd like to update them to say `"compound: verb stem of bedina + cbráh"`. Want me to PATCH that record? (Same kind of fix may be useful on a few other compounds as we learn more.)
