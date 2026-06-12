@@ -1012,8 +1012,7 @@ Each entry follows the `Word` model fields. Leave `⚠️ ?` markers for anythin
 - **definition:** please
 - **pos:** particle / interjection
 - **register:** neutral
-- **usage:** *…bitce ruiga…*
-- **forms:** sentence-initial form *Bice* (drops the *t*)
+- **usage:** *…bitce ruiga…* — sentence-initial *Bitce numoi fasuaha*
 
 ### sai
 - **definition:** be (imperative singular)
