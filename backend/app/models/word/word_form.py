@@ -6,10 +6,12 @@ A WordForm holds the actual string, IPA, rhyme keys, inflectional features
 this specific pronunciation/form was attested. Exactly one WordForm per
 Lexeme should have `is_lemma=True` (the canonical citation form).
 """
-from datetime import UTC, datetime
-import uuid
 
-from sqlalchemy import Boolean, Column, DateTime, Enum as SQLEnum, ForeignKey, String
+import uuid
+from datetime import UTC, datetime
+
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String
+from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -26,7 +28,9 @@ class WordForm(Base):
     __tablename__ = "word_forms"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    lexeme_id = Column(UUID(as_uuid=True), ForeignKey("lexemes.id", ondelete="CASCADE"), nullable=False, index=True)
+    lexeme_id = Column(
+        UUID(as_uuid=True), ForeignKey("lexemes.id", ondelete="CASCADE"), nullable=False, index=True
+    )
 
     # Surface representation
     form = Column(String(255), nullable=False, index=True)
@@ -41,7 +45,9 @@ class WordForm(Base):
     # this WordForm's `form` for cheap search.
     is_lemma = Column(Boolean, default=False, nullable=False, index=True)
 
-    # Inflectional features
+    # Inflectional features. These enums were created by the initial schema
+    # with UPPERCASE Postgres labels; default SQLAlchemy storage (.name) is
+    # what Postgres expects here. Do NOT add values_callable.
     plurality = Column(SQLEnum(Plurality, name="plurality"), nullable=True)
     grammatical_case = Column(SQLEnum(GrammaticalCase, name="grammaticalcase"), nullable=True)
     verb_aspect = Column(SQLEnum(VerbAspect, name="verbaspect"), nullable=True)

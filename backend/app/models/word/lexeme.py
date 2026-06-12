@@ -9,23 +9,25 @@ antonyms, translations, tags.
 The surface strings, IPA, inflection features, audio recordings, and
 attested locations live on the related `WordForm` rows.
 """
-from datetime import UTC, datetime
-import uuid
 
-from sqlalchemy import Boolean, Column, DateTime, Enum as SQLEnum, ForeignKey, String, Text
+import uuid
+from datetime import UTC, datetime
+
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String, Text
+from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from app.database import Base
 from app.models.word.associations import (
+    lexeme_antonyms,
     lexeme_definitions,
+    lexeme_images,
     lexeme_related,
     lexeme_synonyms,
-    lexeme_antonyms,
     lexeme_tags,
     lexeme_texts,
     lexeme_translations,
-    lexeme_images,
 )
 from app.models.word.enums import (
     Animacy,
@@ -45,28 +47,48 @@ class Lexeme(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 
-    language_id = Column(UUID(as_uuid=True), ForeignKey("languages.id", ondelete="CASCADE"), nullable=False, index=True)
+    language_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("languages.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
 
     # Denormalized citation form for search/display. The canonical WordForm
     # (the one with `is_lemma=True`) holds the authoritative string; this
     # mirrors it for cheap lookups and is kept in sync by the service layer.
     lemma = Column(String(255), nullable=False, index=True)
 
-    # Concept-level grammatical category
+    # Concept-level grammatical category.
+    # These enums were created by the initial schema (0824d074…) with UPPERCASE
+    # Postgres labels matching the Python enum NAMES — so default SQLAlchemy
+    # storage (.name → uppercase) is what Postgres expects. Do NOT add
+    # values_callable here; lowercase .value would not match the PG labels.
     part_of_speech = Column(SQLEnum(PartOfSpeech, name="partofspeech"), nullable=True, index=True)
     gender = Column(SQLEnum(GrammaticalGender, name="grammaticalgender"), nullable=True)
     animacy = Column(SQLEnum(Animacy, name="animacy"), nullable=True)
-    language_register = Column(SQLEnum(Register, name="register"), nullable=True, default=Register.NEUTRAL)
+    language_register = Column(
+        SQLEnum(Register, name="register"), nullable=True, default=Register.NEUTRAL
+    )
 
     # Concept-level documents (one each)
-    etymology_document_id = Column(UUID(as_uuid=True), ForeignKey("documents.id", ondelete="SET NULL"), nullable=True)
-    cultural_significance_document_id = Column(UUID(as_uuid=True), ForeignKey("documents.id", ondelete="SET NULL"), nullable=True)
+    etymology_document_id = Column(
+        UUID(as_uuid=True), ForeignKey("documents.id", ondelete="SET NULL"), nullable=True
+    )
+    cultural_significance_document_id = Column(
+        UUID(as_uuid=True), ForeignKey("documents.id", ondelete="SET NULL"), nullable=True
+    )
 
     # Provenance
     created_by_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     verified_by_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
     is_verified = Column(Boolean, default=False, nullable=False, index=True)
-    status = Column(SQLEnum(LexemeStatus, name="lexemestatus"), default=LexemeStatus.DRAFT, nullable=False, index=True)
+    status = Column(
+        SQLEnum(LexemeStatus, name="lexemestatus", values_callable=lambda e: [m.value for m in e]),
+        default=LexemeStatus.DRAFT,
+        nullable=False,
+        index=True,
+    )
     source = Column(String(500), nullable=True)
     notes = Column(Text, nullable=True)
 
@@ -75,8 +97,12 @@ class Lexeme(Base):
 
     # Relationships
     language = relationship("Language", back_populates="lexemes")
-    created_by = relationship("User", foreign_keys=[created_by_id], back_populates="lexemes_created")
-    verified_by = relationship("User", foreign_keys=[verified_by_id], back_populates="lexemes_verified")
+    created_by = relationship(
+        "User", foreign_keys=[created_by_id], back_populates="lexemes_created"
+    )
+    verified_by = relationship(
+        "User", foreign_keys=[verified_by_id], back_populates="lexemes_verified"
+    )
 
     forms = relationship(
         "WordForm",
@@ -88,7 +114,9 @@ class Lexeme(Base):
     tags = relationship("Tag", secondary=lexeme_tags, back_populates="lexemes")
     images = relationship("Image", secondary=lexeme_images, backref="lexemes")
 
-    definitions = relationship("Document", secondary=lexeme_definitions, backref="lexemes_with_definition")
+    definitions = relationship(
+        "Document", secondary=lexeme_definitions, backref="lexemes_with_definition"
+    )
     etymology = relationship(
         "Document",
         foreign_keys=[etymology_document_id],
@@ -100,7 +128,9 @@ class Lexeme(Base):
         backref="lexemes_with_cultural_significance",
     )
 
-    texts = relationship("Text", secondary=lexeme_texts, back_populates="linked_lexemes", viewonly=True)
+    texts = relationship(
+        "Text", secondary=lexeme_texts, back_populates="linked_lexemes", viewonly=True
+    )
 
     # Symmetric self-referential M2Ms. Stored canonically (lexeme_id < other_id)
     # so we have to UNION both sides at read time to look undirected. The
