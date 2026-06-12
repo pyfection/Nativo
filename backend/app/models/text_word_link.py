@@ -102,8 +102,31 @@ class TextWordLink(Base):
         return self.word_form.form if self.word_form else None
 
     @property
+    def word_form_romanization(self) -> str | None:
+        return self.word_form.romanization if self.word_form else None
+
+    @property
+    def word_form_ipa(self) -> str | None:
+        return self.word_form.ipa_pronunciation if self.word_form else None
+
+    @property
     def lexeme_id(self):
         return self.word_form.lexeme_id if self.word_form else None
+
+    @property
+    def word_lemma(self) -> str | None:
+        return self.word_form.lexeme.lemma if self.word_form and self.word_form.lexeme else None
+
+    @property
+    def word_part_of_speech(self) -> str | None:
+        if not (self.word_form and self.word_form.lexeme):
+            return None
+        pos = self.word_form.lexeme.part_of_speech
+        return pos.value if pos is not None else None
+
+    @property
+    def word_notes(self) -> str | None:
+        return self.word_form.lexeme.notes if self.word_form and self.word_form.lexeme else None
 
     @property
     def word_language_id(self):

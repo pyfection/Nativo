@@ -197,6 +197,16 @@
   outline-offset: 2px;
 }
 
+/* Hovering a suggestion row pulses an accent outline around the matching
+   text in the document body so the user immediately sees what the row
+   refers to. Replaces the explicit "Select" button. */
+.linking-token.suggestion-hover {
+  outline: 2px dashed var(--accent);
+  outline-offset: 2px;
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+  color: var(--cream);
+}
+
 /* Selection preview */
 .selection-preview {
   display: flex;
@@ -407,15 +417,72 @@
   gap: 8px;
 }
 
-.suggestion-snippet span {
-  font-weight: 600;
+.suggestion-snippet .suggestion-source-word {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 500;
   color: var(--cream);
+  letter-spacing: -0.01em;
 }
 
-.suggestion-snippet small {
-  display: block;
+.suggestion-snippet .suggestion-link-word {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+  color: var(--cream-dim);
+  font-size: 0.85rem;
+  cursor: help;
+  border-bottom: 1px dotted var(--sage);
+  padding-bottom: 1px;
+}
+
+.suggestion-pos {
   color: var(--sage);
-  margin-top: 4px;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 1px 7px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 999px;
+}
+
+.suggestion-item {
+  cursor: pointer;
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+.suggestion-item:hover {
+  border-color: rgba(245, 239, 226, 0.22);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Selection panel: rich "Word: meara" line */
+.selection-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  cursor: help;
+}
+.selection-meta-word {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--cream);
+}
+.selection-meta-pos {
+  color: var(--sage);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 2px 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 999px;
+}
+.selection-meta-form {
+  color: var(--cream-dim);
+  font-style: italic;
   font-size: 0.85rem;
 }
 

@@ -1,6 +1,6 @@
 /**
  * Text type definitions
- * 
+ *
  * Texts contain actual content in specific languages.
  * Multiple Texts can belong to the same Document (translations).
  */
@@ -12,7 +12,7 @@ export enum DocumentType {
   BOOK = 'book',
   ARTICLE = 'article',
   TRANSCRIPTION = 'transcription',
-  
+
   // Text snippets
   DEFINITION = 'definition',
   LITERAL_TRANSLATION = 'literal_translation',
@@ -22,7 +22,7 @@ export enum DocumentType {
   CULTURAL_SIGNIFICANCE = 'cultural_significance',
   TRANSLATION = 'translation',
   NOTE = 'note',
-  
+
   OTHER = 'other',
 }
 
@@ -46,7 +46,15 @@ export interface TextWordLink {
   created_at: string;
   updated_at: string;
   verified_at?: string | null;
+  // Surface form (matching word_form_id)
   word_text?: string | null;
+  word_form_romanization?: string | null;
+  word_form_ipa?: string | null;
+  // Parent lexeme (the dictionary entry)
+  lexeme_id?: string | null;
+  word_lemma?: string | null;
+  word_part_of_speech?: string | null;
+  word_notes?: string | null;
   word_language_id?: string | null;
 }
 
@@ -135,4 +143,3 @@ export interface TextStatistics {
   texts_with_linked_words: number;
   primary_texts: number;
 }
-

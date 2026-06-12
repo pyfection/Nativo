@@ -228,6 +228,27 @@ interface EnrichedSearchHit extends LexemeWithForms {
   translations: TranslationLink[];
 }
 
+/**
+ * Build a multi-line tooltip for a TextWordLink, using whatever the backend
+ * sent on it (word_lemma / word_part_of_speech / word_form_ipa / etc.). Used
+ * for the suggestion-list rows AND the Selection panel's "Word:" line.
+ */
+function buildLinkTooltip(link: TextWordLink): string {
+  const lemma = link.word_lemma ?? link.word_text;
+  const isInflection =
+    link.word_text && link.word_lemma && link.word_text !== link.word_lemma;
+  return [
+    lemma,
+    link.word_part_of_speech ? `[${link.word_part_of_speech}]` : '',
+    isInflection ? `Surface form: ${link.word_text}` : '',
+    link.word_form_romanization ? `Romanization: ${link.word_form_romanization}` : '',
+    link.word_form_ipa ? `IPA: /${link.word_form_ipa}/` : '',
+    link.word_notes ? `Notes: ${link.word_notes}` : '',
+  ]
+    .filter(Boolean)
+    .join('\n');
+}
+
 interface DocumentLinkingProps {
   selectedLanguage: Language;
   languages: Language[];
@@ -248,6 +269,10 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  // Tracks which suggestion the user is currently hovering, so the matching
+  // span in the document body can be visually highlighted. {start, end} is
+  // a char range within the active text.
+  const [hoveredSpan, setHoveredSpan] = useState<{ start: number; end: number } | null>(null);
   const [isSuggesting, setIsSuggesting] = useState(false);
 
   const [searchResults, setSearchResults] = useState<EnrichedSearchHit[]>([]);
@@ -378,7 +403,11 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
     });
 
     const annotated: AnnotatedToken[] = [];
-    const tokenRegex = /\b[\w'-]+\b/g;
+    // Unicode-aware: \p{L}+\p{M} covers letters with diacritics like "ó",
+    // \p{N} keeps digit-bearing tokens, and we allow apostrophe + hyphen
+    // for contractions like "gibd's". The previous /[\w'-]+/ only matched
+    // ASCII so it sliced "sógn" into "s"/"gn" and similar.
+    const tokenRegex = /[\p{L}\p{M}\p{N}'-]+/gu;
     let match: RegExpExecArray | null;
     let cursor = 0;
 
@@ -1099,6 +1128,11 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                   token.end <= selectedSpan.end
                     ? 'selected'
                     : '',
+                  hoveredSpan &&
+                  token.start >= hoveredSpan.start &&
+                  token.end <= hoveredSpan.end
+                    ? 'suggestion-hover'
+                    : '',
                 ]
                   .filter(Boolean)
                   .join(' ')}
@@ -1132,9 +1166,28 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                 </div>
                 {selectedSpan.link ? (
                   <div className="selection-actions">
-                    <div className="selection-meta">
+                    <div
+                      className="selection-meta"
+                      title={buildLinkTooltip(selectedSpan.link)}
+                    >
                       <strong>Word:</strong>{' '}
-                      {selectedSpan.link.word_text ?? `#${selectedSpan.link.word_form_id}`}
+                      <span className="selection-meta-word">
+                        {selectedSpan.link.word_lemma ??
+                          selectedSpan.link.word_text ??
+                          `#${selectedSpan.link.word_form_id}`}
+                      </span>
+                      {selectedSpan.link.word_part_of_speech && (
+                        <span className="selection-meta-pos">
+                          {selectedSpan.link.word_part_of_speech}
+                        </span>
+                      )}
+                      {selectedSpan.link.word_text &&
+                        selectedSpan.link.word_lemma &&
+                        selectedSpan.link.word_text !== selectedSpan.link.word_lemma && (
+                          <span className="selection-meta-form">
+                            (form: {selectedSpan.link.word_text})
+                          </span>
+                        )}
                     </div>
                     <div className="selection-buttons">
                       <button
@@ -1585,47 +1638,57 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
               <p>No suggestions available. Try regenerating to get new suggestions.</p>
             ) : (
               <ul className="suggestion-list">
-                {suggestions.map((link) => (
-                  <li key={link.id} className="suggestion-item">
-                    <div className="suggestion-snippet">
-                      <span>{activeText.content.slice(link.start_char, link.end_char)}</span>
-                      <small>{link.word_text ?? `Word #${link.word_form_id}`}</small>
-                    </div>
-                    <div className="suggestion-actions">
-                      <button
-                        className="btn-secondary"
-                        onClick={() => {
-                          selectRangeInText(link.start_char, link.end_char);
-                          setSelectedSpan({
-                            start: link.start_char,
-                            end: link.end_char,
-                            text: activeText.content.slice(link.start_char, link.end_char),
-                            link,
-                          });
-                        }}
-                        title="Jump to this span in the text and load it into the Selection panel for closer review."
-                      >
-                        Select
-                      </button>
-                      <button
-                        className="btn-primary"
-                        onClick={() => handleConfirmLink(link)}
-                        disabled={!canEdit || isSaving}
-                        title="Accept this suggestion as a confirmed link without leaving the suggestions list."
-                      >
-                        Confirm
-                      </button>
-                      <button
-                        className="btn-secondary"
-                        onClick={() => handleRejectLink(link)}
-                        disabled={!canEdit || isSaving}
-                        title="Mark this suggestion as wrong. It won't be re-proposed by future Regenerate runs."
-                      >
-                        Reject
-                      </button>
-                    </div>
-                  </li>
-                ))}
+                {suggestions.map((link) => {
+                  const linkLabel = link.word_lemma ?? link.word_text ?? `Word #${link.word_form_id}`;
+                  const linkTooltip = buildLinkTooltip(link);
+                  return (
+                    <li
+                      key={link.id}
+                      className="suggestion-item"
+                      // Hovering anywhere on the row highlights the matching
+                      // span in the document body. Clears on mouse-leave.
+                      onMouseEnter={() =>
+                        setHoveredSpan({ start: link.start_char, end: link.end_char })
+                      }
+                      onMouseLeave={() => setHoveredSpan(null)}
+                    >
+                      <div className="suggestion-snippet">
+                        <span
+                          className="suggestion-source-word"
+                          title="Span from the document text that the suggestion applies to. Hover the row to highlight it in the document."
+                        >
+                          {activeText.content.slice(link.start_char, link.end_char)}
+                        </span>
+                        <small className="suggestion-link-word" title={linkTooltip}>
+                          {linkLabel}
+                          {link.word_part_of_speech && (
+                            <span className="suggestion-pos">
+                              {link.word_part_of_speech}
+                            </span>
+                          )}
+                        </small>
+                      </div>
+                      <div className="suggestion-actions">
+                        <button
+                          className="btn-primary"
+                          onClick={() => handleConfirmLink(link)}
+                          disabled={!canEdit || isSaving}
+                          title="Accept this suggestion as a confirmed link without leaving the suggestions list."
+                        >
+                          Confirm
+                        </button>
+                        <button
+                          className="btn-secondary"
+                          onClick={() => handleRejectLink(link)}
+                          disabled={!canEdit || isSaving}
+                          title="Mark this suggestion as wrong. It won't be re-proposed by future Regenerate runs."
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </section>
