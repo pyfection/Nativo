@@ -371,15 +371,17 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
     fetchDocument();
   }, [fetchDocument]);
 
+  // Toast auto-dismiss timers. Success messages dismiss faster; errors
+  // linger so the user has time to read them.
   useEffect(() => {
     if (!actionMessage) return;
-    const timer = setTimeout(() => setActionMessage(null), 3000);
+    const timer = setTimeout(() => setActionMessage(null), 4000);
     return () => clearTimeout(timer);
   }, [actionMessage]);
 
   useEffect(() => {
     if (!actionError) return;
-    const timer = setTimeout(() => setActionError(null), 4000);
+    const timer = setTimeout(() => setActionError(null), 8000);
     return () => clearTimeout(timer);
   }, [actionError]);
 
@@ -1093,8 +1095,41 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
         </div>
       )}
 
-      {actionError && <div className="document-linking-error">{actionError}</div>}
-      {actionMessage && <div className="document-linking-message">{actionMessage}</div>}
+      {/* Toasts float in the bottom-right corner so they don't shift the
+          page layout when they appear. Click × to dismiss; auto-dismiss
+          after a few seconds (longer for errors so they're readable). */}
+      {(actionError || actionMessage) && (
+        <div className="document-linking-toasts" role="status" aria-live="polite">
+          {actionError && (
+            <div className="document-linking-toast toast-error">
+              <span className="toast-body">{actionError}</span>
+              <button
+                type="button"
+                className="toast-dismiss"
+                onClick={() => setActionError(null)}
+                aria-label="Dismiss error"
+                title="Dismiss"
+              >
+                ×
+              </button>
+            </div>
+          )}
+          {actionMessage && (
+            <div className="document-linking-toast toast-success">
+              <span className="toast-body">{actionMessage}</span>
+              <button
+                type="button"
+                className="toast-dismiss"
+                onClick={() => setActionMessage(null)}
+                aria-label="Dismiss message"
+                title="Dismiss"
+              >
+                ×
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="document-linking-grid">
         <aside className="document-linking-sidebar">
