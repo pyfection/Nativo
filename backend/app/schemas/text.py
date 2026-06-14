@@ -103,6 +103,7 @@ class TextWordLink(BaseModel):
     word_text: str | None = None
     word_form_romanization: str | None = None
     word_form_ipa: str | None = None
+    word_form_notes: str | None = None
     # Lexeme-level info (the dictionary entry the form belongs to)
     lexeme_id: UUID | None = None
     word_lemma: str | None = None

@@ -229,21 +229,43 @@ interface EnrichedSearchHit extends LexemeWithForms {
 }
 
 /**
- * Build a multi-line tooltip for a TextWordLink, using whatever the backend
- * sent on it (word_lemma / word_part_of_speech / word_form_ipa / etc.). Used
- * for the suggestion-list rows AND the Selection panel's "Word:" line.
+ * Build a tooltip describing the dictionary entry a link points at. Used for
+ * both the Suggestions list and the Selection panel. The visible row only
+ * shows the form (e.g. "is"); the tooltip carries the disambiguating
+ * metadata — most importantly the parent lemma when the form is an
+ * inflection (e.g. "is" → lemma "sei").
+ *
+ * Shape:
+ *   <form>
+ *   Form of "<lemma>" — <first-line of lemma notes>          (only if form ≠ lemma)
+ *   <word_form_notes>                                         (e.g. "3sg present indicative")
+ *   /<romanization>/ · /<IPA>/                               (only if present)
+ *   <lemma notes>                                             (full notes block)
  */
 function buildLinkTooltip(link: TextWordLink): string {
-  const lemma = link.word_lemma ?? link.word_text;
-  const isInflection =
-    link.word_text && link.word_lemma && link.word_text !== link.word_lemma;
+  const form = link.word_text ?? '';
+  const lemma = link.word_lemma;
+  const isInflection = !!(lemma && form && lemma !== form);
+  const lemmaMeaningSnippet = link.word_notes?.split(/[.\n]/)[0]?.trim();
+  const pronunciation = [
+    link.word_form_romanization ? `/${link.word_form_romanization}/` : '',
+    link.word_form_ipa ? `[${link.word_form_ipa}]` : '',
+  ]
+    .filter(Boolean)
+    .join(' · ');
   return [
-    lemma,
-    link.word_part_of_speech ? `[${link.word_part_of_speech}]` : '',
-    isInflection ? `Surface form: ${link.word_text}` : '',
-    link.word_form_romanization ? `Romanization: ${link.word_form_romanization}` : '',
-    link.word_form_ipa ? `IPA: /${link.word_form_ipa}/` : '',
-    link.word_notes ? `Notes: ${link.word_notes}` : '',
+    form,
+    isInflection
+      ? `Form of "${lemma}"${lemmaMeaningSnippet ? ` — ${lemmaMeaningSnippet}` : ''}`
+      : '',
+    link.word_form_notes ?? '',
+    pronunciation,
+    // Avoid duplicating the lemma meaning snippet we already showed above.
+    link.word_notes && link.word_notes !== lemmaMeaningSnippet
+      ? link.word_notes
+      : !isInflection && link.word_notes
+        ? link.word_notes
+        : '',
   ]
     .filter(Boolean)
     .join('\n');
@@ -1172,8 +1194,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                     >
                       <strong>Word:</strong>{' '}
                       <span className="selection-meta-word">
-                        {selectedSpan.link.word_lemma ??
-                          selectedSpan.link.word_text ??
+                        {selectedSpan.link.word_text ??
                           `#${selectedSpan.link.word_form_id}`}
                       </span>
                       {selectedSpan.link.word_part_of_speech && (
@@ -1181,13 +1202,6 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                           {selectedSpan.link.word_part_of_speech}
                         </span>
                       )}
-                      {selectedSpan.link.word_text &&
-                        selectedSpan.link.word_lemma &&
-                        selectedSpan.link.word_text !== selectedSpan.link.word_lemma && (
-                          <span className="selection-meta-form">
-                            (form: {selectedSpan.link.word_text})
-                          </span>
-                        )}
                     </div>
                     <div className="selection-buttons">
                       <button
@@ -1639,7 +1653,13 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
             ) : (
               <ul className="suggestion-list">
                 {suggestions.map((link) => {
-                  const linkLabel = link.word_lemma ?? link.word_text ?? `Word #${link.word_form_id}`;
+                  // The row shows ONE word — the form being linked, which is
+                  // also the text in the document (they are the same string
+                  // by construction). Lemma + inflection role live in the
+                  // hover tooltip; the row stays scannable.
+                  const formLabel =
+                    link.word_text ??
+                    activeText.content.slice(link.start_char, link.end_char);
                   const linkTooltip = buildLinkTooltip(link);
                   return (
                     <li
@@ -1651,22 +1671,15 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                         setHoveredSpan({ start: link.start_char, end: link.end_char })
                       }
                       onMouseLeave={() => setHoveredSpan(null)}
+                      title={linkTooltip}
                     >
-                      <div className="suggestion-snippet">
-                        <span
-                          className="suggestion-source-word"
-                          title="Span from the document text that the suggestion applies to. Hover the row to highlight it in the document."
-                        >
-                          {activeText.content.slice(link.start_char, link.end_char)}
-                        </span>
-                        <small className="suggestion-link-word" title={linkTooltip}>
-                          {linkLabel}
-                          {link.word_part_of_speech && (
-                            <span className="suggestion-pos">
-                              {link.word_part_of_speech}
-                            </span>
-                          )}
-                        </small>
+                      <div className="suggestion-headline">
+                        <span className="suggestion-form">{formLabel}</span>
+                        {link.word_part_of_speech && (
+                          <span className="suggestion-pos">
+                            {link.word_part_of_speech}
+                          </span>
+                        )}
                       </div>
                       <div className="suggestion-actions">
                         <button

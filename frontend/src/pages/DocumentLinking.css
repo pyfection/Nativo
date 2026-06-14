@@ -417,39 +417,36 @@
   gap: 8px;
 }
 
-.suggestion-snippet .suggestion-source-word {
+/* Suggestion rows show ONE word — the form being linked, plus a POS chip.
+   All the lemma / inflection / pronunciation context lives in the row's
+   hover tooltip so the row itself stays scannable. */
+.suggestion-headline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.suggestion-form {
   font-family: var(--font-serif);
-  font-size: 1.05rem;
+  font-size: 1.15rem;
   font-weight: 500;
   color: var(--cream);
   letter-spacing: -0.01em;
-}
-
-.suggestion-snippet .suggestion-link-word {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-top: 6px;
-  color: var(--cream-dim);
-  font-size: 0.85rem;
-  cursor: help;
-  border-bottom: 1px dotted var(--sage);
-  padding-bottom: 1px;
 }
 
 .suggestion-pos {
   color: var(--sage);
   font-size: 0.65rem;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  padding: 1px 7px;
+  letter-spacing: 0.12em;
+  padding: 2px 9px;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 999px;
 }
 
 .suggestion-item {
-  cursor: pointer;
+  cursor: help;
   transition: border-color 0.18s ease, background 0.18s ease;
 }
 .suggestion-item:hover {
@@ -457,17 +454,17 @@
   background: rgba(255, 255, 255, 0.05);
 }
 
-/* Selection panel: rich "Word: meara" line */
+/* Selection panel: matching single-word row */
 .selection-meta {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
   cursor: help;
 }
 .selection-meta-word {
   font-family: var(--font-serif);
-  font-size: 1.05rem;
+  font-size: 1.15rem;
   font-weight: 500;
   color: var(--cream);
 }
@@ -475,15 +472,10 @@
   color: var(--sage);
   font-size: 0.65rem;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  padding: 2px 8px;
+  letter-spacing: 0.12em;
+  padding: 2px 9px;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 999px;
-}
-.selection-meta-form {
-  color: var(--cream-dim);
-  font-style: italic;
-  font-size: 0.85rem;
 }
 
 .suggestion-actions {

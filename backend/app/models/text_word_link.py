@@ -110,6 +110,11 @@ class TextWordLink(Base):
         return self.word_form.ipa_pronunciation if self.word_form else None
 
     @property
+    def word_form_notes(self) -> str | None:
+        """Per-form notes (e.g. '3sg present indicative')."""
+        return self.word_form.notes if self.word_form else None
+
+    @property
     def lexeme_id(self):
         return self.word_form.lexeme_id if self.word_form else None
 

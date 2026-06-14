@@ -50,6 +50,7 @@ export interface TextWordLink {
   word_text?: string | null;
   word_form_romanization?: string | null;
   word_form_ipa?: string | null;
+  word_form_notes?: string | null;
   // Parent lexeme (the dictionary entry)
   lexeme_id?: string | null;
   word_lemma?: string | null;
