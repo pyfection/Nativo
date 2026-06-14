@@ -24,15 +24,14 @@
   text-align: center;
 }
 
-/* The yellow "no permission" notice WordList shows when the user
-   can't edit the selected language. */
-.word-list-page > div[style*='fff3cd'] {
-  background: rgba(245, 158, 11, 0.1) !important;
-  border: 1px solid rgba(245, 158, 11, 0.3) !important;
-  color: #f6c25c !important;
-  border-radius: 12px !important;
-  margin: 16px clamp(20px, 5vw, 64px) !important;
-}
-.word-list-page > div[style*='fff3cd'] p {
-  color: #f6c25c !important;
+.word-list-permission-notice {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #f6c25c;
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin: 16px clamp(20px, 5vw, 64px);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  max-width: 1180px;
 }

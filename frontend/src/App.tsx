@@ -38,12 +38,16 @@ export interface Language {
   };
 }
 
-// Default color scheme for languages without colors
+// Default color scheme for languages without DB-stored colours. These five
+// values feed `getThemeStyles()` in styles/theme.ts, which derives the full
+// dark palette via HSL shifts. The primary tone here is a calm teal so any
+// unconfigured language reads as "Nativo brand" rather than dropping into
+// the old saddle-brown light theme.
 const DEFAULT_COLOR_SCHEME = {
-  primary: '#8B4513',
-  secondary: '#D2691E',
-  accent: '#CD853F',
-  background: '#FFF8DC',
+  primary: '#5DA9E9',
+  secondary: '#06243f',
+  accent: '#A9C2BD',
+  background: '#0a2733',
 };
 
 // Convert API language to frontend Language type

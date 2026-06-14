@@ -98,10 +98,9 @@ export default function WordList({ selectedLanguage }: WordListProps) {
       </div>
 
       {!canEdit && selectedLanguage && (
-        <div style={{ padding: '1rem', backgroundColor: '#fff3cd', border: '1px solid #ffc107', borderRadius: '4px', marginBottom: '1rem' }}>
-          <p style={{ margin: 0, color: '#856404' }}>
-            You don't have permission to add words to this language. Contact an administrator to request access.
-          </p>
+        <div className="word-list-permission-notice">
+          You don't have permission to add words to this language. Contact an
+          administrator to request access.
         </div>
       )}
 

@@ -71,7 +71,12 @@ export default function Dictionary({ selectedLanguage, languages }: DictionaryPr
       setResults(withTranslations);
     } catch (err: any) {
       console.error('Search error:', err);
-      setError(err.response?.data?.detail || 'Failed to search words');
+      // Surface the HTTP status when we have one so users can at least tell
+      // network errors apart from server 500s when reporting issues.
+      const status = err.response?.status;
+      const detail = err.response?.data?.detail;
+      const suffix = status ? ` (HTTP ${status})` : '';
+      setError(detail ? `${detail}${suffix}` : `Failed to search words${suffix}`);
     } finally {
       setLoading(false);
     }
