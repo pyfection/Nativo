@@ -5,6 +5,9 @@
     "subtitle": "A digitale blátfoam fia's festhóitn und eahóitn fo de bedrotn cbráha af da veit - duah grimne dokument, voatsámlunga und tonafnáma.",
     "subtitle_language": "Mia nemas af befoas' nima gibt."
   },
+  "home": {
+    "read_writing_standard": "De {{language}}-Cdandard les'n"
+  },
   "hero_v2": {
     "eyebrow": "Olle dsvoa vohan vad a cbráh cdui",
     "heading_pre": "Réts de",

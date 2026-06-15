@@ -80,6 +80,15 @@
   color: var(--sage);
 }
 
+.word-detail-standard-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+.word-detail-standard-link:hover {
+  text-decoration: underline;
+}
+
 .word-detail-notes {
   color: var(--cream-dim);
   line-height: 1.55;

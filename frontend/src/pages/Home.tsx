@@ -179,6 +179,18 @@ export default function Home({ selectedLanguage }: HomeProps) {
             <p className="language-strip-desc">{selectedLanguage.description}</p>
           )}
           <LanguageActionPanel />
+          {/* Most contributors will want to read the orthography rules before
+              they write a word; surface that link right next to the language
+              header so it's the most-visible reference on the page. */}
+          {selectedLanguage.writingStandardDocumentId && (
+            <Link
+              to={`/languages/${selectedLanguage.id}/standard`}
+              className="language-strip-standard"
+              title={`Read the orthography / writing rules for ${selectedLanguage.name}`}
+            >
+              📖 {t('home.read_writing_standard', { language: selectedLanguage.name })}
+            </Link>
+          )}
         </div>
       </section>
 

@@ -5,6 +5,9 @@
     "title_language": "{{language}} has been spoken for over a thousand years.",
     "subtitle_language": "We're documenting it before it isn't."
   },
+  "home": {
+    "read_writing_standard": "Read the {{language}} writing standard"
+  },
   "hero_v2": {
     "eyebrow": "A language falls silent every two weeks",
     "heading_pre": "Save the",

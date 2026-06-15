@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { LanguageResponse } from '../../services/languageService';
 import { useAuth } from '../../contexts/AuthContext';
 import JoinLanguageModal from '../common/JoinLanguageModal';
@@ -27,11 +28,12 @@ export default function LanguageCard({ language, onLanguageJoined }: LanguageCar
     iso: language.iso_639_3 || '',
     description: language.description || '',
     managed: language.managed,
+    writingStandardDocumentId: language.writing_standard_document_id ?? null,
     colorScheme: {
-      primary: language.primary_color || '#8B4513',
-      secondary: language.secondary_color || '#D2691E',
-      accent: language.accent_color || '#CD853F',
-      background: language.background_color || '#FFF8DC',
+      primary: language.primary_color || '#5DA9E9',
+      secondary: language.secondary_color || '#06243f',
+      accent: language.accent_color || '#A9C2BD',
+      background: language.background_color || '#0a2733',
     },
   };
 
@@ -120,7 +122,7 @@ export default function LanguageCard({ language, onLanguageJoined }: LanguageCar
           </div>
         )}
 
-        {/* Action button */}
+        {/* Action button + standard link */}
         <div className="language-card-actions">
           {!userProficiency ? (
             <button
@@ -136,6 +138,15 @@ export default function LanguageCard({ language, onLanguageJoined }: LanguageCar
             <button className="btn-manage" disabled title="Coming soon">
               Manage
             </button>
+          )}
+          {language.writing_standard_document_id && (
+            <Link
+              to={`/languages/${language.id}/standard`}
+              className="btn-standard"
+              title={`Read the ${language.name} orthography / writing rules`}
+            >
+              📖 Standard
+            </Link>
           )}
         </div>
       </div>

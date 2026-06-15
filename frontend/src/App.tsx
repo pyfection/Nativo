@@ -10,6 +10,7 @@ import Languages from './pages/Languages';
 import WordList from './pages/WordList';
 import AddWord from './pages/AddWord';
 import WordDetail from './pages/WordDetail';
+import WritingStandard from './pages/WritingStandard';
 import Dictionary from './pages/Dictionary';
 import DocumentList from './pages/DocumentList';
 import DocumentDetail from './pages/DocumentDetail';
@@ -31,6 +32,8 @@ export interface Language {
   iso: string;
   description: string;
   managed: boolean;
+  /** Document promoted as this language's writing standard, or null. */
+  writingStandardDocumentId: string | null;
   colorScheme: {
     primary: string;
     secondary: string;
@@ -60,6 +63,7 @@ function convertLanguage(apiLang: LanguageResponse): Language {
     iso: apiLang.iso_639_3 || '',
     description: apiLang.description || '',
     managed: apiLang.managed,
+    writingStandardDocumentId: apiLang.writing_standard_document_id ?? null,
     colorScheme: {
       primary: apiLang.primary_color || DEFAULT_COLOR_SCHEME.primary,
       secondary: apiLang.secondary_color || DEFAULT_COLOR_SCHEME.secondary,
@@ -260,6 +264,22 @@ function App() {
                     <Languages />
                   </AppLayout>
                 </ProtectedRoute>
+              }
+            />
+            {/* Public read-only writing-standard reference per language. */}
+            <Route
+              path="/languages/:id/standard"
+              element={
+                <AppLayout
+                  selectedLanguage={selectedLanguage!}
+                  onLanguageChange={setSelectedLanguage}
+                  languages={languages}
+                >
+                  <WritingStandard
+                    selectedLanguage={selectedLanguage!}
+                    languages={languages}
+                  />
+                </AppLayout>
               }
             />
 

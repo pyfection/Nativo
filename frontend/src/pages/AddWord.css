@@ -116,6 +116,29 @@
   }
 }
 
+/* ---------- Writing-standard hint banner ---------- */
+.add-word-standard-hint {
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
+  border-radius: 12px;
+  color: var(--cream-dim);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.add-word-standard-hint a {
+  color: var(--accent);
+  font-weight: 500;
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 60%, transparent);
+  transition: border-color 0.18s ease;
+}
+.add-word-standard-hint a:hover {
+  border-bottom-color: var(--accent);
+}
+
 /* ---------- Additional inflected forms ---------- */
 .additional-forms {
   margin-top: 12px;

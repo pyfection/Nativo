@@ -6,6 +6,7 @@ export const DOCUMENT_TYPE_OPTIONS: Array<{ value: DocumentType; label: string }
   { value: DocumentType.BOOK, label: 'Book' },
   { value: DocumentType.ARTICLE, label: 'Article' },
   { value: DocumentType.TRANSCRIPTION, label: 'Transcription' },
+  { value: DocumentType.WRITING_STANDARD, label: 'Writing standard' },
   { value: DocumentType.DEFINITION, label: 'Definition' },
   { value: DocumentType.LITERAL_TRANSLATION, label: 'Literal Translation' },
   { value: DocumentType.CONTEXT_NOTE, label: 'Context Note' },
@@ -38,5 +39,3 @@ export function getDocumentTypeLabel(type: DocumentType | string | undefined): s
 
   return label;
 }
-
-

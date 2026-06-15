@@ -151,6 +151,18 @@ export default function WordDetail({ languages }: WordDetailProps) {
         {language && (
           <p className="word-detail-language">
             {language.name} <span className="muted">· {language.nativeName}</span>
+            {language.writingStandardDocumentId && (
+              <>
+                {' · '}
+                <Link
+                  to={`/languages/${language.id}/standard`}
+                  className="word-detail-standard-link"
+                  title={`${language.name} writing standard`}
+                >
+                  📖 Standard
+                </Link>
+              </>
+            )}
           </p>
         )}
         {lexeme.notes && <p className="word-detail-notes">{lexeme.notes}</p>}

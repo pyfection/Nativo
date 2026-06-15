@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import documentService from '../services/documentService';
+import languageService from '../services/languageService';
 import { DocumentWithTexts } from '../types/document';
 import { Text } from '../types/text';
 import { Language } from '../App';
@@ -16,7 +17,15 @@ interface DocumentDetailProps {
 export default function DocumentDetail({ selectedLanguage, languages }: DocumentDetailProps) {
   const { documentId } = useParams<{ documentId: string }>();
   const navigate = useNavigate();
-  const { canEditLanguage } = useAuth();
+  const { canEditLanguage, isAdmin } = useAuth();
+  // Local mirror so the button can flip immediately after a promote/demote
+  // round-trip without waiting for the parent's languages prop to re-fetch.
+  // Set is keyed by language_id; presence means "this language has THIS
+  // document as its writing standard right now".
+  const [languagesUsingThisStandard, setLanguagesUsingThisStandard] = useState<
+    Set<string>
+  >(new Set());
+  const [savingStandard, setSavingStandard] = useState(false);
 
   const [document, setDocument] = useState<DocumentWithTexts | null>(null);
   const [activeTextId, setActiveTextId] = useState<string | null>(null);
@@ -37,6 +46,14 @@ export default function DocumentDetail({ selectedLanguage, languages }: Document
         const data = await documentService.getById(documentId);
         setDocument(data);
         setError('');
+        // Seed the pinned-language set so the button shows the right label.
+        setLanguagesUsingThisStandard(
+          new Set(
+            languages
+              .filter((l) => l.writingStandardDocumentId === documentId)
+              .map((l) => l.id),
+          ),
+        );
       } catch (err: any) {
         setError(err?.response?.data?.detail || 'Failed to load document');
       } finally {
@@ -45,6 +62,8 @@ export default function DocumentDetail({ selectedLanguage, languages }: Document
     };
 
     fetchDocument();
+    // languages intentionally not in deps — we only re-seed on doc id change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [documentId]);
 
   useEffect(() => {
@@ -164,6 +183,42 @@ export default function DocumentDetail({ selectedLanguage, languages }: Document
           <button className="btn-secondary" onClick={handleLink}>
             Link Words
           </button>
+          {isAdmin && activeText?.language_id && documentId && (
+            <button
+              className="btn-secondary"
+              disabled={savingStandard}
+              title={
+                languagesUsingThisStandard.has(activeText.language_id)
+                  ? 'Remove this document as the language’s writing standard.'
+                  : 'Promote this document to be the language’s writing standard. It will then appear on the language strip on Home and on /languages/<id>/standard.'
+              }
+              onClick={async () => {
+                if (!activeText.language_id) return;
+                setSavingStandard(true);
+                try {
+                  const alreadyPinned = languagesUsingThisStandard.has(activeText.language_id);
+                  await languageService.setWritingStandard(
+                    activeText.language_id,
+                    alreadyPinned ? null : documentId,
+                  );
+                  setLanguagesUsingThisStandard((prev) => {
+                    const next = new Set(prev);
+                    if (alreadyPinned) next.delete(activeText.language_id!);
+                    else next.add(activeText.language_id!);
+                    return next;
+                  });
+                } catch (err: any) {
+                  alert(err.response?.data?.detail || 'Failed to update writing standard');
+                } finally {
+                  setSavingStandard(false);
+                }
+              }}
+            >
+              {languagesUsingThisStandard.has(activeText.language_id)
+                ? '✓ Writing standard'
+                : '📖 Mark as writing standard'}
+            </button>
+          )}
           {canEdit && (
             <button className="btn-primary" onClick={handleEdit}>
               Edit Document
@@ -240,5 +295,3 @@ export default function DocumentDetail({ selectedLanguage, languages }: Document
     </div>
   );
 }
-
-

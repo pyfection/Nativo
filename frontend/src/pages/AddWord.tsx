@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Language } from '../App';
 import wordService, { CreateLexemeData } from '../services/wordService';
@@ -244,6 +244,18 @@ export default function AddWord({ selectedLanguage }: AddWordProps) {
           Adding word to: <strong>{selectedLanguage.name} ({selectedLanguage.nativeName})</strong>
         </p>
       </div>
+
+      {/* Surface the orthography rules right before the contributor types the
+          word — this is the moment they need them. */}
+      {selectedLanguage.writingStandardDocumentId && (
+        <div className="add-word-standard-hint">
+          📖 First time writing in {selectedLanguage.name}?{' '}
+          <Link to={`/languages/${selectedLanguage.id}/standard`}>
+            Read the writing standard
+          </Link>{' '}
+          before you start, so your spelling matches the dictionary.
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="word-form">
         {error && <div className="error-message">{error}</div>}

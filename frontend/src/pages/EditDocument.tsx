@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams, useLocation } from 'react-router-dom';
 import documentService from '../services/documentService';
 import { DocumentWithTexts } from '../types/document';
-import { Text, TextUpdate, DocumentType } from '../types/text';
+import { Text, TextUpdate, DocumentType, TextFormat } from '../types/text';
 import { Language } from '../App';
 import { useAuth } from '../contexts/AuthContext';
 import { DOCUMENT_TYPE_OPTIONS, getDocumentTypeLabel } from '../utils/documentTypes';
@@ -26,6 +26,7 @@ export default function EditDocument({ selectedLanguage, languages }: EditDocume
     title: '',
     content: '',
     document_type: DocumentType.STORY,
+    format: TextFormat.PLAIN,
     source: '',
     notes: '',
   });
@@ -77,6 +78,7 @@ export default function EditDocument({ selectedLanguage, languages }: EditDocume
         title: preferred.title,
         content: preferred.content,
         document_type: preferred.document_type,
+        format: preferred.format ?? TextFormat.PLAIN,
         source: preferred.source,
         notes: preferred.notes,
       });
@@ -107,6 +109,7 @@ export default function EditDocument({ selectedLanguage, languages }: EditDocume
       title: text.title,
       content: text.content,
       document_type: text.document_type,
+      format: text.format ?? TextFormat.PLAIN,
       source: text.source,
       notes: text.notes,
     });
@@ -120,7 +123,12 @@ export default function EditDocument({ selectedLanguage, languages }: EditDocume
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === 'document_type' ? (value as DocumentType) : value,
+      [name]:
+        name === 'document_type'
+          ? (value as DocumentType)
+          : name === 'format'
+            ? (value as TextFormat)
+            : value,
     }));
   };
 
@@ -137,6 +145,7 @@ export default function EditDocument({ selectedLanguage, languages }: EditDocume
       title: formData.title?.trim(),
       content: formData.content,
       document_type: formData.document_type,
+      format: formData.format,
       source: formData.source?.trim() || undefined,
       notes: formData.notes?.trim() || undefined,
     };
@@ -287,6 +296,25 @@ export default function EditDocument({ selectedLanguage, languages }: EditDocume
           </div>
 
           <div className="form-group">
+            <label
+              htmlFor="format"
+              title="How the content is rendered. Markdown enables headings, lists and tables — use this for writing-standard references."
+            >
+              Format
+            </label>
+            <select
+              id="format"
+              name="format"
+              value={formData.format ?? TextFormat.PLAIN}
+              onChange={handleFieldChange}
+              disabled={!canEdit || saving}
+            >
+              <option value={TextFormat.PLAIN}>Plain (prose)</option>
+              <option value={TextFormat.MARKDOWN}>Markdown</option>
+            </select>
+          </div>
+
+          <div className="form-group">
             <label htmlFor="source">Source</label>
             <input
               id="source"
@@ -336,5 +364,3 @@ export default function EditDocument({ selectedLanguage, languages }: EditDocume
     </div>
   );
 }
-
-

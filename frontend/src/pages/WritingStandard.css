@@ -1,0 +1,274 @@
+/* WritingStandard — long-form reading surface for /languages/:id/standard. */
+
+.writing-standard-page {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 32px clamp(20px, 5vw, 64px) 80px;
+  color: var(--cream);
+}
+
+.writing-standard-header {
+  margin-bottom: 24px;
+}
+
+.writing-standard-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 11px;
+  color: var(--accent);
+  margin: 0 0 8px;
+  font-weight: 600;
+}
+
+.writing-standard-title {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(34px, 4vw, 48px);
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  margin: 0;
+  color: var(--cream);
+}
+
+.writing-standard-native {
+  color: var(--cream-dim);
+  font-style: italic;
+  font-weight: 400;
+}
+
+.writing-standard-doc-title {
+  color: var(--cream-dim);
+  margin: 8px 0 0;
+  font-size: 0.95rem;
+}
+
+/* ---------- Empty / fallback states ---------- */
+.writing-standard-empty {
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 28px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+.writing-standard-empty p {
+  margin: 0;
+  color: var(--cream-dim);
+}
+
+.writing-standard-empty-hint {
+  color: var(--sage);
+  font-size: 0.92rem;
+  font-style: italic;
+}
+
+/* ---------- Text-switcher tabs ---------- */
+.writing-standard-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.writing-standard-tab {
+  font-family: inherit;
+  font-size: 0.9rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--line);
+  color: var(--cream-dim);
+  border-radius: 999px;
+  padding: 7px 14px;
+  cursor: pointer;
+  transition: 0.18s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.writing-standard-tab:hover {
+  border-color: rgba(245, 239, 226, 0.3);
+  color: var(--cream);
+}
+.writing-standard-tab.active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+}
+.writing-standard-tab-lang {
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+/* ---------- Long-form body ----------
+   Most of these targets are the elements produced by react-markdown. We
+   constrain the line length, give heading rhythm, and style tables for dark
+   mode. */
+.writing-standard-body {
+  font-size: 1.04rem;
+  line-height: 1.7;
+  color: var(--cream);
+}
+
+.writing-standard-body h1,
+.writing-standard-body h2,
+.writing-standard-body h3,
+.writing-standard-body h4 {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--cream);
+  margin-top: 1.6em;
+  margin-bottom: 0.4em;
+  line-height: 1.2;
+}
+
+.writing-standard-body h1 {
+  font-size: 1.9rem;
+}
+.writing-standard-body h2 {
+  font-size: 1.5rem;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.3em;
+}
+.writing-standard-body h3 {
+  font-size: 1.2rem;
+}
+.writing-standard-body h4 {
+  font-size: 1.05rem;
+  color: var(--cream-dim);
+}
+
+.writing-standard-body p {
+  margin: 0 0 1em;
+  color: var(--cream-dim);
+}
+
+.writing-standard-body strong {
+  color: var(--cream);
+}
+
+.writing-standard-body em {
+  color: var(--cream);
+  font-style: italic;
+}
+
+.writing-standard-body ul,
+.writing-standard-body ol {
+  margin: 0 0 1em;
+  padding-left: 1.5em;
+  color: var(--cream-dim);
+}
+
+.writing-standard-body li {
+  margin-bottom: 0.3em;
+}
+
+.writing-standard-body blockquote {
+  margin: 0 0 1em;
+  padding: 0.4em 1em;
+  border-left: 3px solid var(--accent);
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 0 8px 8px 0;
+  color: var(--cream-dim);
+  font-style: italic;
+}
+
+.writing-standard-body code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.92em;
+  padding: 1px 6px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  color: var(--cream);
+}
+
+.writing-standard-body pre {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px 16px;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  margin: 0 0 1em;
+}
+
+.writing-standard-body pre code {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.writing-standard-body a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.18s ease;
+}
+.writing-standard-body a:hover {
+  border-bottom-color: var(--accent);
+}
+
+.writing-standard-body hr {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: 2em 0;
+}
+
+/* ---------- Tables (GFM) ---------- */
+.writing-standard-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 1em;
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.writing-standard-body th,
+.writing-standard-body td {
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.writing-standard-body th {
+  background: rgba(255, 255, 255, 0.05);
+  font-weight: 600;
+  color: var(--cream);
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+}
+
+.writing-standard-body tr:last-child td {
+  border-bottom: none;
+}
+
+/* ---------- Plain-format fallback ---------- */
+.writing-standard-plain {
+  white-space: pre-wrap;
+  font-family: inherit;
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.writing-standard-footer {
+  margin-top: 32px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}

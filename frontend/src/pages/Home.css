@@ -121,6 +121,27 @@
   max-width: 56em;
 }
 
+.language-strip-standard {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 9px 18px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--line));
+  color: var(--accent);
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: 0.18s ease;
+}
+
+.language-strip-standard:hover {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  transform: translateY(-1px);
+}
+
 /* ---------- Stats sections ---------- */
 .stats-section {
   padding: 28px clamp(20px, 5vw, 64px);

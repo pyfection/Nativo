@@ -7,7 +7,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.models.text import DocumentType
+from app.models.text import DocumentType, TextFormat
 from app.models.text_word_link import TextWordLinkStatus
 
 
@@ -17,6 +17,7 @@ class TextBase(BaseModel):
     title: str = Field(..., min_length=1, max_length=500)
     content: str = Field(..., min_length=1)
     document_type: DocumentType
+    format: TextFormat = TextFormat.PLAIN
     language_id: UUID | None = None  # Language of the content
     document_id: UUID | None = None  # Parent document
     is_primary: bool = False
@@ -36,6 +37,7 @@ class TextUpdate(BaseModel):
     title: str | None = Field(None, min_length=1, max_length=500)
     content: str | None = Field(None, min_length=1)
     document_type: DocumentType | None = None
+    format: TextFormat | None = None
     language_id: UUID | None = None
     document_id: UUID | None = None
     is_primary: bool | None = None

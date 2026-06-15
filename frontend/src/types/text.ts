@@ -12,6 +12,7 @@ export enum DocumentType {
   BOOK = 'book',
   ARTICLE = 'article',
   TRANSCRIPTION = 'transcription',
+  WRITING_STANDARD = 'writing_standard',
 
   // Text snippets
   DEFINITION = 'definition',
@@ -30,6 +31,12 @@ export enum TextWordLinkStatus {
   SUGGESTED = 'suggested',
   CONFIRMED = 'confirmed',
   REJECTED = 'rejected',
+}
+
+/** How a Text's content should be rendered. Plain prose vs. markdown. */
+export enum TextFormat {
+  PLAIN = 'plain',
+  MARKDOWN = 'markdown',
 }
 
 export interface TextWordLink {
@@ -78,6 +85,7 @@ export interface Text {
   title: string;
   content: string;
   document_type: DocumentType;
+  format?: TextFormat;
   language_id?: string;
   document_id?: string;
   is_primary: boolean;
@@ -119,6 +127,7 @@ export interface TextUpdate {
   title?: string;
   content?: string;
   document_type?: DocumentType;
+  format?: TextFormat;
   language_id?: string;
   document_id?: string;
   is_primary?: boolean;

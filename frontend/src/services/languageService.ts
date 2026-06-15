@@ -12,6 +12,8 @@ export interface LanguageResponse {
   secondary_color: string | null;
   accent_color: string | null;
   background_color: string | null;
+  /** Document promoted as this language's canonical writing-standard reference. */
+  writing_standard_document_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -61,7 +63,19 @@ export const languageService = {
   async delete(id: string): Promise<void> {
     await api.delete(`/api/v1/languages/${id}`);
   },
+
+  /** Promote a Document as this language's canonical writing standard, or
+   *  pass `null` to clear it. Admin-only on the server side. */
+  async setWritingStandard(
+    languageId: string,
+    documentId: string | null,
+  ): Promise<LanguageResponse> {
+    const response = await api.put<LanguageResponse>(
+      `/api/v1/languages/${languageId}/writing-standard`,
+      { document_id: documentId },
+    );
+    return response.data;
+  },
 };
 
 export default languageService;
-
