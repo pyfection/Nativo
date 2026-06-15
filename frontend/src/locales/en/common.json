@@ -54,6 +54,7 @@
     "cta_add_word": "Add the first word",
     "cta_add_document": "Add the first document",
     "cta_audio_coming_soon": "Audio upload coming soon",
+    "cta_add_audio": "Record a pronunciation",
     "cta_join_to_contribute": "Sign up to contribute"
   },
   "action_panel": {

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
 import { Language } from '../App';
+import AudioRecorder from '../components/common/AudioRecorder';
 import { useAuth } from '../contexts/AuthContext';
 import wordService, {
   AntonymLink,
@@ -474,6 +475,16 @@ function FormsSection({ lexeme, canEdit, onChange, onMessage, onError }: FormsSe
                       </button>
                     </div>
                   )}
+                  {/* Per-form audio: a recorder + inline players for any
+                      existing recordings linked to this WordForm. */}
+                  <div className="form-row-audio">
+                    <AudioRecorder
+                      wordFormId={form.id}
+                      canEdit={canEdit}
+                      onMessage={onMessage}
+                      onError={onError}
+                    />
+                  </div>
                 </>
               )}
             </li>

@@ -95,9 +95,15 @@ export default function Home({ selectedLanguage }: HomeProps) {
         href="/audio"
         loading={statsLoading}
         zeroCta={
-          <span className="stat-cta-coming-soon" title={t('action_panel.upload_audio_coming_soon')}>
-            {t('stats.cta_audio_coming_soon')}
-          </span>
+          isAuthenticated ? (
+            <Link className="stat-cta-link" to="/words">
+              {t('stats.cta_add_audio')}
+            </Link>
+          ) : (
+            <Link className="stat-cta-link" to="/register">
+              {t('stats.cta_join_to_contribute')}
+            </Link>
+          )
         }
       />
       <StatCard

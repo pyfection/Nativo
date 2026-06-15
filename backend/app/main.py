@@ -4,6 +4,7 @@ Main FastAPI application for Nativo endangered language preservation platform.
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from starlette.middleware.sessions import SessionMiddleware
@@ -12,6 +13,7 @@ from app.admin import create_admin
 from app.api.v1.router import router as api_v1_router
 from app.config import settings
 from app.limiter import limiter
+from app.utils.file_storage import UPLOADS_ROOT
 
 # Create FastAPI application
 app = FastAPI(
@@ -46,6 +48,13 @@ app.add_middleware(
 
 # Include API router
 app.include_router(api_v1_router, prefix="/api/v1")
+
+# Serve user-uploaded files (audio recordings, future image attachments)
+# from /uploads/* so Audio rows can store a directly-fetchable URL path.
+# On Fly the same path is mounted from the persistent volume — without that
+# mount the directory still exists locally, files just don't survive restart.
+UPLOADS_ROOT.mkdir(parents=True, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=UPLOADS_ROOT), name="uploads")
 
 # Mount admin interface
 create_admin(app)

@@ -226,6 +226,12 @@
   align-self: start;
 }
 
+.form-row-audio {
+  grid-column: 1 / -1;
+  padding-top: 8px;
+  border-top: 1px dashed var(--line);
+}
+
 /* ---------- Form editor ---------- */
 .form-add,
 .form-row .form-editor {
