@@ -144,6 +144,56 @@
   border-radius: 999px;
 }
 
+/* ---------- Word forms strip (Dictionary results) ---------- */
+.word-text-link {
+  text-decoration: none;
+  color: inherit;
+}
+.word-text-link:hover .word-text {
+  color: var(--accent);
+}
+
+.word-ipa {
+  color: var(--sage);
+  font-size: 0.92rem;
+}
+
+.word-forms-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.word-forms-label {
+  color: var(--sage);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-right: 4px;
+}
+
+.word-form-chip {
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  color: var(--cream-dim);
+  padding: 3px 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+
+.word-form-chip-note {
+  font-family: var(--font-sans);
+  font-style: italic;
+  color: var(--sage);
+  font-size: 0.78rem;
+  margin-left: 2px;
+}
+
 .dictionary-trans-words {
   color: var(--cream-dim);
   font-size: 1rem;

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import wordService, {
   LexemeWithForms,
   TranslationLink,
@@ -185,19 +186,36 @@ export default function Dictionary({ selectedLanguage, languages }: DictionaryPr
           <div className="results-list">
             {results.map((lexeme) => {
               const lemmaForm = findLemmaForm(lexeme);
+              const otherForms = (lexeme.forms ?? []).filter((f) => !f.is_lemma);
               return (
                 <div key={lexeme.id} className="word-result-card">
                   <div className="word-header">
                     <div className="word-info">
-                      <h3 className="word-text">{lexeme.lemma}</h3>
+                      <Link to={`/words/${lexeme.id}`} className="word-text-link">
+                        <h3 className="word-text">{lexeme.lemma}</h3>
+                      </Link>
                       {lemmaForm?.romanization && (
                         <span className="word-romanization">({lemmaForm.romanization})</span>
+                      )}
+                      {lemmaForm?.ipa_pronunciation && (
+                        <span className="word-ipa">[{lemmaForm.ipa_pronunciation}]</span>
                       )}
                       {lexeme.part_of_speech && (
                         <span className="word-pos">{lexeme.part_of_speech}</span>
                       )}
                     </div>
                   </div>
+                  {otherForms.length > 0 && (
+                    <div className="word-forms-row">
+                      <span className="word-forms-label">Forms:</span>
+                      {otherForms.map((f) => (
+                        <span key={f.id} className="word-form-chip" title={f.notes ?? undefined}>
+                          {f.form}
+                          {f.notes && <em className="word-form-chip-note"> · {f.notes}</em>}
+                        </span>
+                      ))}
+                    </div>
+                  )}
 
                   {lexeme.translations.length > 0 ? (
                     <div className="translations-section">

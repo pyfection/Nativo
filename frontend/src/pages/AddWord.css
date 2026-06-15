@@ -115,3 +115,54 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ---------- Additional inflected forms ---------- */
+.additional-forms {
+  margin-top: 12px;
+  padding: 18px;
+  border: 1px dashed var(--line);
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.additional-forms legend {
+  padding: 0 8px;
+  color: var(--cream);
+  font-weight: 500;
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.additional-forms-hint {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 0.82rem;
+  color: var(--sage);
+  letter-spacing: normal;
+  text-transform: none;
+  margin-top: 2px;
+}
+
+.additional-form-row {
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.additional-form-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.additional-form-add {
+  align-self: flex-start;
+}

@@ -9,6 +9,7 @@ import Register from './pages/Register';
 import Languages from './pages/Languages';
 import WordList from './pages/WordList';
 import AddWord from './pages/AddWord';
+import WordDetail from './pages/WordDetail';
 import Dictionary from './pages/Dictionary';
 import DocumentList from './pages/DocumentList';
 import DocumentDetail from './pages/DocumentDetail';
@@ -289,6 +290,22 @@ function App() {
                     <AddWord selectedLanguage={selectedLanguage!} />
                   </AppLayout>
                 </ProtectedRoute>
+              }
+            />
+            {/* Dictionary entry detail / edit */}
+            <Route
+              path="/words/:id"
+              element={
+                <AppLayout
+                  selectedLanguage={selectedLanguage!}
+                  onLanguageChange={setSelectedLanguage}
+                  languages={languages}
+                >
+                  <WordDetail
+                    selectedLanguage={selectedLanguage!}
+                    languages={languages}
+                  />
+                </AppLayout>
               }
             />
 
