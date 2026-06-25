@@ -11,6 +11,7 @@ from app.api.deps import require_admin, require_role
 from app.database import get_db
 from app.models.language import Language
 from app.models.user import User, UserRole
+from app.models.user_language import ProficiencyLevel, UserLanguage
 from app.schemas.language import Language as LanguageSchema
 from app.schemas.language import LanguageCreate, LanguageListItem, LanguageUpdate
 
@@ -81,6 +82,30 @@ async def create_language(
     new_language = Language(**language_data.model_dump())
 
     db.add(new_language)
+    db.flush()  # assign new_language.id before linking the creator
+
+    # Make the creator a core contributor for this language so it's
+    # self-starting: they can edit and verify content without waiting for an
+    # admin grant. (Admins/superusers already bypass per-language checks.)
+    existing_link = (
+        db.query(UserLanguage)
+        .filter(
+            UserLanguage.user_id == current_user.id,
+            UserLanguage.language_id == new_language.id,
+        )
+        .first()
+    )
+    if existing_link is None:
+        db.add(
+            UserLanguage(
+                user_id=current_user.id,
+                language_id=new_language.id,
+                proficiency_level=ProficiencyLevel.NATIVE,
+                can_edit=True,
+                can_verify=True,
+            )
+        )
+
     db.commit()
     db.refresh(new_language)
 

@@ -4,24 +4,26 @@ Endpoints for managing links between text content spans and words.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import List
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_active_user, require_contributor
+from app.api.deps import get_current_active_user
 from app.database import get_db
 from app.models.text import Text
 from app.models.text_word_link import TextWordLink, TextWordLinkStatus
 from app.models.user import User
 from app.schemas.text import (
     TextWordLink as TextWordLinkSchema,
+)
+from app.schemas.text import (
     TextWordLinkCreate,
     TextWordLinkUpdate,
 )
 from app.schemas.word import SpellingCorrection
 from app.services import spelling_service
+from app.services.auth_service import require_language_edit_permission
 from app.services.document_service import suggest_links_for_text
 
 router = APIRouter()
@@ -47,7 +49,7 @@ def _get_link_or_404(db: Session, text_id: UUID, link_id: UUID) -> TextWordLink:
 
 @router.get(
     "/texts/{text_id}/links",
-    response_model=List[TextWordLinkSchema],
+    response_model=list[TextWordLinkSchema],
 )
 async def list_text_links(
     text_id: UUID,
@@ -77,12 +79,13 @@ async def create_text_link(
     text_id: UUID,
     link_data: TextWordLinkCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_contributor),
+    current_user: User = Depends(get_current_active_user),
 ):
     """
     Create a link between a text span and an existing word.
     """
-    _get_text_or_404(db, text_id)
+    text = _get_text_or_404(db, text_id)
+    require_language_edit_permission(db, current_user, text.language_id)
 
     existing = (
         db.query(TextWordLink)
@@ -128,11 +131,13 @@ async def update_text_link(
     link_id: UUID,
     link_update: TextWordLinkUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_contributor),
+    current_user: User = Depends(get_current_active_user),
 ):
     """
     Update link metadata or verification status.
     """
+    text = _get_text_or_404(db, text_id)
+    require_language_edit_permission(db, current_user, text.language_id)
     link = _get_link_or_404(db, text_id, link_id)
 
     if link_update.notes is not None:
@@ -166,11 +171,13 @@ async def delete_text_link(
     text_id: UUID,
     link_id: UUID,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_contributor),
+    current_user: User = Depends(get_current_active_user),
 ):
     """
     Delete a link or suggestion.
     """
+    text = _get_text_or_404(db, text_id)
+    require_language_edit_permission(db, current_user, text.language_id)
     link = _get_link_or_404(db, text_id, link_id)
     db.delete(link)
     db.commit()
@@ -179,18 +186,19 @@ async def delete_text_link(
 
 @router.post(
     "/texts/{text_id}/links/suggest",
-    response_model=List[TextWordLinkSchema],
+    response_model=list[TextWordLinkSchema],
 )
 async def regenerate_text_link_suggestions(
     text_id: UUID,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_contributor),
+    current_user: User = Depends(get_current_active_user),
 ):
     """
     Re-run auto-link suggestions for a text, replacing existing suggestions.
     Confirmed or rejected links remain untouched.
     """
     text = _get_text_or_404(db, text_id)
+    require_language_edit_permission(db, current_user, text.language_id)
     created_links = suggest_links_for_text(
         db,
         text,
@@ -203,7 +211,7 @@ async def regenerate_text_link_suggestions(
 
 @router.get(
     "/texts/{text_id}/spelling-corrections",
-    response_model=List[SpellingCorrection],
+    response_model=list[SpellingCorrection],
 )
 async def suggest_spelling_corrections(
     text_id: UUID,
