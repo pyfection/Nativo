@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 
 import { Language } from '../App';
 import AudioRecorder from '../components/common/AudioRecorder';
+import SpellingVariants from '../components/common/SpellingVariants';
 import { useAuth } from '../contexts/AuthContext';
 import wordService, {
   AntonymLink,
@@ -491,6 +492,16 @@ function FormsSection({ lexeme, canEdit, onChange, onMessage, onError }: FormsSe
                       existing recordings linked to this WordForm. */}
                   <div className="form-row-audio">
                     <AudioRecorder
+                      wordFormId={form.id}
+                      canEdit={canEdit}
+                      onMessage={onMessage}
+                      onError={onError}
+                    />
+                  </div>
+                  {/* Per-form spelling variants: non-standard ways this form
+                      is written, mapped back to its standard spelling. */}
+                  <div className="form-row-spellings">
+                    <SpellingVariants
                       wordFormId={form.id}
                       canEdit={canEdit}
                       onMessage={onMessage}

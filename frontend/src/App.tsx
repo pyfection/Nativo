@@ -12,6 +12,7 @@ import AddWord from './pages/AddWord';
 import WordDetail from './pages/WordDetail';
 import WritingStandard from './pages/WritingStandard';
 import Dictionary from './pages/Dictionary';
+import SpellingLookup from './pages/SpellingLookup';
 import DocumentList from './pages/DocumentList';
 import DocumentDetail from './pages/DocumentDetail';
 import AddDocument from './pages/AddDocument';
@@ -343,6 +344,22 @@ function App() {
                       selectedLanguage={selectedLanguage!}
                       languages={languages}
                     />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Spelling lookup Route */}
+            <Route
+              path="/spelling"
+              element={
+                <ProtectedRoute>
+                  <AppLayout
+                    selectedLanguage={selectedLanguage!}
+                    onLanguageChange={setSelectedLanguage}
+                    languages={languages}
+                  >
+                    <SpellingLookup selectedLanguage={selectedLanguage!} />
                   </AppLayout>
                 </ProtectedRoute>
               }

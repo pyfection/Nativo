@@ -60,6 +60,17 @@ const NAV_ITEMS: NavItem[] = [
     ),
   },
   {
+    path: '/spelling',
+    labelKey: 'nav.spelling',
+    // Pencil writing on a line — "how is this spelled?"
+    icon: (
+      <svg {...ICON_PROPS}>
+        <path d="M4 20H20" />
+        <path d="M14.5 4.5L18 8L8 18H4.5V14.5L14.5 4.5Z" />
+      </svg>
+    ),
+  },
+  {
     path: '/documents',
     labelKey: 'nav.documents',
     // Sheet of paper with text lines

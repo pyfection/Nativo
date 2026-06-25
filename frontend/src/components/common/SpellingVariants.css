@@ -1,0 +1,77 @@
+.spelling-variants {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.spelling-variants-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.spelling-variants-label {
+  color: var(--sage);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.spelling-variants-empty {
+  color: var(--sage);
+  opacity: 0.6;
+}
+
+.spelling-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 0.9rem;
+  color: var(--cream-dim, var(--cream));
+}
+
+.spelling-chip-remove {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  color: var(--sage);
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+.spelling-chip-remove:hover:not(:disabled) {
+  color: #f08a8a;
+}
+
+.spelling-chip-remove:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.spelling-variants-add {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.spelling-variants-input {
+  padding: 5px 9px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--cream);
+  font-size: 0.9rem;
+}
+
+.spelling-variants-note {
+  flex: 1;
+  min-width: 180px;
+}

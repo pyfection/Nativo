@@ -1,0 +1,122 @@
+.spelling-lookup-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+.spelling-lookup-header h1 {
+  margin: 0 0 4px;
+}
+
+.spelling-lookup-header .subtitle {
+  color: var(--sage);
+  margin: 0 0 20px;
+}
+
+.spelling-lookup-search {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.spelling-lookup-input {
+  flex: 1;
+  min-width: 200px;
+  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--cream);
+  font-size: 1rem;
+}
+
+.spelling-lookup-button {
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--accent, #6f9f8a);
+  color: var(--ink, #10231c);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.spelling-lookup-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.spelling-lookup-result {
+  margin-top: 24px;
+  padding: 18px 20px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.spelling-lookup-standard {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.spelling-lookup-ok {
+  color: #6fbf8a;
+  font-size: 1.3rem;
+}
+
+.spelling-lookup-lead {
+  margin: 0 0 12px;
+  color: var(--cream);
+}
+
+.spelling-lookup-candidates {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.spelling-lookup-candidate {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.spelling-lookup-arrow {
+  color: var(--sage);
+}
+
+.spelling-lookup-form {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--cream);
+  text-decoration: none;
+}
+
+.spelling-lookup-form:hover {
+  text-decoration: underline;
+}
+
+.spelling-lookup-lemma {
+  color: var(--sage);
+  font-style: italic;
+}
+
+.spelling-lookup-note {
+  color: var(--sage);
+  font-size: 0.9rem;
+}
+
+.spelling-lookup-ambiguous {
+  margin: 14px 0 0;
+  color: var(--sage);
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+.spelling-lookup-none {
+  color: var(--sage);
+}
