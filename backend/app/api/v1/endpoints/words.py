@@ -19,26 +19,32 @@ from app.models.word import Lexeme, LexemeStatus, SpellingVariant, WordForm
 from app.schemas.word import (
     AntonymCreate,
     AntonymLink,
-    Lexeme as LexemeSchema,
     LexemeCreate,
     LexemeListItem,
     LexemeUpdate,
     LexemeWithForms,
     RhymeMatch,
     SpellingResolution,
-    SpellingVariant as SpellingVariantSchema,
     SpellingVariantCreate,
     SynonymCreate,
     SynonymLink,
     TranslationCreate,
     TranslationLink,
     TranslationUpdate,
-    WordForm as WordFormSchema,
     WordFormCreate,
     WordFormUpdate,
 )
+from app.schemas.word import (
+    Lexeme as LexemeSchema,
+)
+from app.schemas.word import (
+    SpellingVariant as SpellingVariantSchema,
+)
+from app.schemas.word import (
+    WordForm as WordFormSchema,
+)
 from app.services import lexeme_service, spelling_service
-from app.services.auth_service import require_resource_owner
+from app.services.auth_service import can_user_edit_language, require_resource_owner
 
 router = APIRouter()
 
@@ -79,7 +85,9 @@ async def search_lexemes(
     db: Session = Depends(get_db),
 ):
     """
-    Full-ish text search over lemma + any WordForm's `form` / `romanization`.
+    Full-ish text search over lemma + any WordForm's `form` / `romanization`,
+    plus recorded non-standard `SpellingVariant`s — so a query like "eich" also
+    surfaces the standard "aih" it's mapped to.
     """
     query = db.query(Lexeme).distinct()
     if include_unpublished:
@@ -93,11 +101,16 @@ async def search_lexemes(
 
     if q:
         like = f"%{q}%"
-        query = query.outerjoin(WordForm, WordForm.lexeme_id == Lexeme.id).filter(
-            or_(
-                Lexeme.lemma.ilike(like),
-                WordForm.form.ilike(like),
-                WordForm.romanization.ilike(like),
+        query = (
+            query.outerjoin(WordForm, WordForm.lexeme_id == Lexeme.id)
+            .outerjoin(SpellingVariant, SpellingVariant.word_form_id == WordForm.id)
+            .filter(
+                or_(
+                    Lexeme.lemma.ilike(like),
+                    WordForm.form.ilike(like),
+                    WordForm.romanization.ilike(like),
+                    SpellingVariant.variant.ilike(like),
+                )
             )
         )
 
@@ -397,6 +410,16 @@ def _get_form_or_404(db: Session, form_id: UUID) -> WordForm:
     return word_form
 
 
+def _require_language_editor(db: Session, user: User, language_id: UUID) -> None:
+    """Spelling variants are low-risk, additive metadata captured mostly during
+    document linking — so they're gated by language-edit permission (the same
+    gate the linker uses), not lexeme ownership."""
+    if not can_user_edit_language(db, user.id, language_id):
+        raise HTTPException(
+            status_code=403, detail="You don't have permission to edit this language"
+        )
+
+
 @router.get("/forms/{form_id}/spellings", response_model=list[SpellingVariantSchema])
 async def list_spelling_variants(form_id: UUID, db: Session = Depends(get_db)):
     _get_form_or_404(db, form_id)
@@ -415,7 +438,7 @@ async def add_spelling_variant(
     db: Session = Depends(get_db),
 ):
     word_form = _get_form_or_404(db, form_id)
-    require_resource_owner(current_user, word_form.lexeme.created_by_id)
+    _require_language_editor(db, current_user, word_form.lexeme.language_id)
     return spelling_service.add_variant(db, word_form, data, creator_id=current_user.id)
 
 
@@ -428,7 +451,7 @@ async def delete_spelling_variant(
     variant = db.query(SpellingVariant).filter(SpellingVariant.id == variant_id).first()
     if not variant:
         raise HTTPException(status_code=404, detail="Spelling variant not found")
-    require_resource_owner(current_user, variant.word_form.lexeme.created_by_id)
+    _require_language_editor(db, current_user, variant.word_form.lexeme.language_id)
     spelling_service.delete_variant(db, variant)
     return None
 
