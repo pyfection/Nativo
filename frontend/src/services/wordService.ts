@@ -164,6 +164,41 @@ export interface RhymeMatch {
 }
 
 // -----------------------------------------------------------------------------
+// Spelling variants — non-standard spellings that map to a WordForm
+// (matches backend/app/schemas/word.py)
+// -----------------------------------------------------------------------------
+
+export interface SpellingVariant {
+  id: string;
+  word_form_id: string;
+  variant: string;
+  normalized: string;
+  note?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateSpellingVariantData {
+  variant: string;
+  note?: string;
+}
+
+export interface SpellingCandidate {
+  word_form_id: string;
+  lexeme_id: string;
+  standard_form: string;
+  lemma: string;
+  note?: string;
+}
+
+export interface SpellingResolution {
+  token: string;
+  normalized: string;
+  already_standard: boolean;
+  candidates: SpellingCandidate[];
+}
+
+// -----------------------------------------------------------------------------
 // Back-compat aliases used by some screens during the transition.
 // New code should use the Lexeme / WordForm types above.
 // -----------------------------------------------------------------------------
@@ -300,6 +335,31 @@ export const wordService = {
   async findRhymes(formId: string, near = false, limit = 50): Promise<RhymeMatch[]> {
     const response = await api.get<RhymeMatch[]>(`/api/v1/words/forms/${formId}/rhymes`, {
       params: { near, limit },
+    });
+    return response.data;
+  },
+
+  // Spelling variants
+  async listSpellings(formId: string): Promise<SpellingVariant[]> {
+    const response = await api.get<SpellingVariant[]>(`/api/v1/words/forms/${formId}/spellings`);
+    return response.data;
+  },
+
+  async addSpelling(formId: string, data: CreateSpellingVariantData): Promise<SpellingVariant> {
+    const response = await api.post<SpellingVariant>(
+      `/api/v1/words/forms/${formId}/spellings`,
+      data,
+    );
+    return response.data;
+  },
+
+  async removeSpelling(variantId: string): Promise<void> {
+    await api.delete(`/api/v1/words/spellings/${variantId}`);
+  },
+
+  async resolveSpelling(languageId: string, token: string): Promise<SpellingResolution> {
+    const response = await api.get<SpellingResolution>('/api/v1/words/spellings/resolve', {
+      params: { language_id: languageId, token },
     });
     return response.data;
   },
