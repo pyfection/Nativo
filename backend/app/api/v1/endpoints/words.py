@@ -15,7 +15,7 @@ from app.api.deps import require_admin, require_contributor, require_native_spea
 from app.database import get_db
 from app.limiter import limiter
 from app.models.user import User
-from app.models.word import Lexeme, LexemeStatus, WordForm
+from app.models.word import Lexeme, LexemeStatus, SpellingVariant, WordForm
 from app.schemas.word import (
     AntonymCreate,
     AntonymLink,
@@ -25,6 +25,9 @@ from app.schemas.word import (
     LexemeUpdate,
     LexemeWithForms,
     RhymeMatch,
+    SpellingResolution,
+    SpellingVariant as SpellingVariantSchema,
+    SpellingVariantCreate,
     SynonymCreate,
     SynonymLink,
     TranslationCreate,
@@ -34,7 +37,7 @@ from app.schemas.word import (
     WordFormCreate,
     WordFormUpdate,
 )
-from app.services import lexeme_service
+from app.services import lexeme_service, spelling_service
 from app.services.auth_service import require_resource_owner
 
 router = APIRouter()
@@ -376,3 +379,69 @@ async def find_rhymes(
             )
         )
     return out
+
+
+# ---------------------------------------------------------------------------
+# Spelling variants
+#
+# A WordForm.form is by definition the standard spelling; a SpellingVariant is
+# a non-standard way the same form gets written. Variants drive the resolver
+# (`/words/spellings/resolve`) and the document corrector (on a Text).
+# ---------------------------------------------------------------------------
+
+
+def _get_form_or_404(db: Session, form_id: UUID) -> WordForm:
+    word_form = db.query(WordForm).filter(WordForm.id == form_id).first()
+    if not word_form:
+        raise HTTPException(status_code=404, detail="WordForm not found")
+    return word_form
+
+
+@router.get("/forms/{form_id}/spellings", response_model=list[SpellingVariantSchema])
+async def list_spelling_variants(form_id: UUID, db: Session = Depends(get_db)):
+    _get_form_or_404(db, form_id)
+    return spelling_service.list_variants(db, form_id)
+
+
+@router.post(
+    "/forms/{form_id}/spellings",
+    response_model=SpellingVariantSchema,
+    status_code=status.HTTP_201_CREATED,
+)
+async def add_spelling_variant(
+    form_id: UUID,
+    data: SpellingVariantCreate,
+    current_user: User = Depends(require_contributor),
+    db: Session = Depends(get_db),
+):
+    word_form = _get_form_or_404(db, form_id)
+    require_resource_owner(current_user, word_form.lexeme.created_by_id)
+    return spelling_service.add_variant(db, word_form, data, creator_id=current_user.id)
+
+
+@router.delete("/spellings/{variant_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_spelling_variant(
+    variant_id: UUID,
+    current_user: User = Depends(require_contributor),
+    db: Session = Depends(get_db),
+):
+    variant = db.query(SpellingVariant).filter(SpellingVariant.id == variant_id).first()
+    if not variant:
+        raise HTTPException(status_code=404, detail="Spelling variant not found")
+    require_resource_owner(current_user, variant.word_form.lexeme.created_by_id)
+    spelling_service.delete_variant(db, variant)
+    return None
+
+
+@router.get("/spellings/resolve", response_model=SpellingResolution)
+async def resolve_spelling(
+    language_id: UUID,
+    token: str,
+    db: Session = Depends(get_db),
+):
+    """
+    Resolve a single written token to its standard spelling candidate(s) for a
+    language. `already_standard` is true when the token is itself a standard
+    form, so no correction is needed.
+    """
+    return spelling_service.resolve_token(db, language_id, token)

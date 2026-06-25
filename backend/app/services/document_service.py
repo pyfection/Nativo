@@ -7,10 +7,8 @@ Matches become `TextWordLink` rows pointing at the matched WordForm.
 """
 from __future__ import annotations
 
-import re
-import unicodedata
 from collections import defaultdict
-from typing import Dict, Iterable, List, Optional, Tuple
+from typing import Dict, Iterable, List, Optional
 from uuid import UUID
 
 from sqlalchemy.orm import Session
@@ -18,19 +16,8 @@ from sqlalchemy.orm import Session
 from app.models.text import Text
 from app.models.text_word_link import TextWordLink, TextWordLinkStatus
 from app.models.word import Lexeme, WordForm
-
-TOKEN_PATTERN = re.compile(r"\b[\w'-]+\b", re.UNICODE)
-
-
-def _strip_diacritics(value: str) -> str:
-    normalized = unicodedata.normalize("NFD", value)
-    without_marks = "".join(ch for ch in normalized if unicodedata.category(ch) != "Mn")
-    return without_marks.casefold()
-
-
-def _iter_tokens(content: str) -> Iterable[Tuple[str, int, int]]:
-    for match in TOKEN_PATTERN.finditer(content or ""):
-        yield match.group(0), match.start(), match.end()
+from app.utils.text_normalize import fold_for_match as _strip_diacritics
+from app.utils.text_normalize import iter_tokens as _iter_tokens
 
 
 def _build_word_form_index(word_forms: Iterable[WordForm]) -> Dict[str, List[WordForm]]:

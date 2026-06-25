@@ -66,6 +66,11 @@ class WordForm(Base):
         back_populates="word_form",
         cascade="all, delete-orphan",
     )
+    spelling_variants = relationship(
+        "SpellingVariant",
+        back_populates="word_form",
+        cascade="all, delete-orphan",
+    )
 
     def __repr__(self) -> str:
         return (

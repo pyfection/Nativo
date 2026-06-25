@@ -20,6 +20,8 @@ from app.schemas.text import (
     TextWordLinkCreate,
     TextWordLinkUpdate,
 )
+from app.schemas.word import SpellingCorrection
+from app.services import spelling_service
 from app.services.document_service import suggest_links_for_text
 
 router = APIRouter()
@@ -197,4 +199,22 @@ async def regenerate_text_link_suggestions(
     )
     db.commit()
     return created_links
+
+
+@router.get(
+    "/texts/{text_id}/spelling-corrections",
+    response_model=List[SpellingCorrection],
+)
+async def suggest_spelling_corrections(
+    text_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    """
+    Scan a Text and propose standard spellings for tokens written in a known
+    non-standard way. Read-only: nothing is rewritten, and spans with more than
+    one candidate are flagged `ambiguous` for the user to disambiguate.
+    """
+    text = _get_text_or_404(db, text_id)
+    return spelling_service.suggest_corrections_for_text(db, text)
 
