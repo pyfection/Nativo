@@ -2,12 +2,12 @@
 Authentication service for JWT token management and user operations.
 """
 from datetime import datetime, timedelta
-from typing import Optional
 from uuid import UUID
-from jose import JWTError, jwt
+
 from fastapi import HTTPException, status
-from sqlalchemy.orm import Session
+from jose import JWTError, jwt
 from sqlalchemy import and_
+from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.models.user import User, UserRole
@@ -26,13 +26,13 @@ def create_access_token(user_id: UUID, role: UserRole) -> str:
         Encoded JWT token
     """
     expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    
+
     to_encode = {
         "sub": str(user_id),
         "role": role.value,
         "exp": expire
     }
-    
+
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     return encoded_jwt
 
@@ -110,11 +110,11 @@ def can_user_edit_language(db: Session, user_id: UUID, language_id: UUID) -> boo
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         return False
-    
-    # Admins can edit any language
-    if user.role == UserRole.ADMIN:
+
+    # Platform admins / superusers can edit any language
+    if user.is_superuser or user.role == UserRole.ADMIN:
         return True
-    
+
     # Check user-language relationship
     user_language = db.query(UserLanguage).filter(
         and_(
@@ -122,7 +122,7 @@ def can_user_edit_language(db: Session, user_id: UUID, language_id: UUID) -> boo
             UserLanguage.language_id == language_id
         )
     ).first()
-    
+
     return user_language is not None and user_language.can_edit
 
 
@@ -143,11 +143,11 @@ def can_user_verify_language(db: Session, user_id: UUID, language_id: UUID) -> b
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         return False
-    
-    # Admins can verify any language
-    if user.role == UserRole.ADMIN:
+
+    # Platform admins / superusers can verify any language
+    if user.is_superuser or user.role == UserRole.ADMIN:
         return True
-    
+
     # Check user-language relationship
     user_language = db.query(UserLanguage).filter(
         and_(
@@ -155,7 +155,7 @@ def can_user_verify_language(db: Session, user_id: UUID, language_id: UUID) -> b
             UserLanguage.language_id == language_id
         )
     ).first()
-    
+
     return user_language is not None and user_language.can_verify
 
 

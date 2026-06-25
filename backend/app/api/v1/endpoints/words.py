@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
-from app.api.deps import require_admin, require_contributor, require_native_speaker
+from app.api.deps import get_current_active_user
 from app.database import get_db
 from app.limiter import limiter
 from app.models.user import User
@@ -44,9 +44,19 @@ from app.schemas.word import (
     WordForm as WordFormSchema,
 )
 from app.services import lexeme_service, spelling_service
-from app.services.auth_service import can_user_edit_language, require_resource_owner
+from app.services.auth_service import (
+    require_language_edit_permission,
+    require_language_verify_permission,
+)
 
 router = APIRouter()
+
+
+def _get_lexeme_or_404(db: Session, lexeme_id: UUID) -> Lexeme:
+    lexeme = db.query(Lexeme).filter(Lexeme.id == lexeme_id).first()
+    if not lexeme:
+        raise HTTPException(status_code=404, detail="Lexeme not found")
+    return lexeme
 
 
 # ---------------------------------------------------------------------------
@@ -136,9 +146,10 @@ async def get_lexeme(lexeme_id: UUID, db: Session = Depends(get_db)):
 @router.post("/", response_model=LexemeWithForms, status_code=status.HTTP_201_CREATED)
 async def create_lexeme(
     data: LexemeCreate,
-    current_user: User = Depends(require_contributor),
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
+    require_language_edit_permission(db, current_user, data.language_id)
     return lexeme_service.create_lexeme(db, data, creator_id=current_user.id)
 
 
@@ -146,25 +157,22 @@ async def create_lexeme(
 async def update_lexeme(
     lexeme_id: UUID,
     data: LexemeUpdate,
-    current_user: User = Depends(require_contributor),
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
-    lexeme = db.query(Lexeme).filter(Lexeme.id == lexeme_id).first()
-    if not lexeme:
-        raise HTTPException(status_code=404, detail="Lexeme not found")
-    require_resource_owner(current_user, lexeme.created_by_id)
+    lexeme = _get_lexeme_or_404(db, lexeme_id)
+    require_language_edit_permission(db, current_user, lexeme.language_id)
     return lexeme_service.update_lexeme(db, lexeme, data)
 
 
 @router.delete("/{lexeme_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_lexeme(
     lexeme_id: UUID,
-    current_user: User = Depends(require_admin),
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
-    lexeme = db.query(Lexeme).filter(Lexeme.id == lexeme_id).first()
-    if not lexeme:
-        raise HTTPException(status_code=404, detail="Lexeme not found")
+    lexeme = _get_lexeme_or_404(db, lexeme_id)
+    require_language_edit_permission(db, current_user, lexeme.language_id)
     db.delete(lexeme)
     db.commit()
     return None
@@ -173,12 +181,11 @@ async def delete_lexeme(
 @router.post("/{lexeme_id}/verify", response_model=LexemeSchema)
 async def verify_lexeme(
     lexeme_id: UUID,
-    current_user: User = Depends(require_native_speaker),
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
-    lexeme = db.query(Lexeme).filter(Lexeme.id == lexeme_id).first()
-    if not lexeme:
-        raise HTTPException(status_code=404, detail="Lexeme not found")
+    lexeme = _get_lexeme_or_404(db, lexeme_id)
+    require_language_verify_permission(db, current_user, lexeme.language_id)
     lexeme.is_verified = True
     lexeme.verified_by_id = current_user.id
     lexeme.status = LexemeStatus.PUBLISHED
@@ -210,11 +217,13 @@ async def list_forms(lexeme_id: UUID, db: Session = Depends(get_db)):
 async def add_form(
     lexeme_id: UUID,
     data: WordFormCreate,
-    current_user: User = Depends(require_contributor),
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
     if data.lexeme_id != lexeme_id:
         raise HTTPException(status_code=400, detail="Path lexeme_id does not match payload")
+    lexeme = _get_lexeme_or_404(db, lexeme_id)
+    require_language_edit_permission(db, current_user, lexeme.language_id)
     return lexeme_service.create_word_form(db, data)
 
 
@@ -222,26 +231,22 @@ async def add_form(
 async def update_form(
     form_id: UUID,
     data: WordFormUpdate,
-    current_user: User = Depends(require_contributor),
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
-    word_form = db.query(WordForm).filter(WordForm.id == form_id).first()
-    if not word_form:
-        raise HTTPException(status_code=404, detail="WordForm not found")
-    require_resource_owner(current_user, word_form.lexeme.created_by_id)
+    word_form = _get_form_or_404(db, form_id)
+    require_language_edit_permission(db, current_user, word_form.lexeme.language_id)
     return lexeme_service.update_word_form(db, word_form, data)
 
 
 @router.delete("/forms/{form_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_form(
     form_id: UUID,
-    current_user: User = Depends(require_contributor),
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
-    word_form = db.query(WordForm).filter(WordForm.id == form_id).first()
-    if not word_form:
-        raise HTTPException(status_code=404, detail="WordForm not found")
-    require_resource_owner(current_user, word_form.lexeme.created_by_id)
+    word_form = _get_form_or_404(db, form_id)
+    require_language_edit_permission(db, current_user, word_form.lexeme.language_id)
     if word_form.is_lemma:
         raise HTTPException(
             status_code=400,
@@ -270,9 +275,11 @@ async def list_synonyms(lexeme_id: UUID, db: Session = Depends(get_db)):
 async def add_synonym(
     lexeme_id: UUID,
     data: SynonymCreate,
-    current_user: User = Depends(require_contributor),
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
+    lexeme = _get_lexeme_or_404(db, lexeme_id)
+    require_language_edit_permission(db, current_user, lexeme.language_id)
     return lexeme_service.add_synonym(db, lexeme_id, data)
 
 
@@ -282,9 +289,11 @@ async def add_synonym(
 async def remove_synonym(
     lexeme_id: UUID,
     other_id: UUID,
-    current_user: User = Depends(require_contributor),
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
+    lexeme = _get_lexeme_or_404(db, lexeme_id)
+    require_language_edit_permission(db, current_user, lexeme.language_id)
     lexeme_service.remove_synonym(db, lexeme_id, other_id)
     return None
 
@@ -302,9 +311,11 @@ async def list_antonyms(lexeme_id: UUID, db: Session = Depends(get_db)):
 async def add_antonym(
     lexeme_id: UUID,
     data: AntonymCreate,
-    current_user: User = Depends(require_contributor),
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
+    lexeme = _get_lexeme_or_404(db, lexeme_id)
+    require_language_edit_permission(db, current_user, lexeme.language_id)
     return lexeme_service.add_antonym(db, lexeme_id, data)
 
 
@@ -314,9 +325,11 @@ async def add_antonym(
 async def remove_antonym(
     lexeme_id: UUID,
     other_id: UUID,
-    current_user: User = Depends(require_contributor),
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
+    lexeme = _get_lexeme_or_404(db, lexeme_id)
+    require_language_edit_permission(db, current_user, lexeme.language_id)
     lexeme_service.remove_antonym(db, lexeme_id, other_id)
     return None
 
@@ -334,9 +347,11 @@ async def list_translations(lexeme_id: UUID, db: Session = Depends(get_db)):
 async def add_translation(
     lexeme_id: UUID,
     data: TranslationCreate,
-    current_user: User = Depends(require_contributor),
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
+    lexeme = _get_lexeme_or_404(db, lexeme_id)
+    require_language_edit_permission(db, current_user, lexeme.language_id)
     return lexeme_service.add_translation(db, lexeme_id, data, creator_id=current_user.id)
 
 
@@ -347,9 +362,11 @@ async def update_translation(
     lexeme_id: UUID,
     other_id: UUID,
     data: TranslationUpdate,
-    current_user: User = Depends(require_contributor),
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
+    lexeme = _get_lexeme_or_404(db, lexeme_id)
+    require_language_edit_permission(db, current_user, lexeme.language_id)
     return lexeme_service.update_translation_notes(db, lexeme_id, other_id, data.notes)
 
 
@@ -359,9 +376,11 @@ async def update_translation(
 async def remove_translation(
     lexeme_id: UUID,
     other_id: UUID,
-    current_user: User = Depends(require_contributor),
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
+    lexeme = _get_lexeme_or_404(db, lexeme_id)
+    require_language_edit_permission(db, current_user, lexeme.language_id)
     lexeme_service.remove_translation(db, lexeme_id, other_id)
     return None
 
@@ -410,16 +429,6 @@ def _get_form_or_404(db: Session, form_id: UUID) -> WordForm:
     return word_form
 
 
-def _require_language_editor(db: Session, user: User, language_id: UUID) -> None:
-    """Spelling variants are low-risk, additive metadata captured mostly during
-    document linking — so they're gated by language-edit permission (the same
-    gate the linker uses), not lexeme ownership."""
-    if not can_user_edit_language(db, user.id, language_id):
-        raise HTTPException(
-            status_code=403, detail="You don't have permission to edit this language"
-        )
-
-
 @router.get("/forms/{form_id}/spellings", response_model=list[SpellingVariantSchema])
 async def list_spelling_variants(form_id: UUID, db: Session = Depends(get_db)):
     _get_form_or_404(db, form_id)
@@ -434,24 +443,24 @@ async def list_spelling_variants(form_id: UUID, db: Session = Depends(get_db)):
 async def add_spelling_variant(
     form_id: UUID,
     data: SpellingVariantCreate,
-    current_user: User = Depends(require_contributor),
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
     word_form = _get_form_or_404(db, form_id)
-    _require_language_editor(db, current_user, word_form.lexeme.language_id)
+    require_language_edit_permission(db, current_user, word_form.lexeme.language_id)
     return spelling_service.add_variant(db, word_form, data, creator_id=current_user.id)
 
 
 @router.delete("/spellings/{variant_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_spelling_variant(
     variant_id: UUID,
-    current_user: User = Depends(require_contributor),
+    current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
     variant = db.query(SpellingVariant).filter(SpellingVariant.id == variant_id).first()
     if not variant:
         raise HTTPException(status_code=404, detail="Spelling variant not found")
-    _require_language_editor(db, current_user, variant.word_form.lexeme.language_id)
+    require_language_edit_permission(db, current_user, variant.word_form.lexeme.language_id)
     spelling_service.delete_variant(db, variant)
     return None
 

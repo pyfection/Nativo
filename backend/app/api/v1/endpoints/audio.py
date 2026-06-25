@@ -16,6 +16,7 @@ from app.api.deps import get_current_user, get_db
 from app.models.audio import Audio
 from app.models.user import User
 from app.models.word import Lexeme, WordForm, word_form_audio
+from app.services.auth_service import require_language_edit_permission
 from app.utils.file_storage import StorageError, store_audio
 
 router = APIRouter()
@@ -147,6 +148,7 @@ async def upload_audio(
         form = db.query(WordForm).filter(WordForm.id == word_form_id).first()
         if form is None:
             raise HTTPException(status_code=404, detail="WordForm not found")
+        require_language_edit_permission(db, current_user, form.lexeme.language_id)
         db.execute(
             word_form_audio.insert().values(
                 word_form_id=word_form_id,
