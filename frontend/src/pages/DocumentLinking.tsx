@@ -20,6 +20,24 @@ import { useAuth } from '../contexts/AuthContext';
 import { getDocumentTypeLabel } from '../utils/documentTypes';
 import './DocumentLinking.css';
 
+// Mirror backend app.utils.text_normalize.fold_for_match so the UI can tell
+// when a selected span is genuinely a different spelling from the form it's
+// being linked to — and not just a case/accent variant the backend rejects.
+function foldToken(value: string): string {
+  return (value || '')
+    .normalize('NFD')
+    .replace(/\p{Mn}/gu, '')
+    .toLowerCase();
+}
+
+// A dictionary entry the typed new-word already matches — either as an exact
+// standard form, or via a recorded non-standard spelling.
+interface DuplicateHint {
+  lexemeId: string;
+  standardForm: string;
+  viaVariant: boolean;
+}
+
 const LETTER_REGEX =
   (() => {
     try {
@@ -321,6 +339,13 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
     language_register: 'neutral',
   });
   const [newWordTagsInput, setNewWordTagsInput] = useState('');
+
+  // When linking a span whose spelling differs from the target form, also
+  // record the original span as an alternative spelling. On by default — this
+  // is the main way the spelling map gets populated during linking.
+  const [recordAltSpelling, setRecordAltSpelling] = useState(true);
+  // Existing entries the typed new-word already matches (exact form or variant).
+  const [duplicateHints, setDuplicateHints] = useState<DuplicateHint[]>([]);
 
   const textContainerRef = useRef<HTMLDivElement | null>(null);
   const initialState = useMemo(() => {
@@ -722,6 +747,21 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
     });
   }, []);
 
+  // If enabled and the span's spelling differs from the linked form, record the
+  // original span as an alternative spelling of that form. Best-effort: the
+  // link already succeeded, so a rejected/duplicate variant is non-fatal.
+  const maybeRecordAltSpelling = async (wordFormId: string, formText: string) => {
+    const original = selectedSpan?.text?.trim();
+    if (!recordAltSpelling || !original) return false;
+    if (foldToken(original) === foldToken(formText)) return false;
+    try {
+      await wordService.addSpelling(wordFormId, { variant: original });
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   const handleLinkToWord = async (lexemeId: string) => {
     if (!activeText || !selectedSpan) return;
     setIsSaving(true);
@@ -743,8 +783,15 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
       };
       const link = await wordLinkService.create(activeText.id, payload);
       applyLinkUpdate(link);
-      setActionMessage('Link created successfully.');
+      const recorded = await maybeRecordAltSpelling(lemmaForm.id, lemmaForm.form);
+      setActionMessage(
+        recorded
+          ? `Linked, and saved “${selectedSpan.text?.trim()}” as an alternative spelling of “${lemmaForm.form}”.`
+          : 'Link created successfully.',
+      );
       setSearchResults([]);
+      setDuplicateHints([]);
+      setShowNewWordForm(false);
     } catch (err: any) {
       setActionError(err?.response?.data?.detail || 'Failed to create link');
     } finally {
@@ -831,7 +878,8 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
     }
   };
 
-  const runWordSearch = useCallback(async () => {
+  const runWordSearch = useCallback(
+    async (silent = false) => {
     if (!selectedLanguage?.id) {
       setSearchResults([]);
       return;
@@ -839,12 +887,16 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
 
     const query = selectedSpan?.text?.trim();
     if (!query) {
-      setActionError('Select some text in the document to search for similar words.');
+      if (!silent) {
+        setActionError('Select some text in the document to search for similar words.');
+      }
       return;
     }
 
-    setActionError(null);
-    setActionMessage(null);
+    if (!silent) {
+      setActionError(null);
+      setActionMessage(null);
+    }
     setSearchLoading(true);
     try {
       const results = await wordService.search({
@@ -867,16 +919,84 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
         }),
       );
       setSearchResults(enriched);
-      if (enriched.length === 0) {
+      if (enriched.length === 0 && !silent) {
         setActionMessage('No similar words found for the current selection.');
       }
-    } catch (err) {
+    } catch {
       setSearchResults([]);
-      setActionError('Failed to search for similar words.');
+      if (!silent) {
+        setActionError('Failed to search for similar words.');
+      }
     } finally {
       setSearchLoading(false);
     }
-  }, [selectedLanguage?.id, selectedSpan?.text]);
+    },
+    [selectedLanguage?.id, selectedSpan?.text],
+  );
+
+  // Auto-search existing words whenever a fresh, unlinked span is selected, so
+  // the user sees matches (including via alternative spellings) without having
+  // to click — "eich" can now surface the standard "aih".
+  useEffect(() => {
+    if (selectedSpan && !selectedSpan.link && canEdit) {
+      void runWordSearch(true);
+    } else {
+      setSearchResults([]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedSpan?.start, selectedSpan?.end, canEdit]);
+
+  // While adding a new word, warn if the typed lemma already exists — as an
+  // exact standard form or as a recorded non-standard spelling — so the user
+  // links to the existing entry instead of creating a duplicate.
+  useEffect(() => {
+    if (!showNewWordForm || !selectedLanguage?.id) {
+      setDuplicateHints([]);
+      return;
+    }
+    const lemma = newWordData.lemma.trim();
+    if (!lemma) {
+      setDuplicateHints([]);
+      return;
+    }
+    const handle = window.setTimeout(async () => {
+      try {
+        const resolution = await wordService.resolveSpelling(selectedLanguage.id, lemma);
+        if (resolution.candidates.length > 0) {
+          setDuplicateHints(
+            resolution.candidates.map((c) => ({
+              lexemeId: c.lexeme_id,
+              standardForm: c.standard_form,
+              viaVariant: true,
+            })),
+          );
+          return;
+        }
+        if (resolution.already_standard) {
+          const results = await wordService.search({
+            q: lemma,
+            language_ids: selectedLanguage.id,
+            include_unpublished: true,
+            limit: 8,
+          });
+          const folded = foldToken(lemma);
+          const hits: DuplicateHint[] = [];
+          results.forEach((lx) => {
+            const match = (lx.forms ?? []).find((f) => foldToken(f.form) === folded);
+            if (match) {
+              hits.push({ lexemeId: lx.id, standardForm: match.form, viaVariant: false });
+            }
+          });
+          setDuplicateHints(hits);
+          return;
+        }
+        setDuplicateHints([]);
+      } catch {
+        setDuplicateHints([]);
+      }
+    }, 300);
+    return () => window.clearTimeout(handle);
+  }, [newWordData.lemma, showNewWordForm, selectedLanguage?.id]);
 
   const clearSelection = useCallback(() => {
     setSelectedSpan(null);
@@ -983,6 +1103,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
       };
       const link = await wordLinkService.create(activeText.id, linkPayload);
       applyLinkUpdate(link);
+      const recorded = await maybeRecordAltSpelling(lemmaForm.id, lemmaForm.form);
 
       setNewWordData({
         lemma: '',
@@ -990,7 +1111,12 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
       });
       setNewWordTagsInput('');
       setShowNewWordForm(false);
-      setActionMessage('Word created and linked.');
+      setDuplicateHints([]);
+      setActionMessage(
+        recorded
+          ? `Word created and linked, and “${selectedSpan.text?.trim()}” saved as an alternative spelling.`
+          : 'Word created and linked.',
+      );
     } catch (err: any) {
       setActionError(err?.response?.data?.detail || 'Failed to create and link word');
     } finally {
@@ -1270,12 +1396,28 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                     <p className="selection-help">
                       Link this selection to an existing word or create a new one.
                     </p>
+                    {canEdit && (
+                      <label
+                        className="alt-spelling-toggle"
+                        title="When the linked word is spelled differently from this selection, save the selection as an alternative spelling of it."
+                      >
+                        <input
+                          type="checkbox"
+                          checked={recordAltSpelling}
+                          onChange={(event) => setRecordAltSpelling(event.target.checked)}
+                        />
+                        <span>
+                          Also save “{selectedSpan.text?.trim()}” as an alternative spelling when it
+                          differs from the linked word
+                        </span>
+                      </label>
+                    )}
                     <div className="link-existing">
                       <button
                         className="btn-secondary"
-                        onClick={runWordSearch}
+                        onClick={() => runWordSearch()}
                         disabled={!canEdit || searchLoading}
-                        title="Find dictionary entries that start with the selected text. Results show meanings; hover any for full detail."
+                        title="Find dictionary entries matching the selected text — including via recorded alternative spellings. Results show meanings; hover any for full detail."
                       >
                         {searchLoading ? 'Searching…' : 'Search existing words'}
                       </button>
@@ -1628,6 +1770,38 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                             disabled={!canEdit}
                             placeholder="e.g., nature, ceremonial"
                           />
+
+                          {duplicateHints.length > 0 && (
+                            <div className="duplicate-hint" role="status">
+                              <p className="duplicate-hint-lead">
+                                Already in the dictionary — link instead of creating a duplicate?
+                              </p>
+                              <ul className="duplicate-hint-list">
+                                {duplicateHints.map((hint) => (
+                                  <li key={hint.lexemeId} className="duplicate-hint-row">
+                                    <span>
+                                      <strong>{hint.standardForm}</strong>
+                                      {hint.viaVariant && (
+                                        <em className="duplicate-hint-via">
+                                          {' '}
+                                          · “{newWordData.lemma.trim()}” is a known spelling of it
+                                        </em>
+                                      )}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      className="btn-secondary"
+                                      onClick={() => handleLinkToWord(hint.lexemeId)}
+                                      disabled={!canEdit || isSaving}
+                                      title={`Link the selection to the existing entry “${hint.standardForm}”.`}
+                                    >
+                                      Link to this
+                                    </button>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
 
                           <div className="new-word-actions">
                             <button

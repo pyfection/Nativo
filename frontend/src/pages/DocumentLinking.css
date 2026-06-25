@@ -565,3 +565,55 @@
     order: -1;
   }
 }
+
+/* Alternative-spelling capture during linking */
+.alt-spelling-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 8px 0;
+  font-size: 0.85rem;
+  color: var(--sage);
+  cursor: pointer;
+}
+
+.alt-spelling-toggle input {
+  margin-top: 2px;
+}
+
+/* "Already in the dictionary" duplicate warning in the new-word form */
+.duplicate-hint {
+  margin: 12px 0;
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+}
+
+.duplicate-hint-lead {
+  margin: 0 0 8px;
+  color: var(--cream);
+  font-size: 0.85rem;
+}
+
+.duplicate-hint-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.duplicate-hint-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.duplicate-hint-via {
+  color: var(--sage);
+  font-style: italic;
+}

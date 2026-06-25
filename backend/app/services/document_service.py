@@ -5,23 +5,28 @@ Auto-link suggestions walk the text content, normalise each token, and
 look it up in an index built from `WordForm.form` for the text's language.
 Matches become `TextWordLink` rows pointing at the matched WordForm.
 """
+
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import Dict, Iterable, List, Optional
+from collections.abc import Iterable
 from uuid import UUID
 
 from sqlalchemy.orm import Session
 
 from app.models.text import Text
 from app.models.text_word_link import TextWordLink, TextWordLinkStatus
-from app.models.word import Lexeme, WordForm
+from app.models.word import Lexeme, SpellingVariant, WordForm
 from app.utils.text_normalize import fold_for_match as _strip_diacritics
 from app.utils.text_normalize import iter_tokens as _iter_tokens
 
+# Suggestions matched on a recorded non-standard spelling rather than a
+# standard form get a lower confidence so reviewers can tell them apart.
+_VARIANT_MATCH_CONFIDENCE = 0.5
 
-def _build_word_form_index(word_forms: Iterable[WordForm]) -> Dict[str, List[WordForm]]:
-    index: Dict[str, List[WordForm]] = defaultdict(list)
+
+def _build_word_form_index(word_forms: Iterable[WordForm]) -> dict[str, list[WordForm]]:
+    index: dict[str, list[WordForm]] = defaultdict(list)
     for wf in word_forms:
         normalized = _strip_diacritics(wf.form)
         if normalized:
@@ -33,13 +38,30 @@ def _build_word_form_index(word_forms: Iterable[WordForm]) -> Dict[str, List[Wor
     return index
 
 
+def _build_variant_index(db: Session, language_id) -> dict[str, list[WordForm]]:
+    """Folded non-standard spellings for the language → the WordForm(s) they
+    map to. `SpellingVariant.normalized` is already folded the same way tokens
+    are, so this keys on it directly."""
+    rows = (
+        db.query(SpellingVariant.normalized, WordForm)
+        .join(WordForm, WordForm.id == SpellingVariant.word_form_id)
+        .join(Lexeme, Lexeme.id == WordForm.lexeme_id)
+        .filter(Lexeme.language_id == language_id)
+        .all()
+    )
+    index: dict[str, list[WordForm]] = defaultdict(list)
+    for normalized, word_form in rows:
+        index[normalized].append(word_form)
+    return index
+
+
 def suggest_links_for_text(
     db: Session,
     text: Text,
     *,
-    creator_id: Optional[UUID] = None,
+    creator_id: UUID | None = None,
     replace_existing_suggestions: bool = False,
-) -> List[TextWordLink]:
+) -> list[TextWordLink]:
     if not text.language_id or not text.content:
         return []
 
@@ -69,8 +91,9 @@ def suggest_links_for_text(
         .all()
     )
     form_index = _build_word_form_index(word_forms)
+    variant_index = _build_variant_index(db, text.language_id)
 
-    created_links: List[TextWordLink] = []
+    created_links: list[TextWordLink] = []
     for token, start, end in _iter_tokens(text.content):
         if (start, end) in rejected_spans:
             continue
@@ -79,16 +102,29 @@ def suggest_links_for_text(
 
         normalized = _strip_diacritics(token)
         matches = form_index.get(normalized)
-        if not matches:
-            continue
 
-        # Prefer an exact case-insensitive match; fall back to lemma; then first.
-        selected = next(
-            (wf for wf in matches if wf.form.casefold() == token.casefold()),
-            None,
-        )
-        if selected is None:
-            selected = next((wf for wf in matches if wf.is_lemma), matches[0])
+        if matches:
+            # Standard-form match. Prefer an exact case-insensitive match; fall
+            # back to lemma; then first.
+            selected = next(
+                (wf for wf in matches if wf.form.casefold() == token.casefold()),
+                None,
+            )
+            if selected is None:
+                selected = next((wf for wf in matches if wf.is_lemma), matches[0])
+            confidence = 1.0
+            notes = None
+        else:
+            # No standard form — try recorded non-standard spellings. When a
+            # variant is ambiguous (maps to several forms) we still suggest a
+            # best guess (lemma, else first) at lower confidence for the human
+            # to confirm or redirect.
+            variant_matches = variant_index.get(normalized)
+            if not variant_matches:
+                continue
+            selected = next((wf for wf in variant_matches if wf.is_lemma), variant_matches[0])
+            confidence = _VARIANT_MATCH_CONFIDENCE
+            notes = f"Auto-matched via alternative spelling '{token}' → '{selected.form}'"
 
         link = TextWordLink(
             text_id=text.id,
@@ -96,7 +132,8 @@ def suggest_links_for_text(
             start_char=start,
             end_char=end,
             status=TextWordLinkStatus.SUGGESTED,
-            confidence=1.0,
+            confidence=confidence,
+            notes=notes,
             created_by_id=creator_id,
         )
         db.add(link)
@@ -110,10 +147,10 @@ def refresh_document_suggestions(
     db: Session,
     document_id: UUID,
     *,
-    creator_id: Optional[UUID] = None,
-) -> Dict[UUID, List[TextWordLink]]:
+    creator_id: UUID | None = None,
+) -> dict[UUID, list[TextWordLink]]:
     texts = db.query(Text).filter(Text.document_id == document_id).all()
-    suggestions: Dict[UUID, List[TextWordLink]] = {}
+    suggestions: dict[UUID, list[TextWordLink]] = {}
 
     for text in texts:
         created = suggest_links_for_text(

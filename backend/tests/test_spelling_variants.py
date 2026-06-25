@@ -8,10 +8,12 @@ from app.database import Base  # noqa: E402
 from app.models.document import Document  # noqa: E402
 from app.models.language import Language  # noqa: E402
 from app.models.text import DocumentType, Text  # noqa: E402
+from app.models.text_word_link import TextWordLink, TextWordLinkStatus  # noqa: E402
 from app.models.user import User, UserRole  # noqa: E402
 from app.models.word import Lexeme, LexemeStatus, SpellingVariant, WordForm  # noqa: E402
 from app.schemas.word import SpellingVariantCreate  # noqa: E402
 from app.services import spelling_service  # noqa: E402
+from app.services.document_service import suggest_links_for_text  # noqa: E402
 from fastapi import HTTPException  # noqa: E402
 from sqlalchemy import create_engine  # noqa: E402
 from sqlalchemy.orm import Session, sessionmaker  # noqa: E402
@@ -281,3 +283,67 @@ def test_suggest_corrections_empty_without_content(db_session: Session):
     db_session.commit()
 
     assert spelling_service.suggest_corrections_for_text(db_session, text) == []
+
+
+# ---------------------------------------------------------------------------
+# Auto-linker: variant-aware suggestions
+# ---------------------------------------------------------------------------
+
+
+def test_autolinker_suggests_via_variant(db_session: Session):
+    user = _seed_user(db_session)
+    language = _seed_language(db_session)
+    form = _seed_form(db_session, language, user, "aih")
+    spelling_service.add_variant(db_session, form, SpellingVariantCreate(variant="eich"))
+    text = _seed_text(db_session, language, user, "eich")
+    db_session.commit()
+
+    created = suggest_links_for_text(db_session, text)
+    db_session.commit()
+
+    assert len(created) == 1
+    link = created[0]
+    assert link.word_form_id == form.id
+    assert link.status == TextWordLinkStatus.SUGGESTED
+    assert link.confidence == 0.5  # variant matches are lower-confidence
+    assert "alternative spelling" in (link.notes or "")
+
+
+def test_autolinker_prefers_standard_form_over_variant(db_session: Session):
+    user = _seed_user(db_session)
+    language = _seed_language(db_session)
+    # "eich" is a variant of "aih" AND a standard form of its own lexeme.
+    aih = _seed_form(db_session, language, user, "aih")
+    spelling_service.add_variant(db_session, aih, SpellingVariantCreate(variant="eich"))
+    eich = _seed_form(db_session, language, user, "eich")
+    text = _seed_text(db_session, language, user, "eich")
+    db_session.commit()
+
+    created = suggest_links_for_text(db_session, text)
+    db_session.commit()
+
+    assert len(created) == 1
+    link = created[0]
+    assert link.word_form_id == eich.id  # standard form wins
+    assert link.confidence == 1.0
+    assert link.notes is None
+
+
+def test_autolinker_variant_ambiguous_picks_best_guess(db_session: Session):
+    user = _seed_user(db_session)
+    language = _seed_language(db_session)
+    form_a = _seed_form(db_session, language, user, "aih")
+    form_b = _seed_form(db_session, language, user, "ay")
+    spelling_service.add_variant(db_session, form_a, SpellingVariantCreate(variant="eich"))
+    spelling_service.add_variant(db_session, form_b, SpellingVariantCreate(variant="eich"))
+    text = _seed_text(db_session, language, user, "eich")
+    db_session.commit()
+
+    created = suggest_links_for_text(db_session, text)
+    db_session.commit()
+
+    # One best-guess suggestion at low confidence, pointing at one of the two.
+    assert len(created) == 1
+    assert created[0].confidence == 0.5
+    assert created[0].word_form_id in {form_a.id, form_b.id}
+    assert db_session.query(TextWordLink).count() == 1
