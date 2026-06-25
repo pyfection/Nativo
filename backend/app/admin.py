@@ -12,7 +12,7 @@ from starlette.responses import Response
 from app.database import engine, SessionLocal
 from app.models.user import User, UserRole
 from app.models.language import Language
-from app.models.word import Lexeme, WordForm
+from app.models.word import Lexeme, SpellingVariant, WordForm
 from app.models.document import Document
 from app.models.text import Text
 from app.models.audio import Audio
@@ -135,6 +135,18 @@ class WordFormAdmin(ModelView):
 
     searchable_fields = ["form", "romanization", "ipa_pronunciation"]
     sortable_fields = ["form", "is_lemma", "created_at"]
+
+    page_size = 25
+    page_size_options = [25, 50, 100]
+
+
+class SpellingVariantAdmin(ModelView):
+    """Admin view for SpellingVariant (non-standard spellings of a WordForm)."""
+    exclude_fields_from_create = ["created_at", "updated_at", "normalized"]
+    exclude_fields_from_edit = ["created_at", "updated_at", "normalized"]
+
+    searchable_fields = ["variant", "note"]
+    sortable_fields = ["variant", "created_at"]
 
     page_size = 25
     page_size_options = [25, 50, 100]

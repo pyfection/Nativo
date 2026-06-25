@@ -79,6 +79,59 @@ class WordForm(WordFormBase):
 
 
 # ============================================================================
+# SpellingVariant schemas
+# ============================================================================
+
+
+class SpellingVariantBase(BaseModel):
+    variant: str = Field(..., min_length=1, max_length=255)
+    note: Optional[str] = Field(None, max_length=500)
+
+
+class SpellingVariantCreate(SpellingVariantBase):
+    """Add a non-standard spelling that maps to an existing WordForm."""
+
+
+class SpellingVariant(SpellingVariantBase):
+    id: UUID
+    word_form_id: UUID
+    normalized: str
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class SpellingCandidate(BaseModel):
+    """One standard form a non-standard spelling could resolve to."""
+
+    word_form_id: UUID
+    lexeme_id: UUID
+    standard_form: str
+    lemma: str
+    note: Optional[str] = None  # provenance of the matched variant
+
+
+class SpellingResolution(BaseModel):
+    """Resolve a single token to its standard spelling candidate(s)."""
+
+    token: str
+    normalized: str
+    already_standard: bool
+    candidates: List[SpellingCandidate]
+
+
+class SpellingCorrection(BaseModel):
+    """A span in a Text whose spelling has a known standard form."""
+
+    start_char: int
+    end_char: int
+    original: str
+    ambiguous: bool  # True when more than one standard form matches
+    candidates: List[SpellingCandidate]
+
+
+# ============================================================================
 # Lexeme schemas
 # ============================================================================
 

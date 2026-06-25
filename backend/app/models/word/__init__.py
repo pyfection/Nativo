@@ -31,11 +31,13 @@ from app.models.word.associations import (
 )
 
 from app.models.word.lexeme import Lexeme
+from app.models.word.spelling_variant import SpellingVariant
 from app.models.word.word_form import WordForm
 
 __all__ = [
     "Lexeme",
     "WordForm",
+    "SpellingVariant",
     # Enums
     "Animacy",
     "AntonymType",

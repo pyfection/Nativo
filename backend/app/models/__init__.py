@@ -16,6 +16,7 @@ from app.models.image import Image
 from app.models.tag import Tag
 from app.models.word import (
     Lexeme,
+    SpellingVariant,
     WordForm,
     # Enums
     Animacy,
@@ -56,6 +57,7 @@ __all__ = [
     "Tag",
     "Lexeme",
     "WordForm",
+    "SpellingVariant",
     "Image",
     # User enums
     "UserRole",
