@@ -14,6 +14,10 @@ from app.services.auth_service import decode_token
 # OAuth2 scheme for token authentication
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
+# Variant that yields None instead of 401 when no token is sent — for
+# endpoints that serve anonymous visitors but personalise for members.
+oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login", auto_error=False)
+
 
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
@@ -63,6 +67,22 @@ async def get_current_user(
         )
     
     return user
+
+
+async def get_current_user_optional(
+    token: str | None = Depends(oauth2_scheme_optional),
+    db: Session = Depends(get_db),
+) -> User | None:
+    """
+    Like get_current_user, but anonymous requests get None instead of 401.
+
+    A token that IS sent must still be valid — an expired session should
+    surface as 401 (so clients can re-authenticate), not silently degrade
+    to the anonymous view.
+    """
+    if token is None:
+        return None
+    return await get_current_user(token=token, db=db)
 
 
 async def get_current_active_user(

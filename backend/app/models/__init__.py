@@ -13,6 +13,7 @@ from app.models.text import Text, DocumentType
 from app.models.text_word_link import TextWordLink, TextWordLinkStatus
 from app.models.location import Location
 from app.models.image import Image
+from app.models.learning import DifficultyRating, UserLexemeKnowledge, UserTextProgress
 from app.models.tag import Tag
 from app.models.word import (
     Lexeme,
@@ -59,6 +60,9 @@ __all__ = [
     "WordForm",
     "SpellingVariant",
     "Image",
+    "UserLexemeKnowledge",
+    "UserTextProgress",
+    "DifficultyRating",
     # User enums
     "UserRole",
     "ProficiencyLevel",

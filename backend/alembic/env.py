@@ -1,12 +1,12 @@
 import os
 from logging.config import fileConfig
 
+# Import all models (not just Base) so every table is registered on
+# Base.metadata — without this, autogenerate sees an empty metadata and
+# proposes dropping every table.
+import app.models  # noqa: F401
 from alembic import context
-
-# Import your models' Base
 from app.database import Base
-
-# Import all models to ensure they're registered with Base
 from sqlalchemy import engine_from_config, pool
 
 # this is the Alembic Config object, which provides
