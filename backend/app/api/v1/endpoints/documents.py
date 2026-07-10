@@ -120,10 +120,13 @@ async def get_document(
 async def get_document_with_links(
     document_id: UUID,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user),
 ):
     """
     Retrieve a document and all associated texts with link metadata.
+
+    Public read: link metadata is what lets a reader click through from a
+    word in a text to its dictionary entry, so anonymous visitors get it
+    too. Creating/editing links stays behind edit permission.
     """
     document = (
         db.query(Document)
