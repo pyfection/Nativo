@@ -15,7 +15,7 @@ interface AppLayoutProps {
 }
 
 export default function AppLayout({ children, selectedLanguage, onLanguageChange, languages }: AppLayoutProps) {
-  const { isAuthenticated, refreshUserProficiencies } = useAuth();
+  const { refreshUserProficiencies } = useAuth();
 
   const handleLanguageJoined = async () => {
     await refreshUserProficiencies();
@@ -42,10 +42,11 @@ export default function AppLayout({ children, selectedLanguage, onLanguageChange
         </div>
       </header>
 
-      {/* Main Content Area */}
+      {/* Main Content Area. The sidebar is the map of what the platform is —
+          show it to guests too so read-only browsing is discoverable. */}
       <div className="app-content-wrapper">
-        {isAuthenticated && <Sidebar />}
-        <main className={`app-main ${isAuthenticated ? 'with-sidebar' : ''}`}>
+        <Sidebar />
+        <main className="app-main with-sidebar">
           {children}
         </main>
       </div>

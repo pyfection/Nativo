@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Language } from '../../App';
 import { useAuth } from '../../contexts/AuthContext';
 import Dropdown, { DropdownOption } from './Dropdown';
@@ -22,6 +22,7 @@ export default function LanguageSelector({
 }: LanguageSelectorProps) {
   const { t } = useTranslation();
   const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [showJoinModal, setShowJoinModal] = useState(false);
 
   // Split languages into managed and other
@@ -56,8 +57,7 @@ export default function LanguageSelector({
 
   const handleJoinClick = () => {
     if (!isAuthenticated) {
-      // Could redirect to login or show a message
-      alert('Please log in to join a language');
+      navigate('/register');
       return;
     }
     setShowJoinModal(true);

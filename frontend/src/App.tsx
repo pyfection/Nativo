@@ -252,19 +252,17 @@ function App() {
               }
             />
 
-            {/* Languages Route */}
+            {/* Languages — public, read-only browsing; join actions require auth */}
             <Route
               path="/languages"
               element={
-                <ProtectedRoute>
-                  <AppLayout
-                    selectedLanguage={selectedLanguage!}
-                    onLanguageChange={setSelectedLanguage}
-                    languages={languages}
-                  >
-                    <Languages />
-                  </AppLayout>
-                </ProtectedRoute>
+                <AppLayout
+                  selectedLanguage={selectedLanguage!}
+                  onLanguageChange={setSelectedLanguage}
+                  languages={languages}
+                >
+                  <Languages />
+                </AppLayout>
               }
             />
             {/* Public read-only writing-standard reference per language. */}
@@ -284,19 +282,17 @@ function App() {
               }
             />
 
-            {/* Word Routes */}
+            {/* Word Routes — listing is public, adding requires auth */}
             <Route
               path="/words"
               element={
-                <ProtectedRoute>
-                  <AppLayout
-                    selectedLanguage={selectedLanguage!}
-                    onLanguageChange={setSelectedLanguage}
-                    languages={languages}
-                  >
-                    <WordList selectedLanguage={selectedLanguage!} />
-                  </AppLayout>
-                </ProtectedRoute>
+                <AppLayout
+                  selectedLanguage={selectedLanguage!}
+                  onLanguageChange={setSelectedLanguage}
+                  languages={languages}
+                >
+                  <WordList selectedLanguage={selectedLanguage!} />
+                </AppLayout>
               }
             />
             <Route
@@ -330,71 +326,63 @@ function App() {
               }
             />
 
-            {/* Dictionary Route */}
+            {/* Dictionary — public, read-only search */}
             <Route
               path="/dictionary"
               element={
-                <ProtectedRoute>
-                  <AppLayout
+                <AppLayout
+                  selectedLanguage={selectedLanguage!}
+                  onLanguageChange={setSelectedLanguage}
+                  languages={languages}
+                >
+                  <Dictionary
                     selectedLanguage={selectedLanguage!}
-                    onLanguageChange={setSelectedLanguage}
                     languages={languages}
-                  >
-                    <Dictionary
-                      selectedLanguage={selectedLanguage!}
-                      languages={languages}
-                    />
-                  </AppLayout>
-                </ProtectedRoute>
+                  />
+                </AppLayout>
               }
             />
 
-            {/* Spelling lookup Route */}
+            {/* Spelling lookup — public, read-only */}
             <Route
               path="/spelling"
               element={
-                <ProtectedRoute>
-                  <AppLayout
-                    selectedLanguage={selectedLanguage!}
-                    onLanguageChange={setSelectedLanguage}
-                    languages={languages}
-                  >
-                    <SpellingLookup selectedLanguage={selectedLanguage!} />
-                  </AppLayout>
-                </ProtectedRoute>
+                <AppLayout
+                  selectedLanguage={selectedLanguage!}
+                  onLanguageChange={setSelectedLanguage}
+                  languages={languages}
+                >
+                  <SpellingLookup selectedLanguage={selectedLanguage!} />
+                </AppLayout>
               }
             />
 
-            {/* Document Routes */}
+            {/* Document Routes — reading is public; add/edit/link require auth */}
             <Route
               path="/documents"
               element={
-                <ProtectedRoute>
-                  <AppLayout
-                    selectedLanguage={selectedLanguage!}
-                    onLanguageChange={setSelectedLanguage}
-                    languages={languages}
-                  >
-                    <DocumentList selectedLanguage={selectedLanguage!} />
-                  </AppLayout>
-                </ProtectedRoute>
+                <AppLayout
+                  selectedLanguage={selectedLanguage!}
+                  onLanguageChange={setSelectedLanguage}
+                  languages={languages}
+                >
+                  <DocumentList selectedLanguage={selectedLanguage!} />
+                </AppLayout>
               }
             />
             <Route
               path="/documents/:documentId"
               element={
-                <ProtectedRoute>
-                  <AppLayout
+                <AppLayout
+                  selectedLanguage={selectedLanguage!}
+                  onLanguageChange={setSelectedLanguage}
+                  languages={languages}
+                >
+                  <DocumentDetail
                     selectedLanguage={selectedLanguage!}
-                    onLanguageChange={setSelectedLanguage}
                     languages={languages}
-                  >
-                    <DocumentDetail
-                      selectedLanguage={selectedLanguage!}
-                      languages={languages}
-                    />
-                  </AppLayout>
-                </ProtectedRoute>
+                  />
+                </AppLayout>
               }
             />
             <Route

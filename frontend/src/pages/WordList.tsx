@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import wordService, { WordListItem } from '../services/wordService';
 import { Language } from '../App';
 import { useAuth } from '../contexts/AuthContext';
@@ -11,7 +11,7 @@ interface WordListProps {
 
 export default function WordList({ selectedLanguage }: WordListProps) {
   const navigate = useNavigate();
-  const { canEditLanguage } = useAuth();
+  const { isAuthenticated, canEditLanguage } = useAuth();
   const [words, setWords] = useState<WordListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -99,8 +99,17 @@ export default function WordList({ selectedLanguage }: WordListProps) {
 
       {!canEdit && selectedLanguage && (
         <div className="word-list-permission-notice">
-          You don't have permission to add words to this language. Contact an
-          administrator to request access.
+          {isAuthenticated ? (
+            <>
+              You don't have permission to add words to this language. Contact an
+              administrator to request access.
+            </>
+          ) : (
+            <>
+              Know a {selectedLanguage.name} word that's missing?{' '}
+              <Link to="/register">Create a free account</Link> to contribute.
+            </>
+          )}
         </div>
       )}
 

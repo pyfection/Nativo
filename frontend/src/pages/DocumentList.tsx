@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import documentService from '../services/documentService';
 import { DocumentListItem } from '../types/document';
 import { Language } from '../App';
@@ -12,7 +12,7 @@ interface DocumentListProps {
 
 export default function DocumentList({ selectedLanguage }: DocumentListProps) {
   const navigate = useNavigate();
-  const { canEditLanguage } = useAuth();
+  const { isAuthenticated, canEditLanguage } = useAuth();
   const [documents, setDocuments] = useState<DocumentListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -98,7 +98,17 @@ export default function DocumentList({ selectedLanguage }: DocumentListProps) {
       {!canEdit && selectedLanguage && (
         <div style={{ padding: '1rem', backgroundColor: '#fff3cd', border: '1px solid #ffc107', borderRadius: '4px', marginBottom: '1rem' }}>
           <p style={{ margin: 0, color: '#856404' }}>
-            You don't have permission to add documents to this language. Contact an administrator to request access.
+            {isAuthenticated ? (
+              <>
+                You don't have permission to add documents to this language. Contact an
+                administrator to request access.
+              </>
+            ) : (
+              <>
+                Have a {selectedLanguage.name} text to preserve?{' '}
+                <Link to="/register">Create a free account</Link> to contribute.
+              </>
+            )}
           </p>
         </div>
       )}

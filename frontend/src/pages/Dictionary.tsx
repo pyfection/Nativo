@@ -28,7 +28,7 @@ export default function Dictionary({ selectedLanguage, languages }: DictionaryPr
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const knownLanguages = languages.filter((lang) => {
+  const proficiencyLanguages = languages.filter((lang) => {
     if (!user?.language_proficiencies) return false;
     const proficiency = user.language_proficiencies.find((lp) => lp.language_id === lang.id);
     if (!proficiency) return false;
@@ -36,9 +36,17 @@ export default function Dictionary({ selectedLanguage, languages }: DictionaryPr
     return level === 'intermediate' || level === 'fluent' || level === 'native';
   });
 
+  // Guests (and members who haven't joined a language yet) can still use the
+  // dictionary: fall back to every other language as a candidate target.
+  const usingProficiencies = proficiencyLanguages.length > 0;
+  const knownLanguages = usingProficiencies
+    ? proficiencyLanguages
+    : languages.filter((lang) => lang.id !== selectedLanguage.id);
+
   useEffect(() => {
     setSelectedKnownLanguages(new Set(knownLanguages.map((lang) => lang.id)));
-  }, [user, languages]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, languages, selectedLanguage.id]);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
@@ -145,15 +153,17 @@ export default function Dictionary({ selectedLanguage, languages }: DictionaryPr
             <span className="toggle-label">Search direction:</span>
             <span className="toggle-value">
               {searchDirection === 'current-to-known'
-                ? `${selectedLanguage.name} → Known Languages`
-                : `Known Languages → ${selectedLanguage.name}`}
+                ? `${selectedLanguage.name} → ${usingProficiencies ? 'Known Languages' : 'Other Languages'}`
+                : `${usingProficiencies ? 'Known Languages' : 'Other Languages'} → ${selectedLanguage.name}`}
             </span>
           </button>
         </div>
 
         {knownLanguages.length > 0 && (
           <div className="language-filters">
-            <span className="filter-label">Filter by known languages:</span>
+            <span className="filter-label">
+              {usingProficiencies ? 'Filter by known languages:' : 'Filter by language:'}
+            </span>
             <div className="language-toggles">
               {knownLanguages.map((lang) => (
                 <button
@@ -170,9 +180,10 @@ export default function Dictionary({ selectedLanguage, languages }: DictionaryPr
 
         {knownLanguages.length === 0 && (
           <div className="no-known-languages">
-            <p>You haven't joined any languages yet.</p>
+            <p>There is no other language to translate to yet.</p>
             <p className="hint">
-              Join languages with intermediate or higher proficiency to use the dictionary.
+              The dictionary translates between {selectedLanguage.name} and other languages on the
+              platform; more languages need to be added first.
             </p>
           </div>
         )}

@@ -5,7 +5,7 @@ import LanguageCard from '../components/languages/LanguageCard';
 import './Languages.css';
 
 export default function Languages() {
-  const { user, refreshUserProficiencies } = useAuth();
+  const { user, isAuthenticated, refreshUserProficiencies } = useAuth();
   const [languages, setLanguages] = useState<LanguageResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -100,26 +100,29 @@ export default function Languages() {
           />
         </div>
 
-        <div className="filter-tabs">
-          <button
-            className={`filter-tab ${filter === 'all' ? 'active' : ''}`}
-            onClick={() => setFilter('all')}
-          >
-            All Languages ({languages.length})
-          </button>
-          <button
-            className={`filter-tab ${filter === 'joined' ? 'active' : ''}`}
-            onClick={() => setFilter('joined')}
-          >
-            Joined ({user?.language_proficiencies?.length || 0})
-          </button>
-          <button
-            className={`filter-tab ${filter === 'not-joined' ? 'active' : ''}`}
-            onClick={() => setFilter('not-joined')}
-          >
-            Not Joined ({languages.length - (user?.language_proficiencies?.length || 0)})
-          </button>
-        </div>
+        {/* Join-status tabs only make sense once you can join — hide for guests */}
+        {isAuthenticated && (
+          <div className="filter-tabs">
+            <button
+              className={`filter-tab ${filter === 'all' ? 'active' : ''}`}
+              onClick={() => setFilter('all')}
+            >
+              All Languages ({languages.length})
+            </button>
+            <button
+              className={`filter-tab ${filter === 'joined' ? 'active' : ''}`}
+              onClick={() => setFilter('joined')}
+            >
+              Joined ({user?.language_proficiencies?.length || 0})
+            </button>
+            <button
+              className={`filter-tab ${filter === 'not-joined' ? 'active' : ''}`}
+              onClick={() => setFilter('not-joined')}
+            >
+              Not Joined ({languages.length - (user?.language_proficiencies?.length || 0)})
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Languages Grid */}

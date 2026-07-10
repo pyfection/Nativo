@@ -124,7 +124,14 @@ export default function LanguageCard({ language, onLanguageJoined }: LanguageCar
 
         {/* Action button + standard link */}
         <div className="language-card-actions">
-          {!userProficiency ? (
+          {!user ? (
+            <Link to="/register" className="btn-join">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/>
+              </svg>
+              Sign up to join
+            </Link>
+          ) : !userProficiency ? (
             <button
               className="btn-join"
               onClick={() => setShowJoinModal(true)}

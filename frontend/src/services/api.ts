@@ -23,11 +23,15 @@ api.interceptors.request.use(
   }
 );
 
-// Handle 401 responses
+// Handle 401 responses. Only force a redirect when a token was actually
+// sent — that means an expired/invalid session. Anonymous visitors browsing
+// public pages must never be ejected to /login by a stray 401 from an
+// auth-only endpoint; the calling page handles the error itself.
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const hadToken = !!localStorage.getItem('access_token');
+    if (error.response?.status === 401 && hadToken) {
       localStorage.removeItem('access_token');
       window.location.href = '/login';
     }
