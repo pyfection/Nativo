@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import './Register.css';
 
@@ -14,6 +14,10 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  // Land back where the visitor's intent was (e.g. the word list they were
+  // reading when they clicked "create an account").
+  const from = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname || '/';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,7 +43,7 @@ export default function Register() {
         username: formData.username,
         password: formData.password,
       });
-      navigate('/');
+      navigate(from, { replace: true });
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Registration failed. Please try again.');
     } finally {
@@ -133,7 +137,7 @@ export default function Register() {
         <div className="register-footer">
           <p>
             Already have an account?{' '}
-            <Link to="/login" className="login-link">
+            <Link to="/login" state={location.state} className="login-link">
               Sign in here
             </Link>
           </p>

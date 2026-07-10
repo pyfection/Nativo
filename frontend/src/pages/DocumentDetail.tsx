@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import documentService from '../services/documentService';
 import languageService from '../services/languageService';
 import { DocumentWithTexts } from '../types/document';
@@ -17,7 +17,8 @@ interface DocumentDetailProps {
 export default function DocumentDetail({ selectedLanguage, languages }: DocumentDetailProps) {
   const { documentId } = useParams<{ documentId: string }>();
   const navigate = useNavigate();
-  const { canEditLanguage, isAdmin } = useAuth();
+  const location = useLocation();
+  const { isAuthenticated, canEditLanguage, isAdmin } = useAuth();
   // Local mirror so the button can flip immediately after a promote/demote
   // round-trip without waiting for the parent's languages prop to re-fetch.
   // Set is keyed by language_id; presence means "this language has THIS
@@ -180,9 +181,11 @@ export default function DocumentDetail({ selectedLanguage, languages }: Document
           <button className="btn-secondary" onClick={handleBack}>
             Back
           </button>
-          <button className="btn-secondary" onClick={handleLink}>
-            Link Words
-          </button>
+          {canEdit && (
+            <button className="btn-secondary" onClick={handleLink}>
+              Link Words
+            </button>
+          )}
           {isAdmin && activeText?.language_id && documentId && (
             <button
               className="btn-secondary"
@@ -256,6 +259,17 @@ export default function DocumentDetail({ selectedLanguage, languages }: Document
               );
             })}
           </ul>
+          {/* A missing translation is a contribution opportunity — pitch the
+              signup exactly there instead of hiding the gap from guests. */}
+          {!isAuthenticated && (
+            <p className="translation-guest-cta">
+              Missing your language?{' '}
+              <Link to="/register" state={{ from: location }}>
+                Sign up to add a translation
+              </Link>
+              .
+            </p>
+          )}
         </aside>
 
         <article className="document-content">

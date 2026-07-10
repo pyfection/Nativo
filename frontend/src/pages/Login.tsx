@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import './Login.css';
 
@@ -12,6 +12,10 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  // Land back on the page the visitor came from (ProtectedRoute and the
+  // guest CTAs pass it via state) instead of dumping everyone on the home page.
+  const from = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname || '/';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,7 +24,7 @@ export default function Login() {
 
     try {
       await login(formData);
-      navigate('/');
+      navigate(from, { replace: true });
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Login failed. Please try again.');
     } finally {
@@ -84,7 +88,7 @@ export default function Login() {
         <div className="login-footer">
           <p>
             Don't have an account?{' '}
-            <Link to="/register" className="register-link">
+            <Link to="/register" state={location.state} className="register-link">
               Register here
             </Link>
           </p>

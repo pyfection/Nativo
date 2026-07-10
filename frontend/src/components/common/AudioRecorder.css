@@ -84,3 +84,16 @@
     animation: none;
   }
 }
+
+/* Guest invitation shown where a recording could be but isn't yet. */
+.audio-recorder-guest-cta {
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--cream-dim);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.audio-recorder-guest-cta:hover {
+  color: var(--cream);
+}

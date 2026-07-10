@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import documentService from '../services/documentService';
 import { DocumentListItem } from '../types/document';
 import { Language } from '../App';
@@ -12,6 +12,7 @@ interface DocumentListProps {
 
 export default function DocumentList({ selectedLanguage }: DocumentListProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { isAuthenticated, canEditLanguage } = useAuth();
   const [documents, setDocuments] = useState<DocumentListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -106,7 +107,8 @@ export default function DocumentList({ selectedLanguage }: DocumentListProps) {
             ) : (
               <>
                 Have a {selectedLanguage.name} text to preserve?{' '}
-                <Link to="/register">Create a free account</Link> to contribute.
+                <Link to="/register" state={{ from: location }}>Create a free account</Link> to
+                contribute.
               </>
             )}
           </p>
@@ -204,18 +206,20 @@ export default function DocumentList({ selectedLanguage }: DocumentListProps) {
                         </svg>
                       </button>
                     )}
-                    <button
-                      type="button"
-                      className="icon-button"
-                      onClick={() => navigate(`/documents/${doc.id}/link`)}
-                      aria-label="Link words"
-                      title="Link words"
-                    >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M10 13a5 5 0 0 1 7.54-.54l2 2a5 5 0 0 1-7.07 7.07l-1.29-1.3" />
-                        <path d="M14 11a5 5 0 0 1-7.54.54l-2-2a5 5 0 0 1 7.07-7.07l1.29 1.3" />
-                      </svg>
-                    </button>
+                    {canEdit && (
+                      <button
+                        type="button"
+                        className="icon-button"
+                        onClick={() => navigate(`/documents/${doc.id}/link`)}
+                        aria-label="Link words"
+                        title="Link words"
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M10 13a5 5 0 0 1 7.54-.54l2 2a5 5 0 0 1-7.07 7.07l-1.29-1.3" />
+                          <path d="M14 11a5 5 0 0 1-7.54.54l-2-2a5 5 0 0 1 7.07-7.07l1.29 1.3" />
+                        </svg>
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 
+import { useAuth } from '../../contexts/AuthContext';
 import {
   AudioListItem,
   deleteAudio,
@@ -41,6 +43,8 @@ export default function AudioRecorder({
   onError,
   onMessage,
 }: AudioRecorderProps) {
+  const { isAuthenticated } = useAuth();
+  const location = useLocation();
   const [audios, setAudios] = useState<AudioListItem[]>([]);
   const [status, setStatus] = useState<Status>('idle');
   const [elapsed, setElapsed] = useState(0);
@@ -217,6 +221,13 @@ export default function AudioRecorder({
           <span className="audio-recorder-unsupported">
             Recording isn't supported in this browser.
           </span>
+        )}
+        {/* The moment read-only runs out is the moment to invite a signup:
+            a guest looking at a form nobody has recorded yet. */}
+        {!isAuthenticated && audios.length === 0 && (
+          <Link to="/register" state={{ from: location }} className="audio-recorder-guest-cta">
+            No recording yet — sign up to lend your voice
+          </Link>
         )}
       </div>
 

@@ -150,17 +150,26 @@ export default function Home({ selectedLanguage }: HomeProps) {
           </p>
           <div className="hero-actions">
             {isAuthenticated ? (
-              <Link to="/words/add" className="btn btn-accent btn-lg">
-                {t('hero_v2.cta_start')}
-              </Link>
+              <>
+                <Link to="/words/add" className="btn btn-accent btn-lg">
+                  {t('hero_v2.cta_start')}
+                </Link>
+                <Link to="/languages" className="btn btn-ghost btn-lg">
+                  {t('hero_v2.cta_explore')}
+                </Link>
+              </>
             ) : (
-              <Link to="/register" className="btn btn-accent btn-lg">
-                {t('hero_v2.cta_start')}
-              </Link>
+              // Curiosity first, commitment later: guests get "browse the
+              // dictionary" as the primary action, signup as the secondary.
+              <>
+                <Link to="/dictionary" className="btn btn-accent btn-lg">
+                  {t('hero_v2.cta_browse')}
+                </Link>
+                <Link to="/register" className="btn btn-ghost btn-lg">
+                  {t('hero_v2.cta_start')}
+                </Link>
+              </>
             )}
-            <Link to="/languages" className="btn btn-ghost btn-lg">
-              {t('hero_v2.cta_explore')}
-            </Link>
           </div>
           <div className="hero-reassure">
             <i>✦</i> {t('hero_v2.reassure')}

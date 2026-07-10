@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import wordService, { WordListItem } from '../services/wordService';
 import { Language } from '../App';
 import { useAuth } from '../contexts/AuthContext';
@@ -11,6 +11,7 @@ interface WordListProps {
 
 export default function WordList({ selectedLanguage }: WordListProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { isAuthenticated, canEditLanguage } = useAuth();
   const [words, setWords] = useState<WordListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -107,7 +108,8 @@ export default function WordList({ selectedLanguage }: WordListProps) {
           ) : (
             <>
               Know a {selectedLanguage.name} word that's missing?{' '}
-              <Link to="/register">Create a free account</Link> to contribute.
+              <Link to="/register" state={{ from: location }}>Create a free account</Link> to
+              contribute.
             </>
           )}
         </div>
