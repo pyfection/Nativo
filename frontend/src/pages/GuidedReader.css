@@ -1,0 +1,223 @@
+.reader-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 6rem;
+}
+
+.reader-header {
+  margin-bottom: 1.5rem;
+}
+
+.reader-title {
+  margin: 0.5rem 0 0.25rem;
+}
+
+.reader-subtitle {
+  margin: 0;
+  opacity: 0.75;
+  font-size: 0.9rem;
+}
+
+/* ---------- New-word preview ---------- */
+
+.reader-new-words {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 1.5rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.reader-new-words-label {
+  opacity: 0.8;
+  margin-right: 0.25rem;
+}
+
+.reader-new-word-chip {
+  padding: 0.1rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  opacity: 0.9;
+}
+
+/* ---------- The text itself ---------- */
+
+.reader-content {
+  font-size: 1.35rem;
+  line-height: 2;
+  white-space: pre-wrap;
+}
+
+.reader-word {
+  display: inline;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  border-radius: 3px;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+  transition: text-decoration-color 0.15s ease, background-color 0.15s ease;
+}
+
+.reader-word:hover {
+  text-decoration-color: currentColor;
+}
+
+/* Words the learner hasn't met yet get a quiet dotted underline. */
+.reader-word-new {
+  text-decoration: underline dotted;
+  text-decoration-color: var(--accent, #a9c2bd);
+  text-decoration-thickness: 2px;
+}
+
+.reader-word-active {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* ---------- Completion ---------- */
+
+.reader-footer {
+  margin-top: 3rem;
+  text-align: center;
+}
+
+.reader-finished p,
+.reader-guest-cta p {
+  margin-bottom: 0.75rem;
+  opacity: 0.9;
+}
+
+/* ---------- Gloss panel ---------- */
+
+.reader-gloss {
+  position: fixed;
+  left: 50%;
+  bottom: 1rem;
+  transform: translateX(-50%);
+  width: min(680px, calc(100vw - 2rem));
+  padding: 0.9rem 1.1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: var(--base1, #0a2733);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+  z-index: 50;
+}
+
+.reader-gloss-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.reader-gloss-word {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-right: 0.5rem;
+}
+
+.reader-gloss-ipa {
+  opacity: 0.75;
+  margin-right: 0.5rem;
+}
+
+.reader-gloss-pos {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.6;
+}
+
+.reader-gloss-close {
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.6;
+  font-size: 0.9rem;
+}
+
+.reader-gloss-close:hover {
+  opacity: 1;
+}
+
+.reader-gloss-body {
+  margin: 0.5rem 0;
+  font-size: 0.95rem;
+}
+
+.reader-gloss-loading,
+.reader-gloss-none {
+  opacity: 0.7;
+  font-style: italic;
+}
+
+.reader-gloss-translations {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.25rem;
+}
+
+.reader-gloss-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.reader-gloss-more {
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.reader-gloss-more:hover {
+  opacity: 1;
+}
+
+/* ---------- Difficulty modal ---------- */
+
+.reader-difficulty {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.reader-difficulty-option {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.reader-difficulty-option:hover {
+  border-color: currentColor;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.reader-difficulty-label {
+  font-weight: 600;
+}
+
+.reader-difficulty-hint {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}

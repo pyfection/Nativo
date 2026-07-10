@@ -20,6 +20,7 @@ import EditDocument from './pages/EditDocument';
 import DocumentLinking from './pages/DocumentLinking';
 import AudioList from './pages/AudioList';
 import ContributorsList from './pages/ContributorsList';
+import GuidedReader from './pages/GuidedReader';
 import languageService, { LanguageResponse } from './services/languageService';
 import { API_URL } from './services/api';
 import { getThemeStyles } from './styles/theme';
@@ -223,6 +224,23 @@ function App() {
             />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+
+            {/* Guided reading — public; taps show glosses, progress needs an account */}
+            <Route
+              path="/learn/:documentId"
+              element={
+                <AppLayout
+                  selectedLanguage={selectedLanguage!}
+                  onLanguageChange={setSelectedLanguage}
+                  languages={languages}
+                >
+                  <GuidedReader
+                    selectedLanguage={selectedLanguage!}
+                    languages={languages}
+                  />
+                </AppLayout>
+              }
+            />
 
             {/* Audio listing — public, read-only */}
             <Route
