@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 
 import { Language } from '../../App';
 import { ActivityItem, getActivity } from '../../services/activityService';
@@ -14,6 +15,15 @@ const ICON_BY_TYPE: Record<ActivityItem['type'], string> = {
   text_added: '📚',
   contributor_joined: '🤝',
 };
+
+/** Feed entries deep-link to the thing that was added, so the feed doubles
+ *  as a browsing entry point (especially for logged-out visitors). */
+function entityHref(item: ActivityItem): string | null {
+  if (!item.entity_id) return null;
+  if (item.type === 'word_added') return `/words/${item.entity_id}`;
+  if (item.type === 'text_added') return `/documents/${item.entity_id}`;
+  return null;
+}
 
 function relativeTime(timestamp: string, locale: string): string {
   const t = Date.parse(timestamp);
@@ -71,22 +81,33 @@ export default function RecentActivity({ selectedLanguage }: RecentActivityProps
 
       {items.length > 0 && (
         <ul className="recent-activity-list">
-          {items.map((item, index) => (
-            <li key={`${item.type}-${index}-${item.timestamp}`} className="recent-activity-item">
-              <span className="recent-activity-icon" aria-hidden="true">
-                {ICON_BY_TYPE[item.type]}
-              </span>
-              <div className="recent-activity-body">
-                <p className="recent-activity-summary">{item.summary}</p>
-                <p className="recent-activity-meta">
-                  {item.actor && <span>{item.actor} · </span>}
-                  <time dateTime={item.timestamp}>
-                    {relativeTime(item.timestamp, i18n.language || 'en')}
-                  </time>
-                </p>
-              </div>
-            </li>
-          ))}
+          {items.map((item, index) => {
+            const href = entityHref(item);
+            return (
+              <li key={`${item.type}-${index}-${item.timestamp}`} className="recent-activity-item">
+                <span className="recent-activity-icon" aria-hidden="true">
+                  {ICON_BY_TYPE[item.type]}
+                </span>
+                <div className="recent-activity-body">
+                  <p className="recent-activity-summary">
+                    {href ? (
+                      <Link to={href} className="recent-activity-link">
+                        {item.summary}
+                      </Link>
+                    ) : (
+                      item.summary
+                    )}
+                  </p>
+                  <p className="recent-activity-meta">
+                    {item.actor && <span>{item.actor} · </span>}
+                    <time dateTime={item.timestamp}>
+                      {relativeTime(item.timestamp, i18n.language || 'en')}
+                    </time>
+                  </p>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       )}
     </section>

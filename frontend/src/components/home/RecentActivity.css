@@ -69,3 +69,16 @@
 .recent-activity-error {
   color: #f08a8a;
 }
+
+/* Activity entries link to the added word/document. */
+.recent-activity-link {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 2px;
+  transition: text-decoration-color 0.15s ease;
+}
+
+.recent-activity-link:hover {
+  text-decoration-color: currentColor;
+}

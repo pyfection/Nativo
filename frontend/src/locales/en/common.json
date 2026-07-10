@@ -30,7 +30,8 @@
     "no_entry": "No entry for \"{{query}}\" yet.",
     "no_entry_body": "This word hasn't been documented in {{language}}. You could be the first to add it.",
     "add_this_word": "Add this word",
-    "no_translation_in_target": "No {{target}} translation yet"
+    "no_translation_in_target": "No {{target}} translation yet",
+    "play": "Hear it"
   },
   "dictionary": {
     "title_with_target": "Look up a {{source}} word → {{target}}",
@@ -141,5 +142,9 @@
   },
   "footer": {
     "copyright": "© 2026 Nativo - Preserving Linguistic Heritage"
+  },
+  "latest_text": {
+    "heading": "Freshly preserved in {{language}}",
+    "read_more": "Read the whole text"
   }
 }

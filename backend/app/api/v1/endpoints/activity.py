@@ -30,6 +30,9 @@ class ActivityItem(BaseModel):
     timestamp: str
     actor: str | None  # username
     summary: str  # short, ready-to-render line
+    # Target for a click-through: the Lexeme id for word_added, the Document
+    # id for text_added (that's what the frontend routes on), None otherwise.
+    entity_id: UUID | None = None
 
 
 @router.get("/", response_model=list[ActivityItem])
@@ -97,6 +100,7 @@ def get_activity(
                 timestamp=w.created_at.isoformat(),
                 actor=actor,
                 summary=f'Word added: "{w.lemma}"',
+                entity_id=w.id,
             )
         )
     for t in recent_texts:
@@ -107,6 +111,7 @@ def get_activity(
                 timestamp=t.created_at.isoformat(),
                 actor=actor,
                 summary=f'Document added: "{t.title}"',
+                entity_id=t.document_id,
             )
         )
     for j in recent_joins:

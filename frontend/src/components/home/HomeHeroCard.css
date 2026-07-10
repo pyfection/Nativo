@@ -170,3 +170,23 @@
   font-size: 14px;
   margin-bottom: 12px;
 }
+
+/* Inline pronunciation playback next to the showcased word. */
+.hero-card-play {
+  margin-left: 0.6rem;
+  padding: 0.15rem 0.6rem;
+  font-size: 0.75rem;
+  font-family: inherit;
+  vertical-align: middle;
+  color: inherit;
+  background: transparent;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  opacity: 0.75;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.hero-card-play:hover {
+  opacity: 1;
+}

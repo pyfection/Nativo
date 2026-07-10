@@ -6,6 +6,7 @@ import { Language } from '../App';
 import EndangermentPanel from '../components/home/EndangermentPanel';
 import HomeHeroCard from '../components/home/HomeHeroCard';
 import LanguageActionPanel from '../components/home/LanguageActionPanel';
+import LatestText from '../components/home/LatestText';
 import RecentActivity from '../components/home/RecentActivity';
 import StatCard from '../components/home/StatCard';
 import { useAuth } from '../contexts/AuthContext';
@@ -202,6 +203,9 @@ export default function Home({ selectedLanguage }: HomeProps) {
           )}
         </div>
       </section>
+
+      {/* Something real to read, one click from landing */}
+      <LatestText selectedLanguage={selectedLanguage} />
 
       {/* UNESCO endangerment + progress towards a core-vocabulary target */}
       <EndangermentPanel

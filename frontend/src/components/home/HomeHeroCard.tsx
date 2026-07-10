@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
 import { Language } from '../../App';
 import { useUILanguage } from '../../contexts/UILanguageContext';
+import { fullAudioUrl, listAudioForForm } from '../../services/audioService';
 import wordService, {
   LexemeWithForms,
   TranslationLink,
@@ -77,9 +78,72 @@ export default function HomeHeroCard({ selectedLanguage }: HomeHeroCardProps) {
 
   const inSearchMode = query.trim().length > 0 || searched;
 
-  // Rotate every ROTATE_MS while in idle/rotating mode.
+  const current = useMemo(() => words[index], [words, index]);
+
+  // Inline pronunciation for the entry on display — hearing the language is
+  // the strongest hook the card has, especially for logged-out visitors.
+  // Cache lexeme -> audio URL (or null) so rotation doesn't refetch.
+  const audioCacheRef = useRef(new Map<string, string | null>());
+  const playerRef = useRef<HTMLAudioElement | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [playing, setPlaying] = useState(false);
+
+  const activeEntry = inSearchMode ? hit : current;
+
   useEffect(() => {
-    if (inSearchMode || words.length < 2) return;
+    let cancelled = false;
+    playerRef.current?.pause();
+    setPlaying(false);
+    setAudioUrl(null);
+    if (!activeEntry) return;
+    const lexemeId = activeEntry.id;
+    const cached = audioCacheRef.current.get(lexemeId);
+    if (cached !== undefined) {
+      setAudioUrl(cached);
+      return;
+    }
+    (async () => {
+      let url: string | null = null;
+      try {
+        let forms =
+          'forms' in activeEntry ? (activeEntry as LexemeWithForms).forms : undefined;
+        if (!forms) forms = (await wordService.getById(lexemeId)).forms;
+        const lemmaForm = forms?.find((f) => f.is_lemma) ?? forms?.[0];
+        if (lemmaForm) {
+          const audios = await listAudioForForm(lemmaForm.id);
+          if (audios.length > 0) url = fullAudioUrl(audios[0].file_path);
+        }
+      } catch {
+        // No audio is a normal state; stay silent.
+      }
+      audioCacheRef.current.set(lexemeId, url);
+      if (!cancelled) setAudioUrl(url);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [activeEntry]);
+
+  function togglePlay() {
+    if (!audioUrl) return;
+    if (playing) {
+      playerRef.current?.pause();
+      setPlaying(false);
+      return;
+    }
+    if (!playerRef.current || playerRef.current.src !== audioUrl) {
+      playerRef.current?.pause();
+      playerRef.current = new Audio(audioUrl);
+      playerRef.current.onended = () => setPlaying(false);
+    }
+    void playerRef.current.play();
+    setPlaying(true);
+  }
+
+  // Rotate every ROTATE_MS while in idle/rotating mode; hold the current
+  // entry while its pronunciation is playing.
+  useEffect(() => {
+    if (inSearchMode || playing || words.length < 2) return;
     const tick = setInterval(() => {
       setVisible(false);
       setTimeout(() => {
@@ -88,9 +152,7 @@ export default function HomeHeroCard({ selectedLanguage }: HomeHeroCardProps) {
       }, FADE_MS);
     }, ROTATE_MS);
     return () => clearInterval(tick);
-  }, [inSearchMode, words.length]);
-
-  const current = useMemo(() => words[index], [words, index]);
+  }, [inSearchMode, playing, words.length]);
 
   async function runSearch() {
     const trimmed = query.trim();
@@ -186,7 +248,19 @@ export default function HomeHeroCard({ selectedLanguage }: HomeHeroCardProps) {
               <span>{t('hero_card.label_result')}</span>
               <span>{selectedLanguage.nativeName}</span>
             </div>
-            <div className="hero-card-word">{hit.lemma}</div>
+            <div className="hero-card-word">
+              {hit.lemma}
+              {audioUrl && (
+                <button
+                  type="button"
+                  className="hero-card-play"
+                  onClick={togglePlay}
+                  title={t('hero_card.play')}
+                >
+                  {playing ? '❚❚' : '▶'} {t('hero_card.play')}
+                </button>
+              )}
+            </div>
             <HeroCardMeta lexeme={hit} />
             {target && (
               <div className="hero-card-gloss">
@@ -199,7 +273,7 @@ export default function HomeHeroCard({ selectedLanguage }: HomeHeroCardProps) {
               </div>
             )}
             <div className="hero-card-footer">
-              <Link className="hero-card-link" to="/words">
+              <Link className="hero-card-link" to={`/words/${hit.id}`}>
                 {t('hero_card.view_in_dictionary')} →
               </Link>
             </div>
@@ -229,10 +303,22 @@ export default function HomeHeroCard({ selectedLanguage }: HomeHeroCardProps) {
               <span>{t('hero_card.label_rotating')}</span>
               <span>{selectedLanguage.nativeName}</span>
             </div>
-            <div className="hero-card-word">{current.lemma}</div>
+            <div className="hero-card-word">
+              {current.lemma}
+              {audioUrl && (
+                <button
+                  type="button"
+                  className="hero-card-play"
+                  onClick={togglePlay}
+                  title={t('hero_card.play')}
+                >
+                  {playing ? '❚❚' : '▶'} {t('hero_card.play')}
+                </button>
+              )}
+            </div>
             <HeroCardMetaLite item={current} />
             <div className="hero-card-footer">
-              <Link className="hero-card-link" to="/words">
+              <Link className="hero-card-link" to={`/words/${current.id}`}>
                 {t('hero_card.view_in_dictionary')} →
               </Link>
               <span className="hero-card-rotctl">

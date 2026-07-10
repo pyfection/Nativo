@@ -1,0 +1,39 @@
+.latest-text {
+  margin: 2.5rem 0;
+}
+
+.latest-text-heading {
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.latest-text-card {
+  display: block;
+  padding: 1.25rem 1.5rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+.latest-text-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+}
+
+.latest-text-excerpt {
+  margin: 0 0 0.75rem;
+  opacity: 0.85;
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.latest-text-more {
+  font-size: 0.85rem;
+  opacity: 0.75;
+}
+
+.latest-text-card:hover .latest-text-more {
+  opacity: 1;
+}

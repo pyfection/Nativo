@@ -7,6 +7,8 @@ export interface ActivityItem {
   timestamp: string;
   actor: string | null;
   summary: string;
+  /** Lexeme id for word_added, Document id for text_added, null otherwise. */
+  entity_id: string | null;
 }
 
 export const getActivity = async (
