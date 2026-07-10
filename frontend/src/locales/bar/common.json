@@ -31,7 +31,7 @@
     "no_entry_body": "Des voat is nó ned dokumentiad in {{language}}. Du kantsd 's easte sai, dea's eidrógt.",
     "add_this_word": "Des voat dadsuaduan",
     "no_translation_in_target": "Nó koa {{target}}-ivasetsung",
-    "play": "Ólosn"
+    "play": "Ohean"
   },
   "dictionary": {
     "title_with_target": "A {{source}} voat ocaugn -> {{target}}",
@@ -139,6 +139,6 @@
   },
   "latest_text": {
     "heading": "Fric dahóitn in {{language}}",
-    "read_more": "S'gandse dokument les'n"
+    "read_more": "As gándse dokument lésn"
   }
 }
