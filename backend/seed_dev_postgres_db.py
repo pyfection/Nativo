@@ -99,7 +99,8 @@ LANGUAGES = [
     ),
 ]
 
-# Bavarian demo vocabulary: lemma -> English gloss (None = no translation).
+# Bavarian demo vocabulary in the Nativo standard orthography:
+# lemma -> English gloss (None = no translation, e.g. names).
 BAVARIAN_WORDS: dict[str, str | None] = {
     "Servus": "hello",
     "i": "I",
@@ -108,27 +109,38 @@ BAVARIAN_WORDS: dict[str, str | None] = {
     "de": "the",
     "und": "and",
     "du": "you",
-    "Max": None,
-    "Anna": None,
+    "Maks": None,
+    "Áná": None,
     "gengan": "to go",
-    "auf": "on",
+    "af": "on",
     "d": "the",
-    "Alm": "alpine pasture",
-    "essn": "to eat",
+    "óim": "alpine pasture",
+    "esn": "to eat",
     "a": "a",
-    "Brezn": "pretzel",
-    "Gschichtl": "little story",
+    "bredsn": "pretzel",
+    "Gcihdl": "little story",
 }
 
-# Graded lessons: each is a list of words (also the exact text content).
+# Graded lessons: (title, content, words-to-link in reading order). Content
+# and word list are separate because clitic articles attach with an
+# apostrophe (d'Áná) — the article and the name are linked as two words.
 LESSONS = [
-    ("Lektion 1", ["Servus", "i", "bin", "da", "Max"]),
-    ("Lektion 2", ["Servus", "Max", "i", "bin", "de", "Anna", "und", "du"]),
+    (
+        "Lektion 1",
+        "Servus i bin da Maks",
+        ["Servus", "i", "bin", "da", "Maks"],
+    ),
+    (
+        "Lektion 2",
+        "Servus Maks i bin d'Áná und du",
+        ["Servus", "Maks", "i", "bin", "d", "Áná", "und", "du"],
+    ),
     (
         "Lektion 3",
+        "da Maks und d'Áná gengan af d'óim und esn a bredsn",
         # fmt: off
-        ["da", "Max", "und", "de", "Anna", "gengan", "auf", "d", "Alm",
-         "und", "essn", "a", "Brezn"],
+        ["da", "Maks", "und", "d", "Áná", "gengan", "af", "d", "óim",
+         "und", "esn", "a", "bredsn"],
         # fmt: on
     ),
 ]
@@ -243,8 +255,8 @@ def seed_database():
             Text(
                 document_id=story_doc.id,
                 language_id=bavarian.id,
-                title="A Gschichtl",
-                content="Servus beinand! Des is a kloans Gschichtl auf Boarisch.",
+                title="A Gcihdl",
+                content="Servus bainánd! Des is a gloans Gcihdl af Boaric.",
                 document_type=DocumentType.STORY,
                 created_by_id=admin.id,
                 is_primary=True,
@@ -256,8 +268,7 @@ def seed_database():
         # ------------------------------------------------------------------
         # Graded lessons: fully linked so they qualify for /learn
         # ------------------------------------------------------------------
-        for title, words in LESSONS:
-            content = " ".join(words)
+        for title, content, words in LESSONS:
             doc = Document(created_by_id=admin.id)
             db.add(doc)
             db.flush()
