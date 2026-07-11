@@ -51,7 +51,7 @@ Notes:
 - `fly.toml` sets `release_command = "alembic ... upgrade head"`. It runs before traffic swaps, so a bad migration fails the deploy instead of half-applying.
 - `auto_stop_machines = "stop"` + `min_machines_running = 0` is free-tier friendly: the VM idles to sleep, ~5–10s cold start on next request. Set `min_machines_running = 1` if that's painful.
 - `shared-cpu-1x` / 256 MB is enough for low traffic; bump if you see OOMs.
-- File uploads (`backend/uploads/`) are **ephemeral** without a Fly Volume. Either attach a volume (`fly volumes create nativo_uploads --size 1`) and mount it, or move uploads to object storage (R2, S3) before you ship audio at scale. Documented as TODO.
+- File uploads: the durable option is **object storage** (recommended). Run `fly storage create` — it provisions a Tigris bucket and sets `BUCKET_NAME`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_ENDPOINT_URL_S3` and `AWS_REGION` as app secrets; the backend switches to S3 automatically when `BUCKET_NAME` is set (reads are served via short-lived presigned redirects, the bucket stays private). Any pre-existing files on disk/volume: copy them over once with `uv run python backend/scripts/migrate_uploads_to_s3.py` (idempotent) from `fly ssh console`. Without a bucket the fallback is the Fly volume declared in `fly.toml` (`fly volumes create nativo_uploads --size 3 --region iad`) — works, but ties you to one machine; a plain disk without either is **ephemeral**.
 
 ### CI deploy (optional)
 

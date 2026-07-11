@@ -17,7 +17,7 @@ from app.models.audio import Audio
 from app.models.user import User
 from app.models.word import Lexeme, WordForm, word_form_audio
 from app.services.auth_service import require_language_edit_permission
-from app.utils.file_storage import StorageError, store_audio
+from app.utils.file_storage import StorageError, delete_blob, store_audio
 
 router = APIRouter()
 
@@ -222,6 +222,10 @@ def delete_audio(
         raise HTTPException(status_code=403, detail="Not allowed to delete this audio")
     # Drop association rows first (no cascade declared here).
     db.execute(word_form_audio.delete().where(word_form_audio.c.audio_id == audio_id))
+    file_path = audio.file_path
     db.delete(audio)
     db.commit()
+    # Blob cleanup after the row is gone; best-effort by design — an
+    # already-missing file must not resurrect the DB row.
+    delete_blob(file_path)
     return None

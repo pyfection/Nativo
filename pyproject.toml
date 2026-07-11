@@ -21,6 +21,7 @@ dependencies = [
     "itsdangerous>=2.2.0",
     "psycopg2-binary>=2.9.9",
     "slowapi>=0.1.9",
+    "boto3>=1.43.46",
 ]
 
 [project.optional-dependencies]
@@ -32,6 +33,7 @@ dev = [
     "ruff>=0.7.0",
     "mypy>=1.13.0",
     "pre-commit>=4.0.0",
+    "moto>=5.2.2",
 ]
 
 [build-system]

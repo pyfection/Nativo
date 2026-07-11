@@ -90,7 +90,7 @@ These are real and will bite — fix or work around, don't ignore.
 - **Frontend `npm install`** requires `--legacy-peer-deps` only if you re-add an old `eslint-plugin-react-hooks@4`; we bumped to `^5` which is eslint-9-compatible.
 - **`datetime.utcnow()`** is still used as a column `default=` in ~30 places across `app/models/*` and a few service/endpoint call sites. Deprecated in 3.12+; replace with `default=lambda: datetime.now(UTC)` and `datetime.now(UTC)` respectively. Tests have been migrated.
 - **`npm run lint` has 5 pre-existing warnings** (4× `react-hooks/exhaustive-deps`, 1× `react-refresh/only-export-components`). Real code issues, not tooling — needs a per-hook review.
-- **File uploads (`backend/uploads/`) are ephemeral on Fly without a volume.** Attach `fly volumes create nativo_uploads --size 1` and mount, or move to object storage before scaling audio.
+- **File uploads**: durable via object storage — set `BUCKET_NAME` (+ AWS creds/endpoint; on Fly just `fly storage create` for Tigris) and `app/utils/file_storage.py` writes to S3, serving reads through presigned redirects at `/uploads/*`. Without a bucket it falls back to local disk (`UPLOADS_DIR`), which on Fly is only durable with the volume from `fly.toml`. One-off blob copy: `backend/scripts/migrate_uploads_to_s3.py`.
 - **`uv` resolved Python 3.14**, not 3.13. Constraint allows it but pin to 3.13 in `pyproject.toml` if you want stability.
 - **No `.env.example`** in `backend/` or `frontend/`, despite QUICKSTART telling you to `cp` them. Either add them or update QUICKSTART.
 
