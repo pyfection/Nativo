@@ -13,6 +13,7 @@ from app.api.deps import get_current_active_user, get_current_user_optional
 from app.database import get_db
 from app.models.document import Document
 from app.models.text import Text, TextStatus
+from app.models.text_word_link import TextWordLink
 from app.models.user import User
 from app.schemas.document import (
     DocumentListItem,
@@ -33,7 +34,11 @@ from app.services.auth_service import (
     require_language_edit_permission,
     require_language_verify_permission,
 )
-from app.services.document_service import refresh_document_suggestions, suggest_links_for_text
+from app.services.document_service import (
+    compute_link_coverage,
+    refresh_document_suggestions,
+    suggest_links_for_text,
+)
 
 router = APIRouter()
 
@@ -94,8 +99,9 @@ async def list_documents(
     # Get documents
     documents = query.offset(skip).limit(limit).all()
 
-    # Build list items with appropriate text for each document
-    result = []
+    # Pick the text to display per document, then batch-load links for the
+    # displayed texts so coverage doesn't N+1.
+    displayed: list[tuple[Document, Text, int]] = []
     for doc in documents:
         texts = _visible_texts(db, doc, current_user)
 
@@ -117,18 +123,30 @@ async def list_documents(
                 search_lower = search_term.lower()
                 if search_lower not in text.title.lower() and search_lower not in text.content.lower():
                     continue
+            displayed.append((doc, text, len(texts)))
 
-            result.append(DocumentListItem(
-                id=doc.id,
-                title=text.title,
-                content_preview=text.content[:200] if len(text.content) > 200 else text.content,
-                source=text.source,
-                language_id=text.language_id,
-                created_at=doc.created_at,
-                text_count=len(texts)
-            ))
+    links_by_text: dict[UUID, list[TextWordLink]] = {t.id: [] for _, t, _ in displayed}
+    if links_by_text:
+        for link in (
+            db.query(TextWordLink)
+            .filter(TextWordLink.text_id.in_(links_by_text.keys()))
+            .all()
+        ):
+            links_by_text[link.text_id].append(link)
 
-    return result
+    return [
+        DocumentListItem(
+            id=doc.id,
+            title=text.title,
+            content_preview=text.content[:200] if len(text.content) > 200 else text.content,
+            source=text.source,
+            language_id=text.language_id,
+            created_at=doc.created_at,
+            text_count=text_count,
+            link_coverage=compute_link_coverage(text, links_by_text[text.id]),
+        )
+        for doc, text, text_count in displayed
+    ]
 
 
 @router.get("/suggestions", response_model=list[TextSuggestion])
@@ -224,7 +242,12 @@ async def get_document_with_links(
         )
 
     data = DocumentWithLinks.model_validate(document)
-    data.texts = [TextWithLinks.model_validate(t) for t in texts]
+    hydrated = []
+    for t in texts:
+        item = TextWithLinks.model_validate(t)
+        item.link_coverage = compute_link_coverage(t, t.word_links)
+        hydrated.append(item)
+    data.texts = hydrated
     return data
 
 

@@ -343,7 +343,9 @@
     "suggest_document": "Suggest a Document",
     "suggest_notice": "Have a {{language}} text that's missing? You can suggest it — a reviewer will check it before it's published.",
     "suggest_link": "Suggest a document",
-    "review_queue": "Review suggestions"
+    "review_queue": "Review suggestions",
+    "th_linked": "Linked",
+    "coverage_title": "Share of words linked to the dictionary — 90% unlocks the learning path"
   },
   "spelling_page": {
     "title": "Spelling lookup",
@@ -892,7 +894,13 @@
     "opt_taboo": "Taboo",
     "opt_poetic": "Poetic",
     "opt_technical": "Technical",
-    "opt_neutral": "Neutral"
+    "opt_neutral": "Neutral",
+    "confirm_exact": "Confirm {{count}} exact matches",
+    "confirm_exact_title": "Confirm every suggestion that matched exactly one dictionary word — ambiguous ones stay for review",
+    "exact_confirmed": "{{count}} exact matches confirmed",
+    "failed_confirm_exact": "Failed to confirm exact matches.",
+    "coverage_line": "{{percent}}% of words linked · {{unlinked}} left",
+    "coverage_ready": "ready for the learning path"
   },
   "doc_types": {
     "story": "Story",

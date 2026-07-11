@@ -617,3 +617,14 @@
   color: var(--sage);
   font-style: italic;
 }
+
+.document-linking-coverage {
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+  opacity: 0.75;
+}
+
+.document-linking-coverage.coverage-ready {
+  color: #9fe3bd;
+  opacity: 1;
+}

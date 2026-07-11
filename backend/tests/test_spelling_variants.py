@@ -82,7 +82,7 @@ def _seed_form(session: Session, language: Language, user: User, form_value: str
         language_id=language.id,
         lemma=form_value,
         created_by_id=user.id,
-        status=LexemeStatus.DRAFT,
+        status=LexemeStatus.PUBLISHED,
         created_at=now,
         updated_at=now,
     )
@@ -326,7 +326,10 @@ def test_autolinker_prefers_standard_form_over_variant(db_session: Session):
     link = created[0]
     assert link.word_form_id == eich.id  # standard form wins
     assert link.confidence == 1.0
-    assert link.notes is None
+    # A unique standard-form match is auto-confirmed; the recorded variant of
+    # another word doesn't compete (variants only match when no standard form
+    # does).
+    assert link.status == TextWordLinkStatus.CONFIRMED
 
 
 def test_autolinker_variant_ambiguous_picks_best_guess(db_session: Session):

@@ -124,6 +124,9 @@ class TextWithLinks(Text):
     """Text schema including link metadata"""
 
     word_links: list[TextWordLink] = []
+    # Fraction of word tokens covered by confirmed links (the learning-path
+    # gate). Populated by the document endpoints; None if not computed.
+    link_coverage: float | None = None
 
 
 class TextListItem(BaseModel):

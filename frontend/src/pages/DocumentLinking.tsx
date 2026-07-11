@@ -694,6 +694,28 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
     );
   }, [activeText?.word_links]);
 
+  // Suggestions that were a unique exact dictionary match (the linker
+  // auto-confirms these on new texts; older texts may still carry them).
+  const exactSuggestionCount = useMemo(
+    () => suggestions.filter((link) => (link.confidence ?? 0) >= 1).length,
+    [suggestions],
+  );
+
+  // Live coverage over the page's own token model, so the numbers move as
+  // links are confirmed without a server round-trip. Matches the learning
+  // path's gate (90% of word tokens confirmed).
+  const coverageStats = useMemo(() => {
+    const wordTokens = tokens.filter((token) => token.type === 'word');
+    const confirmed = wordTokens.filter(
+      (token) => token.status === TextWordLinkStatus.CONFIRMED,
+    ).length;
+    return {
+      total: wordTokens.length,
+      unlinked: wordTokens.length - confirmed,
+      coverage: wordTokens.length ? confirmed / wordTokens.length : 0,
+    };
+  }, [tokens]);
+
   const applyLinkUpdate = useCallback((updatedLink: TextWordLink) => {
     setDocumentData((prev) => {
       if (!prev) return prev;
@@ -853,6 +875,30 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
       setActionMessage(t('linking.link_removed'));
     } catch (err: any) {
       setActionError(err?.response?.data?.detail || t('linking.failed_remove_link'));
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleConfirmExact = async () => {
+    if (!activeText) return;
+    setIsSaving(true);
+    setActionError(null);
+    const count = exactSuggestionCount;
+    try {
+      const refreshed = await wordLinkService.confirmExact(activeText.id);
+      setDocumentData((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          texts: prev.texts.map((text) =>
+            text.id === activeText.id ? { ...text, word_links: refreshed } : text,
+          ),
+        };
+      });
+      setActionMessage(t('linking.exact_confirmed', { count }));
+    } catch (err: any) {
+      setActionError(err?.response?.data?.detail || t('linking.failed_confirm_exact'));
     } finally {
       setIsSaving(false);
     }
@@ -1193,8 +1239,27 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
           <p className="document-linking-subtitle">
             {activeLanguageDisplay} · {getDocumentTypeLabel(activeText.document_type)}
           </p>
+          <p
+            className={`document-linking-coverage ${
+              coverageStats.coverage >= 0.9 ? 'coverage-ready' : ''
+            }`}
+          >
+            {t('linking.coverage_line', {
+              percent: Math.floor(coverageStats.coverage * 100),
+              unlinked: coverageStats.unlinked,
+            })}
+            {coverageStats.coverage >= 0.9 && <> · ✓ {t('linking.coverage_ready')}</>}
+          </p>
         </div>
         <div className="document-linking-actions">
+          <button
+            className="btn-primary"
+            onClick={handleConfirmExact}
+            disabled={!canEdit || isSaving || exactSuggestionCount === 0}
+            title={t('linking.confirm_exact_title')}
+          >
+            {t('linking.confirm_exact', { count: exactSuggestionCount })}
+          </button>
           <label
             className="toggle-control"
             title={t('linking.auto_expand_title')}

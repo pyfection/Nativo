@@ -176,6 +176,7 @@ export default function DocumentList({ selectedLanguage }: DocumentListProps) {
                 <th>{t('docs_page.th_content_preview')}</th>
                 <th>{t('docs_page.th_source')}</th>
                 <th>{t('docs_page.th_languages')}</th>
+                {canEdit && <th>{t('docs_page.th_linked')}</th>}
                 <th>{t('docs_page.th_date')}</th>
                 <th>{t('docs_page.th_actions')}</th>
               </tr>
@@ -189,6 +190,25 @@ export default function DocumentList({ selectedLanguage }: DocumentListProps) {
                   </td>
                   <td className="source-cell">{doc.source || '—'}</td>
                   <td className="count-cell">{doc.text_count}</td>
+                  {canEdit && (
+                    <td className="coverage-cell">
+                      {doc.link_coverage != null && (
+                        <span
+                          className={`coverage-badge ${
+                            doc.link_coverage >= 0.9
+                              ? 'coverage-high'
+                              : doc.link_coverage >= 0.5
+                                ? 'coverage-mid'
+                                : 'coverage-low'
+                          }`}
+                          title={t('docs_page.coverage_title')}
+                        >
+                          {Math.floor(doc.link_coverage * 100)}%
+                          {doc.link_coverage >= 0.9 ? ' ✓' : ''}
+                        </span>
+                      )}
+                    </td>
+                  )}
                   <td className="date-cell">{formatDate(doc.created_at)}</td>
                   <td className="actions-cell">
                     <button

@@ -68,6 +68,9 @@ class DocumentListItem(BaseModel):
     language_id: Optional[UUID] = None  # Language of the displayed text
     created_at: datetime
     text_count: int = 0  # Number of translations
+    # Confirmed-link coverage of the displayed text (0..1). Editors use this
+    # to see which documents still need linking work.
+    link_coverage: Optional[float] = None
     
     model_config = ConfigDict(from_attributes=True)
 

@@ -352,7 +352,9 @@
     "suggest_document": "Sugerir documento",
     "suggest_notice": "¿Tienes un texto en {{language}} que falta? Puedes sugerirlo: un revisor lo comprobará antes de publicarse.",
     "suggest_link": "Sugerir un documento",
-    "review_queue": "Revisar sugerencias"
+    "review_queue": "Revisar sugerencias",
+    "th_linked": "Enlazado",
+    "coverage_title": "Proporción de palabras enlazadas al diccionario; el 90 % desbloquea la ruta de aprendizaje"
   },
   "spelling_page": {
     "title": "Consulta ortográfica",
@@ -901,7 +903,13 @@
     "opt_taboo": "Tabú",
     "opt_poetic": "Poético",
     "opt_technical": "Técnico",
-    "opt_neutral": "Neutro"
+    "opt_neutral": "Neutro",
+    "confirm_exact": "Confirmar {{count}} coincidencias exactas",
+    "confirm_exact_title": "Confirma cada sugerencia que coincidió con exactamente una palabra del diccionario; las ambiguas quedan para revisión",
+    "exact_confirmed": "{{count}} coincidencias exactas confirmadas",
+    "failed_confirm_exact": "No se pudieron confirmar las coincidencias exactas.",
+    "coverage_line": "{{percent}}% de palabras enlazadas · quedan {{unlinked}}",
+    "coverage_ready": "lista para la ruta de aprendizaje"
   },
   "doc_types": {
     "story": "Relato",

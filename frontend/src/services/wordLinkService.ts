@@ -29,6 +29,15 @@ export const wordLinkService = {
     const response = await api.post<TextWordLink[]>(`/api/v1/texts/${textId}/links/suggest`);
     return response.data;
   },
+
+  /**
+   * Bulk-confirm all unique-exact (confidence 1.0) suggestions for a text.
+   * Returns the full refreshed link list for the text.
+   */
+  async confirmExact(textId: string): Promise<TextWordLink[]> {
+    const response = await api.post<TextWordLink[]>(`/api/v1/texts/${textId}/links/confirm-exact`);
+    return response.data;
+  },
 };
 
 export default wordLinkService;

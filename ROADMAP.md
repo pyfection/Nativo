@@ -28,10 +28,20 @@ Ranked by value after the open-platform + learning-path work landed.
    the volume from fly.toml) — without either, uploads remain ephemeral.*
    Value half: `Audio.text_id` narration — editors record/upload per text
    on the document page, learners get a play bar in the guided reader.
-3. **Cheaper word-linking.** Editor linking time gates the learning path
-   (90% coverage rule). Auto-confirm exact unambiguous suggestion matches,
-   a bulk "confirm all exact" action, and link-coverage shown on the
-   documents list.
+3. **Cheaper word-linking.** `done`
+   The linker now auto-confirms tokens matching exactly ONE published word
+   form (nothing for a human to decide); homographs get a distinct 0.8
+   confidence and stay suggestions, spelling-variant matches stay 0.5. A
+   "Confirm N exact matches" bulk button on the linking page clears
+   pre-existing 1.0 suggestions in one click, the linking header shows live
+   coverage ("X% of words linked · N left · ✓ ready for the learning
+   path"), and the documents list shows a color-coded coverage badge per
+   document (editors only). The linker also matches published lexemes only
+   now — pending/draft/archived words can't link themselves into texts.
+   Accepted risk (revisit if it bites): if a later dictionary addition
+   turns a spelling into a homograph, earlier auto-confirmed links for that
+   spelling are not demoted automatically (they carry an
+   "Auto-confirmed: unique exact match" note, so they're findable).
 4. **Learning retention: review mode + placement.** Use the stored 0–4
    scores: a shaky-words practice deck on /learn, and "I already speak
    some" placement that seeds top-N frequent lexemes as known.

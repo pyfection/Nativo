@@ -209,6 +209,48 @@ async def regenerate_text_link_suggestions(
     return created_links
 
 
+@router.post(
+    "/texts/{text_id}/links/confirm-exact",
+    response_model=list[TextWordLinkSchema],
+)
+async def confirm_exact_links(
+    text_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    """
+    Bulk-confirm every suggested link that is a unique exact match
+    (confidence 1.0). Homograph picks (0.8) and spelling-variant matches
+    (0.5) stay suggestions for a human decision. Returns all links for the
+    text so the client can refresh in one round-trip.
+    """
+    text = _get_text_or_404(db, text_id)
+    require_language_edit_permission(db, current_user, text.language_id)
+
+    exact_suggestions = (
+        db.query(TextWordLink)
+        .filter(
+            TextWordLink.text_id == text_id,
+            TextWordLink.status == TextWordLinkStatus.SUGGESTED,
+            TextWordLink.confidence >= 1.0,
+        )
+        .all()
+    )
+    now = datetime.utcnow()
+    for link in exact_suggestions:
+        link.status = TextWordLinkStatus.CONFIRMED
+        link.verified_by_id = current_user.id
+        link.verified_at = now
+    db.commit()
+
+    return (
+        db.query(TextWordLink)
+        .filter(TextWordLink.text_id == text_id)
+        .order_by(TextWordLink.start_char)
+        .all()
+    )
+
+
 @router.get(
     "/texts/{text_id}/spelling-corrections",
     response_model=list[SpellingCorrection],

@@ -120,6 +120,8 @@ export interface TextListItem {
 
 export interface TextWithLinks extends Text {
   word_links: TextWordLink[];
+  /** Confirmed-link coverage (0..1); populated by the document endpoints. */
+  link_coverage?: number | null;
 }
 
 export interface TextCreate {

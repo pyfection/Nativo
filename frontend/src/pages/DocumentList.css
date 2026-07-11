@@ -101,3 +101,27 @@
   gap: 0.6rem;
   align-items: center;
 }
+
+.coverage-badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.coverage-high {
+  background: rgba(90, 200, 140, 0.18);
+  color: #9fe3bd;
+}
+
+.coverage-mid {
+  background: rgba(240, 190, 90, 0.18);
+  color: #f0d49b;
+}
+
+.coverage-low {
+  background: rgba(230, 110, 110, 0.15);
+  color: #f0a8a8;
+}

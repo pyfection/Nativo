@@ -15,7 +15,6 @@ Scoring rules (agreed design):
   so an abandoned (skimmed) text marks nothing as known.
 """
 
-import re
 from uuid import UUID
 
 from sqlalchemy import func
@@ -32,6 +31,7 @@ from app.models.learning import (
 from app.models.text import Text, TextStatus
 from app.models.text_word_link import TextWordLink, TextWordLinkStatus
 from app.models.word import Lexeme, WordForm
+from app.services.document_service import compute_link_coverage
 
 # A text only qualifies for the learning path when at least this fraction of
 # its word-ish tokens are covered by confirmed links — half-linked texts have
@@ -48,11 +48,6 @@ BUDGET_BY_RATING = {
     DifficultyRating.CHALLENGING: 4,
     DifficultyRating.TOO_HARD: 0,
 }
-
-# \w covers letters/digits/underscore across Unicode in Python 3 — good
-# enough to count "word-ish" tokens for coverage purposes.
-_TOKEN_RE = re.compile(r"\w+", re.UNICODE)
-
 
 # ---------------------------------------------------------------------------
 # Scoring
@@ -160,23 +155,6 @@ def _current_budget(db: Session, user_id: UUID, language_id: UUID) -> int:
     return BUDGET_BY_RATING[latest.difficulty_rating]
 
 
-def _link_coverage(text: Text, links: list[TextWordLink]) -> float:
-    """Fraction of word-ish tokens covered by confirmed link spans."""
-    tokens = list(_TOKEN_RE.finditer(text.content or ""))
-    if not tokens:
-        return 0.0
-    spans = [
-        (link.start_char, link.end_char)
-        for link in links
-        if link.status == TextWordLinkStatus.CONFIRMED
-    ]
-    covered = 0
-    for tok in tokens:
-        if any(start <= tok.start() and tok.end() <= end for start, end in spans):
-            covered += 1
-    return covered / len(tokens)
-
-
 def _corpus_frequency(db: Session, language_id: UUID) -> dict[UUID, int]:
     """Confirmed-link count per lexeme across all texts in the language."""
     rows = (
@@ -247,7 +225,7 @@ def get_learning_path(
     entries = []
     for text in texts:
         links = links_by_text[text.id]
-        coverage = _link_coverage(text, links)
+        coverage = compute_link_coverage(text, links)
         if coverage < LINK_COVERAGE_THRESHOLD and text.id not in completed:
             continue  # difficulty unknowable; editors need to finish linking
 

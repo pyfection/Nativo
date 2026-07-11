@@ -30,6 +30,8 @@ export interface DocumentListItem {
   language_id?: string; // Language of the displayed text
   created_at: string;
   text_count: number; // Number of translations
+  /** Confirmed-link coverage (0..1) of the displayed text. 0.9 unlocks the learning path. */
+  link_coverage?: number | null;
 }
 
 export interface DocumentFilter {
