@@ -6,6 +6,7 @@ import { Language } from '../../App';
 import documentService from '../../services/documentService';
 import { DocumentListItem } from '../../types/document';
 import './LatestText.css';
+import { languageDisplayName } from '../../utils/languageName';
 
 interface LatestTextProps {
   selectedLanguage: Language;
@@ -46,7 +47,7 @@ export default function LatestText({ selectedLanguage }: LatestTextProps) {
   return (
     <section className="latest-text">
       <h3 className="latest-text-heading">
-        {t('latest_text.heading', { language: selectedLanguage.name })}
+        {t('latest_text.heading', { language: languageDisplayName(selectedLanguage) })}
       </h3>
       <Link to={`/documents/${doc.id}`} className="latest-text-card card">
         <h4 className="latest-text-title">{doc.title}</h4>

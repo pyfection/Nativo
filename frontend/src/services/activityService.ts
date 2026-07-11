@@ -6,7 +6,12 @@ export interface ActivityItem {
   type: ActivityType;
   timestamp: string;
   actor: string | null;
+  /** English fallback line; clients localize from subject/detail. */
   summary: string;
+  /** The lemma/title/username the event is about. */
+  subject: string | null;
+  /** Proficiency level for contributor_joined. */
+  detail: string | null;
   /** Lexeme id for word_added, Document id for text_added, null otherwise. */
   entity_id: string | null;
 }

@@ -2,20 +2,23 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useUILanguage } from '../../contexts/UILanguageContext';
+import { languageDisplayName } from '../../utils/languageName';
 import Dropdown, { DropdownOption } from './Dropdown';
 import './UILanguageSelector.css';
 
 export default function UILanguageSelector() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { uiLanguage, setUILanguageId, candidates } = useUILanguage();
 
   const options = useMemo<DropdownOption<string>[]>(
     () =>
       candidates.map((l) => ({
         value: l.id,
-        label: l.name,
+        label: languageDisplayName(l),
       })),
-    [candidates],
+    // i18n.language: labels are localized, recompute on UI-language change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [candidates, i18n.language],
   );
 
   if (candidates.length === 0) return null;

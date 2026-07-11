@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { API_URL } from '../../services/api';
 import './UserMenu.css';
 
 export default function UserMenu() {
+  const { t } = useTranslation();
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -37,10 +39,10 @@ export default function UserMenu() {
     return (
       <div className="user-menu-guest">
         <Link to="/login" className="login-btn">
-          Sign In
+          {t('user_menu.sign_in')}
         </Link>
         <Link to="/register" className="register-btn">
-          Register
+          {t('user_menu.register')}
         </Link>
       </div>
     );
@@ -81,7 +83,7 @@ export default function UserMenu() {
                   <path d="M8 1a2 2 0 0 1 2 2v1h3.5a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6h-.5a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5H6V3a2 2 0 0 1 2-2h0zm1 3V3a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v1h2z"/>
                   <path d="M3 6v6a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V6H3z"/>
                 </svg>
-                Admin Panel
+                {t('user_menu.admin_panel')}
               </button>
             )}
             <button onClick={handleLogout} className="user-menu-item logout">
@@ -89,7 +91,7 @@ export default function UserMenu() {
                 <path d="M5 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H5zm6 13H5V2h6v12z"/>
                 <path d="M10 8a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1 0-1h3A.5.5 0 0 1 10 8z"/>
               </svg>
-              Sign Out
+              {t('user_menu.sign_out')}
             </button>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import { Language } from '../App';
@@ -42,12 +43,7 @@ interface GlossAnchor {
 
 const GLOSS_WIDTH = 340;
 
-const DIFFICULTY_OPTIONS: { value: DifficultyRating; label: string; hint: string }[] = [
-  { value: 'easy', label: 'Easy', hint: 'Give me more new words next time' },
-  { value: 'just_right', label: 'Just right', hint: 'Keep this pace' },
-  { value: 'challenging', label: 'Challenging', hint: 'Fewer new words, please' },
-  { value: 'too_hard', label: 'Too hard', hint: 'I need to consolidate first' },
-];
+const DIFFICULTY_OPTIONS: DifficultyRating[] = ['easy', 'just_right', 'challenging', 'too_hard'];
 
 /**
  * Legentibus-style guided reading: the text rendered as tappable word spans.
@@ -56,6 +52,7 @@ const DIFFICULTY_OPTIONS: { value: DifficultyRating; label: string; hint: string
  * was, which tunes how many new words the next recommendation may contain.
  */
 export default function GuidedReader({ selectedLanguage }: GuidedReaderProps) {
+  const { t } = useTranslation();
   const { documentId } = useParams<{ documentId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -97,13 +94,13 @@ export default function GuidedReader({ selectedLanguage }: GuidedReaderProps) {
           doc.texts.find((t) => t.is_primary) ??
           doc.texts[0];
         if (!match) {
-          setError('This document has no readable text yet.');
+          setError(t('reader.no_text'));
           return;
         }
         setText(match);
       } catch (err: any) {
         if (!cancelled) {
-          setError(err.response?.data?.detail || 'Failed to load the text.');
+          setError(err.response?.data?.detail || t('reader.load_failed'));
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -113,7 +110,7 @@ export default function GuidedReader({ selectedLanguage }: GuidedReaderProps) {
     return () => {
       cancelled = true;
     };
-  }, [documentId, selectedLanguage.id]);
+  }, [documentId, selectedLanguage.id, t]);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -242,7 +239,7 @@ export default function GuidedReader({ selectedLanguage }: GuidedReaderProps) {
       setShowDifficulty(false);
       setFinished(true);
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to save your progress.');
+      setError(err.response?.data?.detail || t('reader.save_failed'));
       setShowDifficulty(false);
     } finally {
       setSaving(false);
@@ -252,7 +249,7 @@ export default function GuidedReader({ selectedLanguage }: GuidedReaderProps) {
   if (loading) {
     return (
       <div className="reader-page">
-        <div className="loading-state">Loading text…</div>
+        <div className="loading-state">{t('reader.loading')}</div>
       </div>
     );
   }
@@ -271,18 +268,20 @@ export default function GuidedReader({ selectedLanguage }: GuidedReaderProps) {
     <div className="reader-page">
       <div className="reader-header">
         <button className="btn-link" onClick={() => navigate(-1)}>
-          ← Back
+          ← {t('reader.back')}
         </button>
         <h1 className="reader-title">{text.title}</h1>
         <p className="reader-subtitle">
-          Tap any word to see what it means{isAuthenticated ? ' — that also tells us which words to keep practising with you' : ''}.
+          {isAuthenticated ? t('reader.tap_hint_member') : t('reader.tap_hint')}
         </p>
       </div>
 
       {newWords.length > 0 && isAuthenticated && (
         <div className="reader-new-words">
           <span className="reader-new-words-label">
-            {newWords.length} new word{newWords.length === 1 ? '' : 's'} in this text:
+            {newWords.length === 1
+              ? t('reader.new_words_one')
+              : t('reader.new_words', { n: newWords.length })}
           </span>
           {newWords.map((w) => (
             <span key={w.lexemeId} className="reader-new-word-chip">
@@ -324,7 +323,7 @@ export default function GuidedReader({ selectedLanguage }: GuidedReaderProps) {
             className={`reader-gloss ${glossAnchor.placeAbove ? 'reader-gloss-above' : ''}`}
             style={{ top: glossAnchor.top, left: glossAnchor.left, width: GLOSS_WIDTH }}
             role="dialog"
-            aria-label="Word details"
+            aria-label={t('reader.word_details')}
           >
             <div className="reader-gloss-head">
               <div>
@@ -342,17 +341,17 @@ export default function GuidedReader({ selectedLanguage }: GuidedReaderProps) {
                 type="button"
                 className="reader-gloss-close"
                 onClick={() => setGloss(null)}
-                aria-label="Close word details"
+                aria-label={t('reader.close_word')}
               >
                 ✕
               </button>
             </div>
             <div className="reader-gloss-body">
               {gloss.translations === null && (
-                <span className="reader-gloss-loading">Loading…</span>
+                <span className="reader-gloss-loading">{t('reader.gloss_loading')}</span>
               )}
               {gloss.translations !== null && gloss.translations.length === 0 && (
-                <span className="reader-gloss-none">No translation recorded yet.</span>
+                <span className="reader-gloss-none">{t('reader.gloss_none')}</span>
               )}
               {gloss.translations !== null && gloss.translations.length > 0 && (
                 <ul className="reader-gloss-translations">
@@ -372,12 +371,12 @@ export default function GuidedReader({ selectedLanguage }: GuidedReaderProps) {
                   className="btn btn-ghost btn-sm"
                   onClick={() => playGlossAudio(gloss.audioUrl!)}
                 >
-                  ▶ Hear it
+                  ▶ {t('hero_card.play')}
                 </button>
               )}
               {gloss.link.lexeme_id && (
                 <Link to={`/words/${gloss.link.lexeme_id}`} className="reader-gloss-more">
-                  Full entry →
+                  {t('reader.full_entry')} →
                 </Link>
               )}
             </div>
@@ -389,9 +388,9 @@ export default function GuidedReader({ selectedLanguage }: GuidedReaderProps) {
       <div className="reader-footer">
         {finished ? (
           <div className="reader-finished">
-            <p>Progress saved — your next text will match how this one felt.</p>
+            <p>{t('reader.saved')}</p>
             <Link to="/learn" className="btn btn-accent">
-              Continue learning
+              {t('reader.continue')}
             </Link>
           </div>
         ) : isAuthenticated ? (
@@ -400,16 +399,16 @@ export default function GuidedReader({ selectedLanguage }: GuidedReaderProps) {
             className="btn btn-accent btn-lg"
             onClick={() => setShowDifficulty(true)}
           >
-            I finished this text
+            {t('reader.finish')}
           </button>
         ) : (
           <div className="reader-guest-cta">
             <p>
-              Enjoying it?{' '}
+              {t('reader.guest_cta_pre')}{' '}
               <Link to="/register" state={{ from: location }}>
-                Create a free account
+                {t('reader.guest_cta_link')}
               </Link>{' '}
-              to track the words you know and get the right next text.
+              {t('reader.guest_cta_post')}
             </p>
           </div>
         )}
@@ -418,19 +417,19 @@ export default function GuidedReader({ selectedLanguage }: GuidedReaderProps) {
       <Modal
         isOpen={showDifficulty}
         onClose={() => setShowDifficulty(false)}
-        title="How difficult was this text?"
+        title={t('reader.difficulty_title')}
       >
         <div className="reader-difficulty">
-          {DIFFICULTY_OPTIONS.map((opt) => (
+          {DIFFICULTY_OPTIONS.map((value) => (
             <button
-              key={opt.value}
+              key={value}
               type="button"
               className="reader-difficulty-option"
               disabled={saving}
-              onClick={() => void submitDifficulty(opt.value)}
+              onClick={() => void submitDifficulty(value)}
             >
-              <span className="reader-difficulty-label">{opt.label}</span>
-              <span className="reader-difficulty-hint">{opt.hint}</span>
+              <span className="reader-difficulty-label">{t(`reader.diff_${value}`)}</span>
+              <span className="reader-difficulty-hint">{t(`reader.diff_${value}_hint`)}</span>
             </button>
           ))}
         </div>

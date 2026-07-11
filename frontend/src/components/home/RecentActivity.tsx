@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 
 import { Language } from '../../App';
 import { ActivityItem, getActivity } from '../../services/activityService';
+import { languageDisplayName } from '../../utils/languageName';
 import './RecentActivity.css';
 
 interface RecentActivityProps {
@@ -42,6 +43,17 @@ function relativeTime(timestamp: string, locale: string): string {
 
 export default function RecentActivity({ selectedLanguage }: RecentActivityProps) {
   const { t, i18n } = useTranslation();
+
+  /** Compose the line in the interface language from the structured parts;
+   *  fall back to the server's English summary for older payloads. */
+  const itemLabel = (item: ActivityItem): string => {
+    if (!item.subject) return item.summary;
+    if (item.type === 'contributor_joined') {
+      const level = item.detail ? t(`proficiency.${item.detail}`) : '';
+      return t('activity.item_contributor_joined', { subject: item.subject, level });
+    }
+    return t(`activity.item_${item.type}`, { subject: item.subject });
+  };
   const [items, setItems] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -68,7 +80,7 @@ export default function RecentActivity({ selectedLanguage }: RecentActivityProps
   return (
     <section className="recent-activity">
       <h3 className="recent-activity-heading">
-        {t('activity.heading', { language: selectedLanguage.name })}
+        {t('activity.heading', { language: languageDisplayName(selectedLanguage) })}
       </h3>
 
       {loading && <p className="recent-activity-loading">{t('activity.loading')}</p>}
@@ -92,10 +104,10 @@ export default function RecentActivity({ selectedLanguage }: RecentActivityProps
                   <p className="recent-activity-summary">
                     {href ? (
                       <Link to={href} className="recent-activity-link">
-                        {item.summary}
+                        {itemLabel(item)}
                       </Link>
                     ) : (
-                      item.summary
+                      itemLabel(item)
                     )}
                   </p>
                   <p className="recent-activity-meta">

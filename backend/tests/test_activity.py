@@ -138,9 +138,13 @@ def test_activity_items_carry_entity_ids(db_session: Session):
     by_type = {item.type: item for item in items}
     assert set(by_type) == {"word_added", "text_added", "contributor_joined"}
     assert by_type["word_added"].entity_id == lexeme.id
+    assert by_type["word_added"].subject == "servus"
     # Click-through target for a text is its parent document, not the text row.
     assert by_type["text_added"].entity_id == document.id
+    assert by_type["text_added"].subject == "A story"
     assert by_type["contributor_joined"].entity_id is None
+    assert by_type["contributor_joined"].subject == user.username
+    assert by_type["contributor_joined"].detail == "native"
 
 
 def test_activity_scoped_to_language(db_session: Session):

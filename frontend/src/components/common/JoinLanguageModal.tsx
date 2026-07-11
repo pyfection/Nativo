@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Modal from './Modal';
+import { languageDisplayName } from '../../utils/languageName';
 import { Language } from '../../App';
 import { useAuth } from '../../contexts/AuthContext';
 import userLanguageService, { ProficiencyLevel } from '../../services/userLanguageService';
@@ -68,7 +69,7 @@ export default function JoinLanguageModal({ isOpen, onClose, language, onJoined 
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={`Join ${language.name}`}>
+    <Modal isOpen={isOpen} onClose={onClose} title={`Join ${languageDisplayName(language)}`}>
       <form onSubmit={handleSubmit} className="join-language-form">
         <p className="join-language-intro">
           Select your proficiency level in <strong>{language.name}</strong> ({language.nativeName}).

@@ -98,7 +98,10 @@
   "activity": {
     "heading": "Letsde duan in {{language}}",
     "loading": "Duan lót...",
-    "empty": "No niks dó — sai da easte, vo a voat, dokument oda afnáma baidrógt."
+    "empty": "No niks dó — sai da easte, vo a voat, dokument oda afnáma baidrógt.",
+    "item_word_added": "Nais voat: \"{{subject}}\"",
+    "item_text_added": "Nais dokument: \"{{subject}}\"",
+    "item_contributor_joined": "{{subject}} is iads dabai ({{level}})"
   },
   "user_menu": {
     "aria_label": "Profil meni fia {{username}}",
@@ -159,5 +162,51 @@
     "step_known": "{{pct}}% gvusd",
     "step_start": "Fáng o dsum lésn",
     "step_tough": "vead cvar"
+  },
+  "reader": {
+    "back": "Dsruk",
+    "loading": "Dokument lót…",
+    "load_failed": "Es dokument hod ned lón kena.",
+    "save_failed": "Dei foatcrit hod ned gcbaihat vean kena.",
+    "no_text": "In dem dokument is no niks dsum lésn.",
+    "tap_hint": "Druk af a voat, dan siagst vos's hoast.",
+    "tap_hint_member": "Druk af a voat, dan siagst vos's hoast — so visn ma a, veihe veata ma no mid dia iabn.",
+    "new_words_one": "1 nais voat in dem dokument:",
+    "new_words": "{{n}} naie veata in dem dokument:",
+    "finish": "I bin fiati mid dem dokument",
+    "saved": "Gcbaihat — es nekste dokument bast dsu dem, via's da ganga is.",
+    "continue": "Vaida leana",
+    "guest_cta_pre": "Gfoit's da?",
+    "guest_cta_link": "Máh da a gratis konto",
+    "guest_cta_post": "um de veata dsu meakn, de'st kenst.",
+    "word_details": "Voat-detais",
+    "close_word": "Voat-detais dsuamáha",
+    "gloss_loading": "Lót…",
+    "gloss_none": "No koa ivasetsung dó.",
+    "full_entry": "Gandsa eindrog",
+    "difficulty_title": "Via cvar voa des dokument?",
+    "diff_easy": "Laihd",
+    "diff_easy_hint": "Gib ma neksts moi mea naie veata",
+    "diff_just_right": "Grod rihtig",
+    "diff_just_right_hint": "So basd's",
+    "diff_challenging": "A bisl cvar",
+    "diff_challenging_hint": "Veniga naie veata, bitte",
+    "diff_too_hard": "Dsu cvar",
+    "diff_too_hard_hint": "I brauh easd a leihdas dokument"
+  },
+  "proficiency": {
+    "native": "Muadacbráh",
+    "fluent": "Fliasnd",
+    "intermediate": "Midldrin",
+    "beginner": "Ofenga"
+  },
+  "language_names": {
+    "bar": "Boaric",
+    "umu": "Lenape",
+    "haw": "Havaiic",
+    "nav": "Navaho",
+    "ain": "Ainu",
+    "eng": "Englic",
+    "spa": "Cbanic"
   }
 }

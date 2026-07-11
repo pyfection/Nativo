@@ -12,6 +12,7 @@ import StatCard from '../components/home/StatCard';
 import { useAuth } from '../contexts/AuthContext';
 import { getStatistics, Statistics } from '../services/statisticsService';
 import './Home.css';
+import { languageDisplayName, languageDisplayDescription } from '../utils/languageName';
 
 interface HomeProps {
   selectedLanguage: Language;
@@ -147,7 +148,7 @@ export default function Home({ selectedLanguage }: HomeProps) {
             {t('hero_v2.heading_post')}
           </h1>
           <p className="hero-sub">
-            {t('hero_v2.sub', { language: selectedLanguage.name })}
+            {t('hero_v2.sub', { language: languageDisplayName(selectedLanguage) })}
           </p>
           <div className="hero-actions">
             {isAuthenticated ? (
@@ -183,10 +184,10 @@ export default function Home({ selectedLanguage }: HomeProps) {
       {/* ---------- The selected language ---------- */}
       <section className="language-strip">
         <div className="language-strip-inner">
-          <h3 className="language-strip-name">{selectedLanguage.name}</h3>
+          <h3 className="language-strip-name">{languageDisplayName(selectedLanguage)}</h3>
           <p className="language-strip-native">{selectedLanguage.nativeName}</p>
-          {selectedLanguage.description && (
-            <p className="language-strip-desc">{selectedLanguage.description}</p>
+          {languageDisplayDescription(selectedLanguage) && (
+            <p className="language-strip-desc">{languageDisplayDescription(selectedLanguage)}</p>
           )}
           <LanguageActionPanel />
           {/* Most contributors will want to read the orthography rules before
@@ -198,7 +199,7 @@ export default function Home({ selectedLanguage }: HomeProps) {
               className="language-strip-standard"
               title={`Read the orthography / writing rules for ${selectedLanguage.name}`}
             >
-              📖 {t('home.read_writing_standard', { language: selectedLanguage.name })}
+              📖 {t('home.read_writing_standard', { language: languageDisplayName(selectedLanguage) })}
             </Link>
           )}
         </div>
@@ -217,7 +218,7 @@ export default function Home({ selectedLanguage }: HomeProps) {
       {/* Language-scoped stats */}
       <section className="stats-section">
         <h3 className="stats-heading">
-          {t('stats.language_heading', { language: selectedLanguage.name })}
+          {t('stats.language_heading', { language: languageDisplayName(selectedLanguage) })}
         </h3>
         {renderLanguageStats(languageStats)}
       </section>

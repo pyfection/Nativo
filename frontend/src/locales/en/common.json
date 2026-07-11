@@ -72,7 +72,10 @@
   "activity": {
     "heading": "Recent activity in {{language}}",
     "loading": "Loading recent activity…",
-    "empty": "Nothing yet — be the first to add a word, document, or recording."
+    "empty": "Nothing yet — be the first to add a word, document, or recording.",
+    "item_word_added": "Word added: \"{{subject}}\"",
+    "item_text_added": "Document added: \"{{subject}}\"",
+    "item_contributor_joined": "{{subject}} joined ({{level}})"
   },
   "mission": {
     "title": "Our Mission",
@@ -165,5 +168,51 @@
     "step_known": "{{pct}}% known",
     "step_start": "Start reading",
     "step_tough": "will be tough"
+  },
+  "reader": {
+    "back": "Back",
+    "loading": "Loading text…",
+    "load_failed": "Failed to load the text.",
+    "save_failed": "Failed to save your progress.",
+    "no_text": "This document has no readable text yet.",
+    "tap_hint": "Tap any word to see what it means.",
+    "tap_hint_member": "Tap any word to see what it means — that also tells us which words to keep practising with you.",
+    "new_words_one": "1 new word in this text:",
+    "new_words": "{{n}} new words in this text:",
+    "finish": "I finished this text",
+    "saved": "Progress saved — your next text will match how this one felt.",
+    "continue": "Continue learning",
+    "guest_cta_pre": "Enjoying it?",
+    "guest_cta_link": "Create a free account",
+    "guest_cta_post": "to track the words you know and get the right next text.",
+    "word_details": "Word details",
+    "close_word": "Close word details",
+    "gloss_loading": "Loading…",
+    "gloss_none": "No translation recorded yet.",
+    "full_entry": "Full entry",
+    "difficulty_title": "How difficult was this text?",
+    "diff_easy": "Easy",
+    "diff_easy_hint": "Give me more new words next time",
+    "diff_just_right": "Just right",
+    "diff_just_right_hint": "Keep this pace",
+    "diff_challenging": "Challenging",
+    "diff_challenging_hint": "Fewer new words, please",
+    "diff_too_hard": "Too hard",
+    "diff_too_hard_hint": "I need to consolidate first"
+  },
+  "proficiency": {
+    "native": "Native",
+    "fluent": "Fluent",
+    "intermediate": "Intermediate",
+    "beginner": "Beginner"
+  },
+  "language_names": {
+    "bar": "Bavarian",
+    "umu": "Lenape",
+    "haw": "Hawaiian",
+    "nav": "Navajo",
+    "ain": "Ainu",
+    "eng": "English",
+    "spa": "Spanish"
   }
 }

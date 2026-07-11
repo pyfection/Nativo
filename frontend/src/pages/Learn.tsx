@@ -6,6 +6,7 @@ import { Language } from '../App';
 import { useAuth } from '../contexts/AuthContext';
 import learnService, { LearningPathEntry } from '../services/learnService';
 import './Learn.css';
+import { languageDisplayName } from '../utils/languageName';
 
 interface LearnProps {
   selectedLanguage: Language;
@@ -49,14 +50,14 @@ export default function Learn({ selectedLanguage }: LearnProps) {
     return () => {
       cancelled = true;
     };
-  }, [selectedLanguage.id, isAuthenticated]);
+  }, [selectedLanguage.id, isAuthenticated, t]);
 
   const completedCount = path.filter((e) => e.state === 'completed').length;
 
   return (
     <div className="learn-page">
       <div className="learn-header">
-        <h1>{t('learn.heading', { language: selectedLanguage.name })}</h1>
+        <h1>{t('learn.heading', { language: languageDisplayName(selectedLanguage) })}</h1>
         <p className="learn-subtitle">{t('learn.subtitle')}</p>
       </div>
 
@@ -74,7 +75,7 @@ export default function Learn({ selectedLanguage }: LearnProps) {
 
       {!loading && !error && path.length === 0 && (
         <div className="learn-empty">
-          <p>{t('learn.empty', { language: selectedLanguage.name })}</p>
+          <p>{t('learn.empty', { language: languageDisplayName(selectedLanguage) })}</p>
           <p className="learn-empty-hint">{t('learn.empty_hint')}</p>
         </div>
       )}

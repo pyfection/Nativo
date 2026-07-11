@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Language } from '../App';
 import { ContributorItem, listContributors } from '../services/contributorsService';
 import './ContributorsList.css';
+import { languageDisplayName } from '../utils/languageName';
 
 interface ContributorsListProps {
   selectedLanguage: Language;
@@ -36,7 +37,7 @@ export default function ContributorsList({ selectedLanguage }: ContributorsListP
   return (
     <div className="contributors-page">
       <header className="contributors-header">
-        <h1>{t('contributors_page.title', { language: selectedLanguage.name })}</h1>
+        <h1>{t('contributors_page.title', { language: languageDisplayName(selectedLanguage) })}</h1>
         <p className="contributors-subtitle">{t('contributors_page.subtitle')}</p>
       </header>
 

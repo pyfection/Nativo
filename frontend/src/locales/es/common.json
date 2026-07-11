@@ -72,7 +72,10 @@
   "activity": {
     "heading": "Actividad reciente en {{language}}",
     "loading": "Cargando actividad reciente…",
-    "empty": "Nada todavía: sé quien añada la primera palabra, documento o grabación."
+    "empty": "Nada todavía: sé quien añada la primera palabra, documento o grabación.",
+    "item_word_added": "Palabra añadida: «{{subject}}»",
+    "item_text_added": "Documento añadido: «{{subject}}»",
+    "item_contributor_joined": "{{subject}} se unió ({{level}})"
   },
   "mission": {
     "title": "Nuestra misión",
@@ -165,5 +168,60 @@
     "step_known": "{{pct}}% conocido",
     "step_start": "Empezar a leer",
     "step_tough": "será difícil"
+  },
+  "reader": {
+    "back": "Volver",
+    "loading": "Cargando texto…",
+    "load_failed": "No se pudo cargar el texto.",
+    "save_failed": "No se pudo guardar tu progreso.",
+    "no_text": "Este documento aún no tiene texto legible.",
+    "tap_hint": "Toca cualquier palabra para ver qué significa.",
+    "tap_hint_member": "Toca cualquier palabra para ver qué significa; así también sabemos qué palabras seguir practicando contigo.",
+    "new_words_one": "1 palabra nueva en este texto:",
+    "new_words": "{{n}} palabras nuevas en este texto:",
+    "finish": "Terminé este texto",
+    "saved": "Progreso guardado: tu próximo texto se ajustará a cómo te fue con este.",
+    "continue": "Seguir aprendiendo",
+    "guest_cta_pre": "¿Te está gustando?",
+    "guest_cta_link": "Crea una cuenta gratis",
+    "guest_cta_post": "para registrar las palabras que conoces y recibir el siguiente texto adecuado.",
+    "word_details": "Detalles de la palabra",
+    "close_word": "Cerrar detalles de la palabra",
+    "gloss_loading": "Cargando…",
+    "gloss_none": "Aún sin traducción registrada.",
+    "full_entry": "Entrada completa",
+    "difficulty_title": "¿Qué tan difícil fue este texto?",
+    "diff_easy": "Fácil",
+    "diff_easy_hint": "Dame más palabras nuevas la próxima vez",
+    "diff_just_right": "Justo bien",
+    "diff_just_right_hint": "Mantén este ritmo",
+    "diff_challenging": "Exigente",
+    "diff_challenging_hint": "Menos palabras nuevas, por favor",
+    "diff_too_hard": "Demasiado difícil",
+    "diff_too_hard_hint": "Necesito consolidar primero"
+  },
+  "proficiency": {
+    "native": "Nativo",
+    "fluent": "Fluido",
+    "intermediate": "Intermedio",
+    "beginner": "Principiante"
+  },
+  "language_names": {
+    "bar": "Bávaro",
+    "umu": "Lenape",
+    "haw": "Hawaiano",
+    "nav": "Navajo",
+    "ain": "Ainu",
+    "eng": "Inglés",
+    "spa": "Español"
+  },
+  "language_descriptions": {
+    "bar": "Lengua altogermánica hablada en Baviera, Austria y Tirol del Sur",
+    "umu": "Lengua algonquina del pueblo lenape",
+    "haw": "Lengua polinesia originaria de Hawái",
+    "nav": "Lengua na-dené del pueblo navajo",
+    "ain": "Lengua aislada hablada por el pueblo ainu de Japón",
+    "eng": "La lengua inglesa",
+    "spa": "La lengua española"
   }
 }

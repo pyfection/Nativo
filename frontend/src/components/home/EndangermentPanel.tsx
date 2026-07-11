@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 
 import { Language } from '../../App';
 import './EndangermentPanel.css';
+import { languageDisplayName } from '../../utils/languageName';
 
 interface EndangermentPanelProps {
   selectedLanguage: Language;
@@ -67,7 +68,7 @@ export default function EndangermentPanel({
         <div className="endangerment-badge">{data.levelLabel}</div>
         <h3 className="endangerment-title">
           {t('endangerment.headline', {
-            language: selectedLanguage.name,
+            language: languageDisplayName(selectedLanguage),
             level: data.levelLabel.toLowerCase(),
           })}
         </h3>

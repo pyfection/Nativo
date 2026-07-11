@@ -29,7 +29,11 @@ class ActivityItem(BaseModel):
     type: ActivityType
     timestamp: str
     actor: str | None  # username
-    summary: str  # short, ready-to-render line
+    summary: str  # English fallback line (clients localize from the parts below)
+    # Localizable parts: the lemma/title/username the event is about, plus an
+    # extra detail (proficiency level for contributor_joined).
+    subject: str | None = None
+    detail: str | None = None
     # Target for a click-through: the Lexeme id for word_added, the Document
     # id for text_added (that's what the frontend routes on), None otherwise.
     entity_id: UUID | None = None
@@ -100,6 +104,7 @@ def get_activity(
                 timestamp=w.created_at.isoformat(),
                 actor=actor,
                 summary=f'Word added: "{w.lemma}"',
+                subject=w.lemma,
                 entity_id=w.id,
             )
         )
@@ -111,6 +116,7 @@ def get_activity(
                 timestamp=t.created_at.isoformat(),
                 actor=actor,
                 summary=f'Document added: "{t.title}"',
+                subject=t.title,
                 entity_id=t.document_id,
             )
         )
@@ -122,6 +128,8 @@ def get_activity(
                 timestamp=j.created_at.isoformat(),
                 actor=actor,
                 summary=f"{actor or 'A contributor'} joined ({j.proficiency_level.value})",
+                subject=actor,
+                detail=j.proficiency_level.value,
             )
         )
 

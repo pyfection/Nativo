@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { languageDisplayDescription, languageDisplayName } from '../../utils/languageName';
 import { LanguageResponse } from '../../services/languageService';
 import { useAuth } from '../../contexts/AuthContext';
 import JoinLanguageModal from '../common/JoinLanguageModal';
@@ -54,8 +55,8 @@ export default function LanguageCard({ language, onLanguageJoined }: LanguageCar
       >
         <div className="language-card-header">
           <div>
-            <h3 className="language-name">{language.name}</h3>
-            {language.native_name && language.native_name !== language.name && (
+            <h3 className="language-name">{languageDisplayName(language)}</h3>
+            {language.native_name && language.native_name !== languageDisplayName(language) && (
               <p className="language-native-name">{language.native_name}</p>
             )}
             {language.iso_639_3 && (
@@ -74,9 +75,9 @@ export default function LanguageCard({ language, onLanguageJoined }: LanguageCar
           )}
         </div>
 
-        {language.description && (
+        {languageDisplayDescription(language) && (
           <p className={`language-description ${expanded ? 'expanded' : ''}`}>
-            {language.description}
+            {languageDisplayDescription(language)}
           </p>
         )}
 

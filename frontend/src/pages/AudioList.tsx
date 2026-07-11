@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Language } from '../App';
 import { AudioListItem, listAudio } from '../services/audioService';
 import './AudioList.css';
+import { languageDisplayName } from '../utils/languageName';
 
 interface AudioListProps {
   selectedLanguage: Language;
@@ -50,7 +51,7 @@ export default function AudioList({ selectedLanguage }: AudioListProps) {
   return (
     <div className="audio-list-page">
       <header className="audio-list-header">
-        <h1>{t('audio_page.title', { language: selectedLanguage.name })}</h1>
+        <h1>{t('audio_page.title', { language: languageDisplayName(selectedLanguage) })}</h1>
         <p className="audio-list-subtitle">{t('audio_page.subtitle')}</p>
       </header>
 

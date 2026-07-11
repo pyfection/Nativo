@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { Language } from '../../App';
 import { useAuth } from '../../contexts/AuthContext';
+import { languageDisplayName } from '../../utils/languageName';
 import Dropdown, { DropdownOption } from './Dropdown';
 import JoinLanguageModal from './JoinLanguageModal';
 import './LanguageSelector.css';
@@ -20,7 +21,7 @@ export default function LanguageSelector({
   onLanguageChange,
   onLanguageJoined
 }: LanguageSelectorProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [showJoinModal, setShowJoinModal] = useState(false);
@@ -32,23 +33,27 @@ export default function LanguageSelector({
   const dropdownOptions = useMemo<DropdownOption<string>[]>(() => {
     const opts: DropdownOption<string>[] = [];
     managedLanguages.forEach((lang, i) => {
+      const label = languageDisplayName(lang);
       opts.push({
         value: lang.id,
-        label: lang.name,
-        hint: lang.nativeName !== lang.name ? lang.nativeName : undefined,
+        label,
+        hint: lang.nativeName !== label ? lang.nativeName : undefined,
         // Separator after the last managed language, if there are 'others' to follow.
         separatorAfter: i === managedLanguages.length - 1 && otherLanguages.length > 0,
       });
     });
     otherLanguages.forEach((lang) => {
+      const label = languageDisplayName(lang);
       opts.push({
         value: lang.id,
-        label: lang.name,
-        hint: lang.nativeName !== lang.name ? lang.nativeName : undefined,
+        label,
+        hint: lang.nativeName !== label ? lang.nativeName : undefined,
       });
     });
     return opts;
-  }, [managedLanguages, otherLanguages]);
+    // i18n.language: labels are localized, recompute on UI-language change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [managedLanguages, otherLanguages, i18n.language]);
 
   // Check if user is a member of the selected language
   const userProficiency = user?.language_proficiencies?.find(
@@ -91,7 +96,7 @@ export default function LanguageSelector({
               <button
                 onClick={handleJoinClick}
                 className="join-button"
-                title={t('header.contribute_tooltip', { language: selectedLanguage.name })}
+                title={t('header.contribute_tooltip', { language: languageDisplayName(selectedLanguage) })}
               >
                 {t('header.contribute')}
               </button>

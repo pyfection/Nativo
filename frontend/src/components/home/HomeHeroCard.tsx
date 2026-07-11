@@ -11,6 +11,7 @@ import wordService, {
   WordListItem,
 } from '../../services/wordService';
 import './HomeHeroCard.css';
+import { languageDisplayName } from '../../utils/languageName';
 
 interface HomeHeroCardProps {
   selectedLanguage: Language;
@@ -212,7 +213,7 @@ export default function HomeHeroCard({ selectedLanguage }: HomeHeroCardProps) {
   return (
     <div className="hero-card card">
       <h2 className="hero-card-title">
-        {t('hero_card.title', { language: selectedLanguage.name })}
+        {t('hero_card.title', { language: languageDisplayName(selectedLanguage) })}
       </h2>
       <p className="hero-card-hint">{t('hero_card.hint')}</p>
 
@@ -286,7 +287,7 @@ export default function HomeHeroCard({ selectedLanguage }: HomeHeroCardProps) {
             <div className="hero-card-empty-big">
               {t('hero_card.no_entry', { query: query.trim() })}
             </div>
-            <p>{t('hero_card.no_entry_body', { language: selectedLanguage.name })}</p>
+            <p>{t('hero_card.no_entry_body', { language: languageDisplayName(selectedLanguage) })}</p>
             <Link className="btn btn-accent" to="/register">
               {t('hero_card.add_this_word')}
             </Link>
