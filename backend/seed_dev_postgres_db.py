@@ -131,11 +131,26 @@ BAVARIAN_WORDS: dict[str, dict[str, str]] = {
     "a": {"English": "a", "Spanish": "un"},
     "bredsn": {"English": "pretzel", "Spanish": "pretzel"},
     "gcihdl": {"English": "little story", "Spanish": "cuentito"},
+    "via": {"English": "how", "Spanish": "cómo"},
+    "hoast": {"English": "(you) are called", "Spanish": "te llamas"},
+    "hoas": {"English": "(I) am called", "Spanish": "me llamo"},
+    "bisd": {"English": "(you) are", "Spanish": "eres"},
+    "heit": {"English": "today", "Spanish": "hoy"},
+    "mia": {"English": "we", "Spanish": "nosotros"},
+    "dsvoa": {"English": "two", "Spanish": "dos"},
+    "hód": {"English": "has", "Spanish": "tiene"},
+    "an": {"English": "a", "Spanish": "un"},
+    "hund": {"English": "dog", "Spanish": "perro"},
+    "is": {"English": "is", "Spanish": "es"},
+    "guad": {"English": "good", "Spanish": "bueno"},
+    "Bello": {},
 }
 
 # Graded lessons: (title, content, words-to-link in reading order). Content
 # and word list are separate because clitic articles attach with an
 # apostrophe (d'Áná) — the article and the name are linked as two words.
+# A word entry may be a (surface, lemma) tuple where the surface form in the
+# text is capitalized (sentence start) but the lexeme is lowercase.
 LESSONS = [
     (
         "Lektion 1",
@@ -153,6 +168,30 @@ LESSONS = [
         # fmt: off
         ["da", "Maks", "und", "d", "Áná", "gengan", "af", "d", "óim",
          "und", "esn", "a", "bredsn"],
+        # fmt: on
+    ),
+    (
+        "Lektion 4",
+        "Servus! Via hoast du? I hoas Maks. Und du? I bin d'Áná.",
+        # fmt: off
+        ["Servus", ("Via", "via"), "hoast", "du", ("I", "i"), "hoas", "Maks",
+         ("Und", "und"), "du", ("I", "i"), "bin", "d", "Áná"],
+        # fmt: on
+    ),
+    (
+        "Lektion 5",
+        "Heit gengan mia af d'óim. Af da óim esn mia dsvoa bredsn.",
+        # fmt: off
+        [("Heit", "heit"), "gengan", "mia", "af", "d", "óim", ("Af", "af"),
+         "da", "óim", "esn", "mia", "dsvoa", "bredsn"],
+        # fmt: on
+    ),
+    (
+        "Lektion 6",
+        "Da Maks hód an hund. Da hund hoast Bello. Da hund is guad.",
+        # fmt: off
+        [("Da", "da"), "Maks", "hód", "an", "hund", ("Da", "da"), "hund",
+         "hoast", "Bello", ("Da", "da"), "hund", "is", "guad"],
         # fmt: on
     ),
 ]
@@ -327,15 +366,16 @@ def seed_database():
                 continue
             text = create_text(title, content)
             offset = 0
-            for word in words:
-                start = content.index(word, offset)
-                end = start + len(word)
+            for entry in words:
+                surface, lemma = entry if isinstance(entry, tuple) else (entry, entry)
+                start = content.index(surface, offset)
+                end = start + len(surface)
                 offset = end
                 db.add(
                     TextWordLink(
                         id=uuid.uuid4(),
                         text_id=text.id,
-                        word_form_id=forms[word].id,
+                        word_form_id=forms[lemma].id,
                         start_char=start,
                         end_char=end,
                         status=TextWordLinkStatus.CONFIRMED,
