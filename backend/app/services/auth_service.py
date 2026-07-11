@@ -196,3 +196,54 @@ def require_language_verify_permission(db: Session, user: User, language_id: UUI
             detail="You don't have permission to verify content for this language"
         )
 
+# ---------------------------------------------------------------------------
+# Suggester tier: trust-based auto-promotion
+# ---------------------------------------------------------------------------
+
+# After this many of a user's suggestions have been approved (published by a
+# reviewer) in a language, they are trusted with direct edit rights there.
+AUTO_PROMOTE_AFTER_APPROVALS = 5
+
+
+def maybe_promote_suggester(db: Session, user_id: UUID, language_id: UUID) -> bool:
+    """
+    Grant `can_edit` once a suggester has enough approved suggestions.
+
+    Called after a reviewer publishes a suggested lexeme. Only promotes users
+    who have joined the language (a UserLanguage row exists) — the membership
+    row is where the permission lives. Returns True if a promotion happened.
+    """
+    from app.models.word import Lexeme, LexemeStatus  # avoid module cycle at import time
+
+    if can_user_edit_language(db, user_id, language_id):
+        return False
+
+    # The caller (verify endpoint) has just set the lexeme to PUBLISHED in
+    # the session; the app session is autoflush=False, so flush explicitly or
+    # the count below misses the approval that triggered this call.
+    db.flush()
+
+    approved = (
+        db.query(Lexeme)
+        .filter(
+            Lexeme.created_by_id == user_id,
+            Lexeme.language_id == language_id,
+            Lexeme.status == LexemeStatus.PUBLISHED,
+            Lexeme.verified_by_id.isnot(None),
+            Lexeme.verified_by_id != user_id,
+        )
+        .count()
+    )
+    if approved < AUTO_PROMOTE_AFTER_APPROVALS:
+        return False
+
+    user_language = db.query(UserLanguage).filter(
+        and_(
+            UserLanguage.user_id == user_id,
+            UserLanguage.language_id == language_id,
+        )
+    ).first()
+    if user_language is None:
+        return False
+    user_language.can_edit = True
+    return True

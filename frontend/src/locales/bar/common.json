@@ -287,5 +287,28 @@
     "note": "Notids",
     "other": "Ándas",
     "unknown": "Ned bekánt"
+  },
+  "words_page": {
+    "suggest_notice": "Kenst a {{language}}-voat, des no feit? Du ko'st as fiaclogn — a briafa caugt's o, befoas veefentlicht vead.",
+    "suggest_link": "A voat fiaclogn",
+    "review_queue": "Fiaclég briafn"
+  },
+  "add_word": {
+    "suggest_title": "A voat fiaclogn",
+    "suggest_note": "Du clogst des voat fia. A briafa caugt's o, befoas im veatabuah aufdaucht.",
+    "suggest_word": "Fiaclog abcikn"
+  },
+  "review": {
+    "title": "{{language}}-fiaclég",
+    "subtitle": "Veata fo da gmoacáfd, de af dei uateil vartn. Genemign veefentlicht se; vea oft guade fiaclég máht, vead automatic editor.",
+    "loading": "Fiaclég lón…",
+    "load_failed": "De fiaclég hom ned lón kena.",
+    "action_failed": "Des hod ned funkdsioniad. Brobia's no amoi.",
+    "empty": "Koane ofna fiaclég — óis daledigt.",
+    "suggested_by": "fiaclogn fo {{username}}",
+    "approve": "Genemign",
+    "reject": "Óblena",
+    "reject_reason_prompt": "Varum vead des óbglent? (freivillig; bleibt in de notidsn)",
+    "no_permission": "Fias briafn brauhst as briaf-reht fia de cbráh."
   }
 }

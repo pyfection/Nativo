@@ -317,7 +317,10 @@
     "empty_subtitle": "Empieza añadiendo tu primera palabra a la colección",
     "add_first_word": "Añadir la primera palabra",
     "th_lemma": "Lema",
-    "th_verified": "Verificada"
+    "th_verified": "Verificada",
+    "suggest_notice": "¿Conoces una palabra del {{language}} que falta? Puedes sugerirla: un revisor la comprobará antes de publicarla.",
+    "suggest_link": "Sugerir una palabra",
+    "review_queue": "Revisar sugerencias"
   },
   "docs_page": {
     "select_language": "Selecciona una lengua para ver los documentos.",
@@ -617,7 +620,10 @@
     "register_archaic": "Arcaico",
     "register_poetic": "Poético",
     "register_technical": "Técnico",
-    "register_neutral": "Neutro"
+    "register_neutral": "Neutro",
+    "suggest_title": "Sugerir una palabra",
+    "suggest_note": "Estás sugiriendo esta palabra. Un revisor la comprobará antes de que aparezca en el diccionario.",
+    "suggest_word": "Enviar sugerencia"
   },
   "add_doc": {
     "title": "Añadir nuevo documento",
@@ -903,5 +909,18 @@
     "note": "Nota",
     "other": "Otro",
     "unknown": "Desconocido"
+  },
+  "review": {
+    "title": "Sugerencias del {{language}}",
+    "subtitle": "Palabras propuestas por la comunidad, a la espera de tu veredicto. Aprobar las publica; quienes sugieren bien con frecuencia pasan automáticamente a editores.",
+    "loading": "Cargando sugerencias…",
+    "load_failed": "No se pudieron cargar las sugerencias.",
+    "action_failed": "La acción falló. Inténtalo de nuevo.",
+    "empty": "No hay sugerencias pendientes: todo al día.",
+    "suggested_by": "sugerida por {{username}}",
+    "approve": "Aprobar",
+    "reject": "Rechazar",
+    "reject_reason_prompt": "¿Por qué se rechaza? (opcional; se guarda en las notas)",
+    "no_permission": "Revisar sugerencias requiere permiso de verificación para esta lengua."
   }
 }

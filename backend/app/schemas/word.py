@@ -196,6 +196,28 @@ class LexemeListItem(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class LexemeSuggestion(BaseModel):
+    """A pending suggestion in the review queue, with its author."""
+
+    id: UUID
+    language_id: UUID
+    lemma: str
+    part_of_speech: Optional[PartOfSpeech] = None
+    notes: Optional[str] = None
+    status: LexemeStatus
+    created_at: datetime
+    creator_username: Optional[str] = None
+    forms: List[WordForm] = []
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class LexemeRejection(BaseModel):
+    """Payload for rejecting a suggestion."""
+
+    reason: Optional[str] = Field(None, max_length=500)
+
+
 class LexemeWithForms(Lexeme):
     forms: List[WordForm] = []
 

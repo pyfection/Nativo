@@ -21,6 +21,8 @@ from app.schemas.word import (
     AntonymLink,
     LexemeCreate,
     LexemeListItem,
+    LexemeRejection,
+    LexemeSuggestion,
     LexemeUpdate,
     LexemeWithForms,
     RhymeMatch,
@@ -45,6 +47,8 @@ from app.schemas.word import (
 )
 from app.services import lexeme_service, spelling_service
 from app.services.auth_service import (
+    can_user_edit_language,
+    maybe_promote_suggester,
     require_language_edit_permission,
     require_language_verify_permission,
 )
@@ -135,6 +139,32 @@ async def search_lexemes(
     return query.offset(skip).limit(limit).all()
 
 
+@router.get("/suggestions", response_model=list[LexemeSuggestion])
+async def list_suggestions(
+    language_id: UUID,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+):
+    """Pending word suggestions for a language — the reviewer's queue."""
+    require_language_verify_permission(db, current_user, language_id)
+    rows = (
+        db.query(Lexeme, User.username)
+        .outerjoin(User, User.id == Lexeme.created_by_id)
+        .filter(
+            Lexeme.language_id == language_id,
+            Lexeme.status == LexemeStatus.PENDING_REVIEW,
+        )
+        .order_by(Lexeme.created_at.asc())
+        .all()
+    )
+    out = []
+    for lexeme, username in rows:
+        item = LexemeSuggestion.model_validate(lexeme)
+        item.creator_username = username
+        out.append(item)
+    return out
+
+
 @router.get("/{lexeme_id}", response_model=LexemeWithForms)
 async def get_lexeme(lexeme_id: UUID, db: Session = Depends(get_db)):
     lexeme = db.query(Lexeme).filter(Lexeme.id == lexeme_id).first()
@@ -149,8 +179,13 @@ async def create_lexeme(
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
-    require_language_edit_permission(db, current_user, data.language_id)
-    return lexeme_service.create_lexeme(db, data, creator_id=current_user.id)
+    if can_user_edit_language(db, current_user.id, data.language_id):
+        return lexeme_service.create_lexeme(db, data, creator_id=current_user.id)
+    # Suggester tier: any signed-in user may propose a word; it lands in the
+    # review queue instead of being rejected with a 403.
+    return lexeme_service.create_lexeme(
+        db, data, creator_id=current_user.id, status=LexemeStatus.PENDING_REVIEW
+    )
 
 
 @router.put("/{lexeme_id}", response_model=LexemeSchema)
@@ -189,6 +224,32 @@ async def verify_lexeme(
     lexeme.is_verified = True
     lexeme.verified_by_id = current_user.id
     lexeme.status = LexemeStatus.PUBLISHED
+    # Trust-based promotion: enough approved suggestions -> direct edit rights.
+    maybe_promote_suggester(db, lexeme.created_by_id, lexeme.language_id)
+    db.commit()
+    db.refresh(lexeme)
+    return lexeme
+
+
+@router.post("/{lexeme_id}/reject", response_model=LexemeSchema)
+async def reject_lexeme(
+    lexeme_id: UUID,
+    payload: LexemeRejection | None = None,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+):
+    """Reject a pending suggestion: archived, with the reason kept in notes."""
+    lexeme = _get_lexeme_or_404(db, lexeme_id)
+    require_language_verify_permission(db, current_user, lexeme.language_id)
+    if lexeme.status != LexemeStatus.PENDING_REVIEW:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Only pending suggestions can be rejected",
+        )
+    lexeme.status = LexemeStatus.ARCHIVED
+    if payload and payload.reason:
+        prefix = f"{lexeme.notes}\n" if lexeme.notes else ""
+        lexeme.notes = f"{prefix}Rejected: {payload.reason}"
     db.commit()
     db.refresh(lexeme)
     return lexeme

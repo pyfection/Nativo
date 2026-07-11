@@ -22,6 +22,7 @@ from app.models.language import Language
 from app.models.tag import Tag
 from app.models.word import (
     Lexeme,
+    LexemeStatus,
     WordForm,
     lexeme_antonyms,
     lexeme_synonyms,
@@ -82,10 +83,22 @@ def _apply_rhyme_keys(word_form: WordForm) -> None:
 # ---------------------------------------------------------------------------
 
 
-def create_lexeme(db: Session, data: LexemeCreate, creator_id: UUID) -> Lexeme:
+def create_lexeme(
+    db: Session,
+    data: LexemeCreate,
+    creator_id: UUID,
+    status: LexemeStatus | None = None,
+) -> Lexeme:
+    """Create a lexeme with its canonical form.
+
+    `status` overrides the model default (DRAFT) — the endpoint passes
+    PENDING_REVIEW when the creator lacks edit permission (suggester tier).
+    """
     payload = data.model_dump(
         exclude={"lemma_form", "additional_forms", "tags"}, exclude_unset=False
     )
+    if status is not None:
+        payload["status"] = status
 
     lexeme = Lexeme(**payload, created_by_id=creator_id)
     db.add(lexeme)

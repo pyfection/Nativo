@@ -22,6 +22,7 @@ import AudioList from './pages/AudioList';
 import ContributorsList from './pages/ContributorsList';
 import GuidedReader from './pages/GuidedReader';
 import Learn from './pages/Learn';
+import Review from './pages/Review';
 import languageService, { LanguageResponse } from './services/languageService';
 import { API_URL } from './services/api';
 import { getThemeStyles } from './styles/theme';
@@ -356,6 +357,22 @@ function App() {
                     languages={languages}
                   />
                 </AppLayout>
+              }
+            />
+
+            {/* Review queue — pending suggestions, for verifiers */}
+            <Route
+              path="/review"
+              element={
+                <ProtectedRoute>
+                  <AppLayout
+                    selectedLanguage={selectedLanguage!}
+                    onLanguageChange={setSelectedLanguage}
+                    languages={languages}
+                  >
+                    <Review selectedLanguage={selectedLanguage!} />
+                  </AppLayout>
+                </ProtectedRoute>
               }
             />
 

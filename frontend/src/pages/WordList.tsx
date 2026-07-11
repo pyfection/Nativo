@@ -15,7 +15,7 @@ export default function WordList({ selectedLanguage }: WordListProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, canEditLanguage } = useAuth();
+  const { isAuthenticated, canEditLanguage, canVerifyLanguage } = useAuth();
   const [words, setWords] = useState<WordListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -29,6 +29,7 @@ export default function WordList({ selectedLanguage }: WordListProps) {
 
   // Check if user can edit this language
   const canEdit = selectedLanguage ? canEditLanguage(selectedLanguage.id) : false;
+  const canVerify = selectedLanguage ? canVerifyLanguage(selectedLanguage.id) : false;
 
   useEffect(() => {
     fetchWords();
@@ -91,6 +92,12 @@ export default function WordList({ selectedLanguage }: WordListProps) {
           <h1>{t('words_page.title')}</h1>
           <p>{t('words_page.subtitle')}</p>
         </div>
+        <div className="page-header-actions">
+        {canVerify && (
+          <button onClick={() => navigate('/review')} className="btn-secondary">
+            {t('words_page.review_queue')}
+          </button>
+        )}
         {canEdit && (
           <button onClick={() => navigate('/words/add')} className="btn-primary">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
@@ -99,12 +106,16 @@ export default function WordList({ selectedLanguage }: WordListProps) {
             {t('words_page.add_word')}
           </button>
         )}
+        </div>
       </div>
 
       {!canEdit && selectedLanguage && (
         <div className="word-list-permission-notice">
           {isAuthenticated ? (
-            <>{t('words_page.no_permission')}</>
+            <>
+              {t('words_page.suggest_notice', { language: languageDisplayName(selectedLanguage) })}{' '}
+              <Link to="/words/add">{t('words_page.suggest_link')}</Link>
+            </>
           ) : (
             <>
               {t('words_page.banner_pre', { language: languageDisplayName(selectedLanguage) })}{' '}

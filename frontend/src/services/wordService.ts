@@ -43,6 +43,18 @@ export interface LexemeWithForms extends Lexeme {
   forms: WordForm[];
 }
 
+export interface LexemeSuggestion {
+  id: string;
+  language_id: string;
+  lemma: string;
+  part_of_speech?: string | null;
+  notes?: string | null;
+  status: string;
+  created_at: string;
+  creator_username?: string | null;
+  forms: WordForm[];
+}
+
 export interface LexemeListItem {
   id: string;
   lemma: string;
@@ -249,6 +261,20 @@ export const wordService = {
 
   async verify(id: string): Promise<Lexeme> {
     const response = await api.post<Lexeme>(`/api/v1/words/${id}/verify`);
+    return response.data;
+  },
+
+  /** Pending word suggestions for a language (requires verify permission). */
+  async listSuggestions(languageId: string): Promise<LexemeSuggestion[]> {
+    const response = await api.get<LexemeSuggestion[]>('/api/v1/words/suggestions', {
+      params: { language_id: languageId },
+    });
+    return response.data;
+  },
+
+  /** Reject a pending suggestion; the reason is kept in the lexeme notes. */
+  async reject(id: string, reason?: string): Promise<Lexeme> {
+    const response = await api.post<Lexeme>(`/api/v1/words/${id}/reject`, reason ? { reason } : {});
     return response.data;
   },
 

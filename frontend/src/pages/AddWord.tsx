@@ -146,7 +146,8 @@ const REGISTER_OPTIONS = [
 export default function AddWord({ selectedLanguage }: AddWordProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, canEditLanguage } = useAuth();
+  const isSuggestion = !canEditLanguage(selectedLanguage.id);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState<FormState>(EMPTY_FORM);
@@ -242,11 +243,14 @@ export default function AddWord({ selectedLanguage }: AddWordProps) {
   return (
     <div className="add-word-page">
       <div className="page-header">
-        <h1>{t('add_word.title')}</h1>
+        <h1>{isSuggestion ? t('add_word.suggest_title') : t('add_word.title')}</h1>
         <p>
           {t('add_word.adding_to')}{' '}
           <strong>{languageDisplayName(selectedLanguage)} ({selectedLanguage.nativeName})</strong>
         </p>
+        {isSuggestion && (
+          <p className="add-word-suggestion-note">{t('add_word.suggest_note')}</p>
+        )}
       </div>
 
       {/* Surface the orthography rules right before the contributor types the
@@ -579,7 +583,11 @@ export default function AddWord({ selectedLanguage }: AddWordProps) {
             className="btn-primary"
             disabled={loading || !formData.lemma.trim()}
           >
-            {loading ? t('add_word.creating') : t('add_word.create_word')}
+            {loading
+              ? t('add_word.creating')
+              : isSuggestion
+                ? t('add_word.suggest_word')
+                : t('add_word.create_word')}
           </button>
         </div>
       </form>

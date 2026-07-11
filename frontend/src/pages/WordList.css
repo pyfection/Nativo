@@ -35,3 +35,9 @@
   line-height: 1.5;
   max-width: 1180px;
 }
+
+.page-header-actions {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+}
