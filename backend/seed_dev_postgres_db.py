@@ -28,7 +28,7 @@ from app.models.text_word_link import TextWordLink, TextWordLinkStatus
 from app.models.user import User, UserRole
 from app.models.word import Lexeme, LexemeStatus, WordForm, lexeme_translations
 from app.utils.security import hash_password
-from sqlalchemy import insert
+from sqlalchemy import insert, select
 
 
 def _now() -> datetime:
@@ -159,52 +159,59 @@ LESSONS = [
 
 
 def seed_database():
+    """
+    Additive and idempotent: every section checks what already exists and
+    only inserts what's missing, so pulling an update and restarting the
+    stack tops up new demo content without wiping the database.
+    """
     db = SessionLocal()
     try:
-        print("Starting database seeding...")
-
-        if db.query(User).count() > 0:
-            print("Database already contains data. Skipping seed.")
-            return
+        print("Starting database seeding (additive)...")
 
         # ------------------------------------------------------------------
         # Admin user
         # ------------------------------------------------------------------
-        admin = User(
-            id=UUID("5029c5d0-c4f6-401e-9257-a8d1055b121a"),
-            email="admin@nativo.dev",
-            username="admin",
-            hashed_password=hash_password("admin123"),
-            role=UserRole.ADMIN,
-            is_active=True,
-            is_superuser=True,
-        )
-        db.add(admin)
-        db.commit()
-        print("  Inserted 1 user (admin / admin123)")
+        admin = db.query(User).filter(User.username == "admin").first()
+        if admin is None:
+            admin = User(
+                id=UUID("5029c5d0-c4f6-401e-9257-a8d1055b121a"),
+                email="admin@nativo.dev",
+                username="admin",
+                hashed_password=hash_password("admin123"),
+                role=UserRole.ADMIN,
+                is_active=True,
+                is_superuser=True,
+            )
+            db.add(admin)
+            db.commit()
+            print("  Inserted admin user (admin / admin123)")
 
         # ------------------------------------------------------------------
         # Languages
         # ------------------------------------------------------------------
         langs: dict[str, Language] = {}
+        added_langs = 0
         for lid, name, native, iso, desc, endangered, managed, colors in LANGUAGES:
-            lang = Language(
-                id=UUID(lid),
-                name=name,
-                native_name=native,
-                iso_639_3=iso,
-                description=desc,
-                is_endangered=endangered,
-                managed=managed,
-                primary_color=colors[0],
-                secondary_color=colors[1],
-                accent_color=colors[2],
-                background_color=colors[3],
-            )
-            db.add(lang)
+            lang = db.query(Language).filter(Language.name == name).first()
+            if lang is None:
+                lang = Language(
+                    id=UUID(lid),
+                    name=name,
+                    native_name=native,
+                    iso_639_3=iso,
+                    description=desc,
+                    is_endangered=endangered,
+                    managed=managed,
+                    primary_color=colors[0],
+                    secondary_color=colors[1],
+                    accent_color=colors[2],
+                    background_color=colors[3],
+                )
+                db.add(lang)
+                added_langs += 1
             langs[name] = lang
         db.commit()
-        print(f"  Inserted {len(LANGUAGES)} languages")
+        print(f"  Languages: {added_langs} added, {len(LANGUAGES) - added_langs} already present")
 
         bavarian = langs["Bavarian"]
 
@@ -212,41 +219,43 @@ def seed_database():
         # Vocabulary: Bavarian lexemes + lemma forms, plus translation
         # counterparts per target language (deduplicated per gloss)
         # ------------------------------------------------------------------
-        forms: dict[str, WordForm] = {}
-        counterparts: dict[tuple[str, str], UUID] = {}  # (language, gloss) -> lexeme id
-        translation_pairs: list[tuple[UUID, UUID]] = []
-        for lemma, glosses in BAVARIAN_WORDS.items():
-            lexeme = Lexeme(
-                language_id=bavarian.id,
-                lemma=lemma,
-                created_by_id=admin.id,
-                status=LexemeStatus.PUBLISHED,
+        def get_or_create_lexeme(language_id: UUID, lemma: str) -> tuple[Lexeme, WordForm]:
+            lexeme = (
+                db.query(Lexeme)
+                .filter(Lexeme.language_id == language_id, Lexeme.lemma == lemma)
+                .first()
             )
-            db.add(lexeme)
-            db.flush()
-            form = WordForm(lexeme_id=lexeme.id, form=lemma, is_lemma=True)
-            db.add(form)
-            db.flush()
-            forms[lemma] = form
+            if lexeme is None:
+                lexeme = Lexeme(
+                    language_id=language_id,
+                    lemma=lemma,
+                    created_by_id=admin.id,
+                    status=LexemeStatus.PUBLISHED,
+                )
+                db.add(lexeme)
+                db.flush()
+            form = (
+                db.query(WordForm)
+                .filter(WordForm.lexeme_id == lexeme.id, WordForm.is_lemma.is_(True))
+                .first()
+            )
+            if form is None:
+                form = WordForm(lexeme_id=lexeme.id, form=lemma, is_lemma=True)
+                db.add(form)
+                db.flush()
+            return lexeme, form
 
-            for lang_name, gloss in glosses.items():
-                key = (lang_name, gloss)
-                if key not in counterparts:
-                    counterpart = Lexeme(
-                        language_id=langs[lang_name].id,
-                        lemma=gloss,
-                        created_by_id=admin.id,
-                        status=LexemeStatus.PUBLISHED,
-                    )
-                    db.add(counterpart)
-                    db.flush()
-                    db.add(WordForm(lexeme_id=counterpart.id, form=gloss, is_lemma=True))
-                    counterparts[key] = counterpart.id
-                translation_pairs.append((lexeme.id, counterparts[key]))
-
-        # Translations are undirected and stored canonically (lexeme_id < other).
-        for a, b in translation_pairs:
+        def ensure_translation(a: UUID, b: UUID) -> bool:
+            # Undirected, stored canonically (lexeme_id < translation_id).
             lo, hi = sorted([a, b])
+            exists = db.execute(
+                select(lexeme_translations.c.lexeme_id).where(
+                    lexeme_translations.c.lexeme_id == lo,
+                    lexeme_translations.c.translation_id == hi,
+                )
+            ).first()
+            if exists:
+                return False
             db.execute(
                 insert(lexeme_translations).values(
                     lexeme_id=lo,
@@ -255,37 +264,40 @@ def seed_database():
                     created_by_id=admin.id,
                 )
             )
+            return True
+
+        before = db.query(Lexeme).count()
+        forms: dict[str, WordForm] = {}
+        added_links = 0
+        for lemma, glosses in BAVARIAN_WORDS.items():
+            lexeme, form = get_or_create_lexeme(bavarian.id, lemma)
+            forms[lemma] = form
+            for lang_name, gloss in glosses.items():
+                counterpart, _ = get_or_create_lexeme(langs[lang_name].id, gloss)
+                if ensure_translation(lexeme.id, counterpart.id):
+                    added_links += 1
         db.commit()
         print(
-            f"  Inserted {len(BAVARIAN_WORDS)} Bavarian words, "
-            f"{len(counterparts)} counterpart words, "
-            f"{len(translation_pairs)} translation links"
+            f"  Vocabulary: {db.query(Lexeme).count() - before} lexemes added, "
+            f"{added_links} translation links added"
         )
 
         # ------------------------------------------------------------------
-        # Free-reading story (not word-linked — regular Documents content)
+        # Texts. Matched by title (case-insensitive) so renames in the seed
+        # don't duplicate content in older dev databases.
         # ------------------------------------------------------------------
-        story_doc = Document(created_by_id=admin.id)
-        db.add(story_doc)
-        db.flush()
-        db.add(
-            Text(
-                document_id=story_doc.id,
-                language_id=bavarian.id,
-                title="A gcihdl",
-                content="Servus bainánd! Des is a gloans gcihdl af Boaric.",
-                document_type=DocumentType.STORY,
-                created_by_id=admin.id,
-                is_primary=True,
+        def text_exists(title: str) -> bool:
+            return (
+                db.query(Text)
+                .filter(
+                    Text.language_id == bavarian.id,
+                    Text.title.ilike(title),
+                )
+                .first()
+                is not None
             )
-        )
-        db.commit()
-        print("  Inserted 1 story document")
 
-        # ------------------------------------------------------------------
-        # Graded lessons: fully linked so they qualify for /learn
-        # ------------------------------------------------------------------
-        for title, content, words in LESSONS:
+        def create_text(title: str, content: str) -> Text:
             doc = Document(created_by_id=admin.id)
             db.add(doc)
             db.flush()
@@ -300,6 +312,20 @@ def seed_database():
             )
             db.add(text)
             db.flush()
+            return text
+
+        added_texts = 0
+
+        # Free-reading story (not word-linked — regular Documents content)
+        if not text_exists("A gcihdl"):
+            create_text("A gcihdl", "Servus bainánd! Des is a gloans gcihdl af Boaric.")
+            added_texts += 1
+
+        # Graded lessons: fully linked so they qualify for /learn
+        for title, content, words in LESSONS:
+            if text_exists(title):
+                continue
+            text = create_text(title, content)
             offset = 0
             for word in words:
                 start = content.index(word, offset)
@@ -315,8 +341,9 @@ def seed_database():
                         status=TextWordLinkStatus.CONFIRMED,
                     )
                 )
+            added_texts += 1
         db.commit()
-        print(f"  Inserted {len(LESSONS)} fully-linked lessons for the learning path")
+        print(f"  Texts: {added_texts} added")
 
         print("Seeding complete.")
     finally:
