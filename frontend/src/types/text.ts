@@ -91,6 +91,8 @@ export interface Text {
   is_primary: boolean;
   source?: string;
   notes?: string;
+  /** Editor pin for the guided learning path (null = computed placement). */
+  learning_order?: number | null;
   created_by_id: string;
   created_at: string;
   updated_at: string;
@@ -133,6 +135,7 @@ export interface TextUpdate {
   is_primary?: boolean;
   source?: string;
   notes?: string;
+  learning_order?: number | null;
 }
 
 export interface TextFilter {

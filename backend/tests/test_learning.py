@@ -322,6 +322,23 @@ def test_suggested_links_do_not_count(db: Session):
     assert path == []  # suggested-only text has 0% confirmed coverage
 
 
+def test_pinned_texts_lead_the_queue_regardless_of_difficulty(db: Session):
+    user, lang = _user(db), _language(db)
+    small = [_lexeme(db, lang, user, f"small{i}") for i in range(2)]
+    big = [_lexeme(db, lang, user, f"big{i}") for i in range(9)]
+
+    _text_with_words(db, lang, user, "computed-easy", small)
+    pinned = _text_with_words(db, lang, user, "pinned-hard", big)
+    # 9 new words exceeds the default budget (8) AND the text is harder than
+    # the alternative — the editor pin must still win.
+    pinned.learning_order = 1
+    db.flush()
+
+    path = learning_service.get_learning_path(db, lang.id, user_id=user.id)
+    assert [e["title"] for e in path] == ["pinned-hard", "computed-easy"]
+    assert path[0]["state"] == "recommended"
+
+
 def test_known_pct_reflects_user_knowledge(db: Session):
     user, lang = _user(db), _language(db)
     lx1 = _lexeme(db, lang, user, "servus")

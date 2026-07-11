@@ -2,7 +2,7 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy import Text as TextType
 from sqlalchemy.dialects.postgresql import UUID
@@ -93,6 +93,11 @@ class Text(Base):
 
     # Flag to mark primary/original text
     is_primary = Column(Boolean, default=False, nullable=False)
+
+    # Editor pin for the guided learning path: texts with a value lead the
+    # sequence (ascending) before the computed easiest-first ordering takes
+    # over. Null (the default) means fully computed placement.
+    learning_order = Column(Integer, nullable=True)
 
     source = Column(String(500), nullable=True)  # Origin/citation
     notes = Column(TextType, nullable=True)  # Internal notes

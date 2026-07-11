@@ -267,10 +267,11 @@ def get_learning_path(
                 "difficulty_rating": completed[text.id].difficulty_rating
                 if text.id in completed
                 else None,
-                # cold-start sort keys
+                # sort keys, stripped before returning
                 "_freq": (
                     sum(frequency.get(lx, 0) for lx in lexemes) / total if total else 0
                 ),
+                "_pin": text.learning_order,
             }
         )
 
@@ -282,16 +283,25 @@ def get_learning_path(
     # (which is also the cold-start order when nothing is known yet).
     unread.sort(key=lambda e: (e["new_lexeme_count"], -e["_freq"]))
 
-    within = [e for e in unread if e["new_lexeme_count"] <= budget]
-    beyond = [e for e in unread if e["new_lexeme_count"] > budget]
+    # Editor-pinned texts jump the computed queue (and the budget) — the pin
+    # is the curated on-ramp, so curation wins over the algorithm.
+    pinned = sorted(
+        (e for e in unread if e["_pin"] is not None), key=lambda e: e["_pin"]
+    )
+    rest = [e for e in unread if e["_pin"] is None]
+
+    within = [e for e in rest if e["new_lexeme_count"] <= budget]
+    beyond = [e for e in rest if e["new_lexeme_count"] > budget]
 
     # A "too hard" verdict asks for a zero-new consolidation text; if the
     # corpus has none, recommend the gentlest available rather than nothing.
-    recommended = within[0] if within else (beyond[0] if beyond else None)
+    ordered_unread = pinned + within + beyond
+    recommended = ordered_unread[0] if ordered_unread else None
 
-    path = done + within + beyond
+    path = done + ordered_unread
     for entry in path:
         entry.pop("_freq")
+        entry.pop("_pin")
         if entry["completed_at"] is not None:
             entry["state"] = "completed"
         elif entry is recommended:

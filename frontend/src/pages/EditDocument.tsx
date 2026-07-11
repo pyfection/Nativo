@@ -81,6 +81,7 @@ export default function EditDocument({ selectedLanguage, languages }: EditDocume
         format: preferred.format ?? TextFormat.PLAIN,
         source: preferred.source,
         notes: preferred.notes,
+        learning_order: preferred.learning_order ?? null,
       });
     }
   }, [document, location.state, searchParams, selectedLanguage.id]);
@@ -112,6 +113,7 @@ export default function EditDocument({ selectedLanguage, languages }: EditDocume
       format: text.format ?? TextFormat.PLAIN,
       source: text.source,
       notes: text.notes,
+      learning_order: text.learning_order ?? null,
     });
     setSuccess('');
     setError('');
@@ -128,7 +130,11 @@ export default function EditDocument({ selectedLanguage, languages }: EditDocume
           ? (value as DocumentType)
           : name === 'format'
             ? (value as TextFormat)
-            : value,
+            : name === 'learning_order'
+              ? value === ''
+                ? null
+                : Number(value)
+              : value,
     }));
   };
 
@@ -148,6 +154,7 @@ export default function EditDocument({ selectedLanguage, languages }: EditDocume
       format: formData.format,
       source: formData.source?.trim() || undefined,
       notes: formData.notes?.trim() || undefined,
+      learning_order: formData.learning_order ?? null,
     };
 
     try {
@@ -333,6 +340,21 @@ export default function EditDocument({ selectedLanguage, languages }: EditDocume
               name="notes"
               rows={3}
               value={formData.notes ?? ''}
+              onChange={handleFieldChange}
+              disabled={!canEdit || saving}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="learning_order">Learning path position</label>
+            <input
+              id="learning_order"
+              name="learning_order"
+              type="number"
+              min={1}
+              placeholder="automatic"
+              title="Pin this text to a fixed position at the start of the guided learning path. Leave empty to let the path order it by difficulty."
+              value={formData.learning_order ?? ''}
               onChange={handleFieldChange}
               disabled={!canEdit || saving}
             />

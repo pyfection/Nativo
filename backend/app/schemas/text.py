@@ -23,6 +23,8 @@ class TextBase(BaseModel):
     is_primary: bool = False
     source: str | None = Field(None, max_length=500)
     notes: str | None = None
+    # Editor pin for the guided learning path (null = computed placement).
+    learning_order: int | None = None
 
 
 class TextCreate(TextBase):
@@ -43,6 +45,7 @@ class TextUpdate(BaseModel):
     is_primary: bool | None = None
     source: str | None = Field(None, max_length=500)
     notes: str | None = None
+    learning_order: int | None = None
 
 
 class TextInDB(TextBase):
