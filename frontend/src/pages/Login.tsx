@@ -82,6 +82,10 @@ export default function Login() {
             />
           </div>
 
+          <Link to="/forgot-password" className="forgot-password-link">
+            {t('auth.forgot_link')}
+          </Link>
+
           <button type="submit" className="login-button" disabled={loading}>
             {loading ? t('auth.signing_in') : t('auth.sign_in')}
           </button>

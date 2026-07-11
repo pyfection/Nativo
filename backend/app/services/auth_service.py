@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from uuid import UUID
 
 from fastapi import HTTPException, status
+from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 from jose import JWTError, jwt
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
@@ -12,6 +13,60 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.models.user import User, UserRole
 from app.models.user_language import UserLanguage
+
+# One-time account-flow tokens (password reset, email verification). Signed
+# and timestamped with itsdangerous — stateless, so no token table.
+PASSWORD_RESET_MAX_AGE = 60 * 60  # 1 hour
+EMAIL_VERIFY_MAX_AGE = 60 * 60 * 24 * 3  # 3 days
+
+
+def _serializer(salt: str) -> URLSafeTimedSerializer:
+    return URLSafeTimedSerializer(settings.SECRET_KEY, salt=salt)
+
+
+def make_password_reset_token(user: User) -> str:
+    """Reset token bound to the CURRENT password hash: changing the password
+    (by reset or otherwise) invalidates every outstanding token."""
+    return _serializer("password-reset").dumps(
+        {"uid": str(user.id), "pw": user.hashed_password[-12:]}
+    )
+
+
+def verify_password_reset_token(db: Session, token: str) -> User | None:
+    try:
+        payload = _serializer("password-reset").loads(
+            token, max_age=PASSWORD_RESET_MAX_AGE
+        )
+        user_id = UUID(payload["uid"])
+    except (BadSignature, SignatureExpired, KeyError, ValueError):
+        return None
+    user = db.query(User).filter(User.id == user_id).first()
+    if user is None or not user.is_active:
+        return None
+    if user.hashed_password[-12:] != payload.get("pw"):
+        return None  # password changed since the token was issued
+    return user
+
+
+def make_email_verify_token(user: User) -> str:
+    """Verification token bound to the address it was sent to."""
+    return _serializer("email-verify").dumps(
+        {"uid": str(user.id), "email": user.email}
+    )
+
+
+def verify_email_token(db: Session, token: str) -> User | None:
+    try:
+        payload = _serializer("email-verify").loads(token, max_age=EMAIL_VERIFY_MAX_AGE)
+        user_id = UUID(payload["uid"])
+    except (BadSignature, SignatureExpired, KeyError, ValueError):
+        return None
+    user = db.query(User).filter(User.id == user_id).first()
+    if user is None or not user.is_active:
+        return None
+    if user.email != payload.get("email"):
+        return None  # address changed since the token was issued
+    return user
 
 
 def create_access_token(user_id: UUID, role: UserRole) -> str:

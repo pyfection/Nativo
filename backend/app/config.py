@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     # CORS — list of allowed origins. Use ["*"] for fully-open dev only.
     BACKEND_CORS_ORIGINS: list[str] = ["http://localhost:5173"]
 
+    # Where account emails (password reset, verification) link back to.
+    FRONTEND_URL: str = "http://localhost:5173"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

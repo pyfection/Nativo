@@ -27,7 +27,10 @@ class User(Base):
     role = Column(SQLEnum(UserRole), default=UserRole.PUBLIC, nullable=False)
     is_active = Column(Boolean, default=True)
     is_superuser = Column(Boolean, default=False)
-    
+    # Set when the user clicks the verification link; null = unverified.
+    email_verified_at = Column(DateTime, nullable=True)
+
+
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
     

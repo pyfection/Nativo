@@ -5,6 +5,9 @@ import { UILanguageProvider } from './contexts/UILanguageContext';
 import AppLayout from './components/layouts/AppLayout';
 import Home from './pages/Home';
 import Login from './pages/Login';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import VerifyEmail from './pages/VerifyEmail';
 import Register from './pages/Register';
 import Languages from './pages/Languages';
 import WordList from './pages/WordList';
@@ -226,6 +229,9 @@ function App() {
             />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/verify-email" element={<VerifyEmail />} />
 
             {/* Learning path — public; guests see the cold-start line */}
             <Route

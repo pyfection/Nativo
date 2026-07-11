@@ -52,9 +52,19 @@ Ranked by value after the open-platform + learning-path work landed.
    "I speak it fairly well" the top 70% — gap-filling only, existing
    scores are never lowered, so re-running is safe. Frequency comes from
    confirmed-link counts, published lexemes only.
-5. **Account survival basics.** Password reset (today a forgotten password
-   permanently loses a contributor) and email verification (unblocks
-   suggestion-approved notifications — the reward loop for item 1).
+5. **Account survival basics.** `done`
+   Password reset: "Forgot your password?" on the login page →
+   /forgot-password (identical response for unknown addresses, so it can't
+   probe accounts) → emailed link → /reset-password. Tokens are stateless
+   (itsdangerous, 1h expiry) and bound to the current password hash, so a
+   used or superseded token dies immediately. Email verification:
+   registration sends a confirmation link (3-day expiry, bound to the
+   address); /verify-email stamps `users.email_verified_at` and can resend.
+   Email itself goes over SMTP when SMTP_HOST is set (any transactional
+   provider; see DEPLOYMENT.md) and into a local outbox file otherwise.
+   *Ops step required in prod: set the SMTP_* + FRONTEND_URL secrets —
+   until then reset emails go nowhere.* Nothing is gated on verification
+   yet; it's the hook for suggestion-approved notifications later.
 
 Honorable mentions, unscheduled: mobile/PWA audit for the reader;
 author-facing "this draft introduces N new words" difficulty report; error

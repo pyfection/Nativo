@@ -27,12 +27,29 @@ class UserLogin(BaseModel):
     password: str
 
 
+class ForgotPasswordRequest(BaseModel):
+    """Request a password-reset email."""
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    """Set a new password using an emailed reset token."""
+    token: str
+    new_password: str = Field(..., min_length=8, max_length=100)
+
+
+class VerifyEmailRequest(BaseModel):
+    """Confirm an email address using an emailed verification token."""
+    token: str
+
+
 class UserResponse(UserBase):
     """Schema for user response (no password)"""
     id: UUID
     role: UserRole
     is_active: bool
     is_superuser: bool
+    email_verified_at: Optional[datetime] = None
     created_at: datetime
     language_proficiencies: Optional[List["LanguageProficiencyResponse"]] = None
     

@@ -41,7 +41,19 @@ fly launch --copy-config --no-deploy
 fly secrets set \
   DATABASE_URL="postgresql://...@ep-...-pooler.../nativo?sslmode=require" \
   SECRET_KEY="$(openssl rand -hex 32)" \
-  BACKEND_CORS_ORIGINS='["https://nativo.pages.dev","https://nativo.example"]'
+  BACKEND_CORS_ORIGINS='["https://nativo.pages.dev","https://nativo.example"]' \
+  FRONTEND_URL="https://nativo.pages.dev"
+
+# Email (password reset + verification links). Any transactional provider's
+# SMTP endpoint works (Resend, Mailgun, SES, Postmark, ...). Without
+# SMTP_HOST the backend writes emails to a local outbox file instead of
+# sending — fine for dev, useless in prod.
+fly secrets set \
+  SMTP_HOST="smtp.resend.com" \
+  SMTP_PORT="587" \
+  SMTP_USERNAME="resend" \
+  SMTP_PASSWORD="re_..." \
+  EMAIL_FROM="Nativo <no-reply@yourdomain.example>"
 
 # Deploy
 fly deploy

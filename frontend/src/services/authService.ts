@@ -27,6 +27,7 @@ export interface User {
   role: string;
   is_active: boolean;
   is_superuser: boolean;
+  email_verified_at?: string | null;
   created_at: string;
   language_proficiencies?: LanguageProficiency[];
 }
@@ -70,6 +71,24 @@ export const authService = {
 
   isAuthenticated(): boolean {
     return !!localStorage.getItem('access_token');
+  },
+
+  /** Request a reset email; the response is identical for unknown addresses. */
+  async forgotPassword(email: string): Promise<void> {
+    await api.post('/api/v1/auth/forgot-password', { email });
+  },
+
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    await api.post('/api/v1/auth/reset-password', { token, new_password: newPassword });
+  },
+
+  async verifyEmail(token: string): Promise<User> {
+    const response = await api.post<User>('/api/v1/auth/verify-email', { token });
+    return response.data;
+  },
+
+  async requestVerification(): Promise<void> {
+    await api.post('/api/v1/auth/request-verification');
   },
 
   async getUserLanguages(userId: string): Promise<LanguageProficiency[]> {

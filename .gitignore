@@ -85,3 +85,4 @@ coverage/
 
 # Docker
 *.env.docker
+email_outbox/
