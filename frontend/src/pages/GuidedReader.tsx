@@ -32,6 +32,16 @@ interface GlossState {
   audioUrl: string | null;
 }
 
+/** Where to render the gloss popover, relative to the text container. */
+interface GlossAnchor {
+  top: number;
+  left: number;
+  /** Render above the word when it sits near the bottom of the viewport. */
+  placeAbove: boolean;
+}
+
+const GLOSS_WIDTH = 340;
+
 const DIFFICULTY_OPTIONS: { value: DifficultyRating; label: string; hint: string }[] = [
   { value: 'easy', label: 'Easy', hint: 'Give me more new words next time' },
   { value: 'just_right', label: 'Just right', hint: 'Keep this pace' },
@@ -56,10 +66,12 @@ export default function GuidedReader({ selectedLanguage }: GuidedReaderProps) {
   const [error, setError] = useState('');
   const [knownLexemes, setKnownLexemes] = useState<Set<string>>(new Set());
   const [gloss, setGloss] = useState<GlossState | null>(null);
+  const [glossAnchor, setGlossAnchor] = useState<GlossAnchor | null>(null);
   const [showDifficulty, setShowDifficulty] = useState(false);
   const [finished, setFinished] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  const contentRef = useRef<HTMLElement | null>(null);
   // Lexemes tapped during this session — excluded from the completion bonus.
   const clickedRef = useRef<Set<string>>(new Set());
   const glossCacheRef = useRef<Map<string, { translations: TranslationLink[]; audioUrl: string | null }>>(
@@ -165,8 +177,25 @@ export default function GuidedReader({ selectedLanguage }: GuidedReaderProps) {
     return words;
   }, [confirmedLinks, knownLexemes]);
 
-  async function openGloss(link: TextWordLink) {
+  /** Anchor the popover to the tapped word: below it, flipped above when the
+   *  word sits in the bottom part of the viewport, clamped horizontally. */
+  function anchorFor(wordEl: HTMLElement): GlossAnchor {
+    const container = contentRef.current;
+    if (!container) return { top: 0, left: 0, placeAbove: false };
+    const word = wordEl.getBoundingClientRect();
+    const box = container.getBoundingClientRect();
+    const placeAbove = word.bottom > window.innerHeight - 260;
+    const left = Math.max(0, Math.min(word.left - box.left, box.width - GLOSS_WIDTH));
+    return {
+      top: (placeAbove ? word.top - box.top : word.bottom - box.top) + (placeAbove ? -8 : 8),
+      left,
+      placeAbove,
+    };
+  }
+
+  async function openGloss(link: TextWordLink, wordEl: HTMLElement) {
     playerRef.current?.pause();
+    setGlossAnchor(anchorFor(wordEl));
     const lexemeId = link.lexeme_id ?? undefined;
 
     // Record the "don't know yet" signal once per lexeme per session.
@@ -265,7 +294,11 @@ export default function GuidedReader({ selectedLanguage }: GuidedReaderProps) {
 
       {error && <div className="error-message">{error}</div>}
 
-      <article className="reader-content" lang={selectedLanguage.iso || undefined}>
+      <article
+        className="reader-content"
+        lang={selectedLanguage.iso || undefined}
+        ref={contentRef}
+      >
         {segments.map((seg) =>
           seg.link ? (
             <button
@@ -276,13 +309,79 @@ export default function GuidedReader({ selectedLanguage }: GuidedReaderProps) {
                   ? 'reader-word-new'
                   : ''
               } ${gloss?.link.id === seg.link.id ? 'reader-word-active' : ''}`}
-              onClick={() => void openGloss(seg.link!)}
+              onClick={(e) => void openGloss(seg.link!, e.currentTarget)}
             >
               {seg.content}
             </button>
           ) : (
             <span key={seg.key}>{seg.content}</span>
           ),
+        )}
+
+        {/* Gloss popover, anchored to the tapped word */}
+        {gloss && glossAnchor && (
+          <div
+            className={`reader-gloss ${glossAnchor.placeAbove ? 'reader-gloss-above' : ''}`}
+            style={{ top: glossAnchor.top, left: glossAnchor.left, width: GLOSS_WIDTH }}
+            role="dialog"
+            aria-label="Word details"
+          >
+            <div className="reader-gloss-head">
+              <div>
+                <span className="reader-gloss-word">
+                  {gloss.link.word_lemma || gloss.link.word_text}
+                </span>
+                {gloss.link.word_form_ipa && (
+                  <span className="reader-gloss-ipa">[{gloss.link.word_form_ipa}]</span>
+                )}
+                {gloss.link.word_part_of_speech && (
+                  <span className="reader-gloss-pos">{gloss.link.word_part_of_speech}</span>
+                )}
+              </div>
+              <button
+                type="button"
+                className="reader-gloss-close"
+                onClick={() => setGloss(null)}
+                aria-label="Close word details"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="reader-gloss-body">
+              {gloss.translations === null && (
+                <span className="reader-gloss-loading">Loading…</span>
+              )}
+              {gloss.translations !== null && gloss.translations.length === 0 && (
+                <span className="reader-gloss-none">No translation recorded yet.</span>
+              )}
+              {gloss.translations !== null && gloss.translations.length > 0 && (
+                <ul className="reader-gloss-translations">
+                  {gloss.translations.map((tr) => (
+                    <li key={tr.id}>
+                      <b>{tr.lemma}</b>
+                      {tr.language_name && <span> · {tr.language_name}</span>}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <div className="reader-gloss-actions">
+              {gloss.audioUrl && (
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-sm"
+                  onClick={() => playGlossAudio(gloss.audioUrl!)}
+                >
+                  ▶ Hear it
+                </button>
+              )}
+              {gloss.link.lexeme_id && (
+                <Link to={`/words/${gloss.link.lexeme_id}`} className="reader-gloss-more">
+                  Full entry →
+                </Link>
+              )}
+            </div>
+          </div>
         )}
       </article>
 
@@ -315,63 +414,6 @@ export default function GuidedReader({ selectedLanguage }: GuidedReaderProps) {
           </div>
         )}
       </div>
-
-      {/* ---------- Gloss panel ---------- */}
-      {gloss && (
-        <div className="reader-gloss" role="dialog" aria-label="Word details">
-          <div className="reader-gloss-head">
-            <div>
-              <span className="reader-gloss-word">{gloss.link.word_lemma || gloss.link.word_text}</span>
-              {gloss.link.word_form_ipa && (
-                <span className="reader-gloss-ipa">[{gloss.link.word_form_ipa}]</span>
-              )}
-              {gloss.link.word_part_of_speech && (
-                <span className="reader-gloss-pos">{gloss.link.word_part_of_speech}</span>
-              )}
-            </div>
-            <button
-              type="button"
-              className="reader-gloss-close"
-              onClick={() => setGloss(null)}
-              aria-label="Close word details"
-            >
-              ✕
-            </button>
-          </div>
-          <div className="reader-gloss-body">
-            {gloss.translations === null && <span className="reader-gloss-loading">Loading…</span>}
-            {gloss.translations !== null && gloss.translations.length === 0 && (
-              <span className="reader-gloss-none">No translation recorded yet.</span>
-            )}
-            {gloss.translations !== null && gloss.translations.length > 0 && (
-              <ul className="reader-gloss-translations">
-                {gloss.translations.map((tr) => (
-                  <li key={tr.id}>
-                    <b>{tr.lemma}</b>
-                    {tr.language_name && <span> · {tr.language_name}</span>}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-          <div className="reader-gloss-actions">
-            {gloss.audioUrl && (
-              <button
-                type="button"
-                className="btn btn-ghost btn-sm"
-                onClick={() => playGlossAudio(gloss.audioUrl!)}
-              >
-                ▶ Hear it
-              </button>
-            )}
-            {gloss.link.lexeme_id && (
-              <Link to={`/words/${gloss.link.lexeme_id}`} className="reader-gloss-more">
-                Full entry →
-              </Link>
-            )}
-          </div>
-        </div>
-      )}
 
       <Modal
         isOpen={showDifficulty}

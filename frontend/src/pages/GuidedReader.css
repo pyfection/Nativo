@@ -47,6 +47,7 @@
 /* ---------- The text itself ---------- */
 
 .reader-content {
+  position: relative; /* anchor for the gloss popover */
   font-size: 1.35rem;
   line-height: 2;
   white-space: pre-wrap;
@@ -97,20 +98,26 @@
   opacity: 0.9;
 }
 
-/* ---------- Gloss panel ---------- */
+/* ---------- Gloss popover (anchored to the tapped word) ---------- */
 
 .reader-gloss {
-  position: fixed;
-  left: 50%;
-  bottom: 1rem;
-  transform: translateX(-50%);
-  width: min(680px, calc(100vw - 2rem));
+  position: absolute;
+  max-width: calc(100% - 0.5rem);
   padding: 0.9rem 1.1rem;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.18);
   background: var(--base1, #0a2733);
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
   z-index: 50;
+  font-size: 1rem;
+  line-height: 1.5;
+  white-space: normal;
+  text-align: left;
+}
+
+/* Flip above the word when it sits near the bottom of the viewport. */
+.reader-gloss-above {
+  transform: translateY(-100%);
 }
 
 .reader-gloss-head {
