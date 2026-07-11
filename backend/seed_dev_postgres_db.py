@@ -97,28 +97,40 @@ LANGUAGES = [
         False,
         ("#FF0000", "#FFFFFF", "#FF0000", "#FFFFFF"),
     ),
+    (
+        "8f2b6c1d-4e7a-4b3c-9d5e-2a1f8c6b4d90",
+        "Spanish",
+        "Español",
+        "spa",
+        "The Spanish language",
+        False,
+        False,
+        ("#C60B1E", "#FFC400", "#AA151B", "#FFF8E7"),
+    ),
 ]
 
 # Bavarian demo vocabulary in the Nativo standard orthography:
-# lemma -> English gloss (None = no translation, e.g. names).
-BAVARIAN_WORDS: dict[str, str | None] = {
-    "Servus": "hello",
-    "i": "I",
-    "bin": "am",
-    "da": "the",
-    "de": "the",
-    "und": "and",
-    "du": "you",
-    "Maks": None,
-    "Áná": None,
-    "gengan": "to go",
-    "af": "on",
-    "d": "the",
-    "óim": "alpine pasture",
-    "esn": "to eat",
-    "a": "a",
-    "bredsn": "pretzel",
-    "gcihdl": "little story",
+# lemma -> glosses per target language ({} = no translations, e.g. names).
+# Counterpart lexemes are deduplicated per (language, gloss), so da/de/d all
+# point at the single English lexeme "the".
+BAVARIAN_WORDS: dict[str, dict[str, str]] = {
+    "Servus": {"English": "hello", "Spanish": "hola"},
+    "i": {"English": "I", "Spanish": "yo"},
+    "bin": {"English": "am", "Spanish": "soy"},
+    "da": {"English": "the", "Spanish": "el"},
+    "de": {"English": "the", "Spanish": "la"},
+    "und": {"English": "and", "Spanish": "y"},
+    "du": {"English": "you", "Spanish": "tú"},
+    "Maks": {},
+    "Áná": {},
+    "gengan": {"English": "to go", "Spanish": "ir"},
+    "af": {"English": "on", "Spanish": "en"},
+    "d": {"English": "the", "Spanish": "la"},
+    "óim": {"English": "alpine pasture", "Spanish": "prado alpino"},
+    "esn": {"English": "to eat", "Spanish": "comer"},
+    "a": {"English": "a", "Spanish": "un"},
+    "bredsn": {"English": "pretzel", "Spanish": "pretzel"},
+    "gcihdl": {"English": "little story", "Spanish": "cuentito"},
 }
 
 # Graded lessons: (title, content, words-to-link in reading order). Content
@@ -195,14 +207,15 @@ def seed_database():
         print(f"  Inserted {len(LANGUAGES)} languages")
 
         bavarian = langs["Bavarian"]
-        english = langs["English"]
 
         # ------------------------------------------------------------------
-        # Vocabulary: Bavarian lexemes + lemma forms, English translations
+        # Vocabulary: Bavarian lexemes + lemma forms, plus translation
+        # counterparts per target language (deduplicated per gloss)
         # ------------------------------------------------------------------
         forms: dict[str, WordForm] = {}
+        counterparts: dict[tuple[str, str], UUID] = {}  # (language, gloss) -> lexeme id
         translation_pairs: list[tuple[UUID, UUID]] = []
-        for lemma, gloss in BAVARIAN_WORDS.items():
+        for lemma, glosses in BAVARIAN_WORDS.items():
             lexeme = Lexeme(
                 language_id=bavarian.id,
                 lemma=lemma,
@@ -216,17 +229,20 @@ def seed_database():
             db.flush()
             forms[lemma] = form
 
-            if gloss:
-                counterpart = Lexeme(
-                    language_id=english.id,
-                    lemma=gloss,
-                    created_by_id=admin.id,
-                    status=LexemeStatus.PUBLISHED,
-                )
-                db.add(counterpart)
-                db.flush()
-                db.add(WordForm(lexeme_id=counterpart.id, form=gloss, is_lemma=True))
-                translation_pairs.append((lexeme.id, counterpart.id))
+            for lang_name, gloss in glosses.items():
+                key = (lang_name, gloss)
+                if key not in counterparts:
+                    counterpart = Lexeme(
+                        language_id=langs[lang_name].id,
+                        lemma=gloss,
+                        created_by_id=admin.id,
+                        status=LexemeStatus.PUBLISHED,
+                    )
+                    db.add(counterpart)
+                    db.flush()
+                    db.add(WordForm(lexeme_id=counterpart.id, form=gloss, is_lemma=True))
+                    counterparts[key] = counterpart.id
+                translation_pairs.append((lexeme.id, counterparts[key]))
 
         # Translations are undirected and stored canonically (lexeme_id < other).
         for a, b in translation_pairs:
@@ -241,8 +257,9 @@ def seed_database():
             )
         db.commit()
         print(
-            f"  Inserted {len(BAVARIAN_WORDS)} Bavarian words "
-            f"({len(translation_pairs)} with English translations)"
+            f"  Inserted {len(BAVARIAN_WORDS)} Bavarian words, "
+            f"{len(counterparts)} counterpart words, "
+            f"{len(translation_pairs)} translation links"
         )
 
         # ------------------------------------------------------------------

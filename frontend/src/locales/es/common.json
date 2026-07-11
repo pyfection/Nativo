@@ -1,0 +1,169 @@
+{
+  "hero": {
+    "title": "Preservando lenguas en peligro",
+    "subtitle": "Una plataforma digital dedicada a documentar y preservar las lenguas en peligro del mundo mediante documentos escritos, bases de datos de vocabulario y grabaciones de audio.",
+    "title_language": "El {{language}} se habla desde hace más de mil años.",
+    "subtitle_language": "Lo estamos documentando antes de que deje de hablarse."
+  },
+  "home": {
+    "read_writing_standard": "Leer la norma escrita del {{language}}"
+  },
+  "hero_v2": {
+    "eyebrow": "Cada dos semanas enmudece una lengua",
+    "heading_pre": "Salva las",
+    "heading_emphasis": "palabras",
+    "heading_post": "antes de que desaparezcan.",
+    "sub": "Nativo documenta las lenguas en peligro del mundo: su vocabulario, su escritura y las voces que las hablan. Cada palabra que añades al {{language}} lo mantiene vivo un poco más.",
+    "cta_start": "Empieza a contribuir",
+    "cta_browse": "Explora el diccionario",
+    "cta_explore": "Explora las lenguas",
+    "reassure": "Gratis, abierto y construido por comunidades como la tuya."
+  },
+  "hero_card": {
+    "title": "Busca una palabra en {{language}}",
+    "hint": "Busca en el diccionario, o mira pasar palabras mientras piensas.",
+    "placeholder": "Escribe una palabra…",
+    "search_aria": "Buscar en el diccionario",
+    "label_result": "Resultado",
+    "label_rotating": "Del diccionario",
+    "view_in_dictionary": "Ver en el diccionario",
+    "no_entry": "Aún no hay entrada para \"{{query}}\".",
+    "no_entry_body": "Esta palabra todavía no está documentada en {{language}}. Podrías ser quien la añada.",
+    "add_this_word": "Añadir esta palabra",
+    "no_translation_in_target": "Aún sin traducción al {{target}}",
+    "play": "Escúchala"
+  },
+  "dictionary": {
+    "title_with_target": "Busca una palabra en {{source}} → {{target}}",
+    "title_no_target": "Busca una palabra en {{source}}",
+    "subtitle_with_target": "Busca en el vocabulario del {{source}} y ve las traducciones al {{target}}. Cambia el idioma de destino con el selector de la cabecera.",
+    "subtitle_no_target": "Busca en el vocabulario del {{source}}.",
+    "placeholder": "Escribe una palabra en {{source}}…",
+    "search": "Buscar",
+    "searching": "Buscando…",
+    "empty": "Aún no hay resultados para “{{query}}”. Los colaboradores siguen construyendo este diccionario.",
+    "no_target_translation": "Aún sin traducción al {{target}}.",
+    "no_translations": "Aún sin traducciones.",
+    "search_aria_label": "Buscar palabras en {{source}}",
+    "rate_limited": "Demasiadas solicitudes: espera un momento y vuelve a intentarlo.",
+    "search_failed": "La búsqueda falló. Inténtalo de nuevo."
+  },
+  "stats": {
+    "heading": "Resumen de la plataforma",
+    "language_heading": "Progreso del {{language}}",
+    "languages": "Lenguas preservadas",
+    "words": "Palabras documentadas",
+    "documents": "Documentos preservados",
+    "audio": "Grabaciones de audio",
+    "contributors": "Colaboradores",
+    "cta_add_word": "Añade la primera palabra",
+    "cta_add_document": "Añade el primer documento",
+    "cta_audio_coming_soon": "La subida de audio llegará pronto",
+    "cta_add_audio": "Graba una pronunciación",
+    "cta_join_to_contribute": "Regístrate para contribuir"
+  },
+  "action_panel": {
+    "view_words": "Ver palabras",
+    "view_documents": "Ver documentos",
+    "upload_audio": "Subir audio",
+    "upload_audio_coming_soon": "La subida de audio llegará pronto",
+    "contribute": "Contribuir"
+  },
+  "activity": {
+    "heading": "Actividad reciente en {{language}}",
+    "loading": "Cargando actividad reciente…",
+    "empty": "Nada todavía: sé quien añada la primera palabra, documento o grabación."
+  },
+  "mission": {
+    "title": "Nuestra misión",
+    "document_title": "Documentar",
+    "document_body": "Registrar y preservar documentos escritos en lenguas en peligro",
+    "vocabulary_title": "Construir vocabulario",
+    "vocabulary_body": "Crear bases de datos completas con traducciones y pronunciaciones",
+    "audio_title": "Grabar audio",
+    "audio_body": "Guardar grabaciones auténticas de hablantes nativos",
+    "share_title": "Compartir el conocimiento",
+    "share_body": "Hacer accesible el patrimonio lingüístico a las generaciones futuras"
+  },
+  "header": {
+    "interface_language": "Idioma de la interfaz",
+    "contribute": "Contribuir",
+    "contribute_tooltip": "Contribuir al {{language}}"
+  },
+  "spotlight": {
+    "eyebrow": "Una palabra del {{language}}",
+    "empty": "Aún no hay palabras: sé quien añada la primera.",
+    "translate_cta": "Traducir una palabra",
+    "back": "Volver a descubrir"
+  },
+  "endangerment": {
+    "headline": "La UNESCO clasifica el {{language}} como {{level}}.",
+    "progress": "{{count}} de unas {{target}} palabras básicas estimadas documentadas.",
+    "body_bar": "En las zonas rurales los niños aún crecen con él; en las ciudades y sus alrededores, cada vez menos.",
+    "body_umu": "Los hablantes fluidos más jóvenes tienen setenta años o más.",
+    "body_haw": "Hay un movimiento de revitalización en marcha; los hablantes nativos fluidos siguen siendo pocos.",
+    "body_nav": "Sigue siendo la lengua indígena más hablada de Norteamérica, pero los hablantes jóvenes disminuyen.",
+    "body_ain": "Solo queda un puñado de hablantes plenamente fluidos, la mayoría muy mayores.",
+    "body_eng": "Hablada por todas las generaciones en muchas regiones; no está clasificada como en peligro."
+  },
+  "user_menu": {
+    "aria_label": "Menú de perfil de {{username}}",
+    "sign_in": "Iniciar sesión",
+    "register": "Registrarse",
+    "admin_panel": "Panel de administración",
+    "sign_out": "Cerrar sesión"
+  },
+  "nav": {
+    "words": "Palabras",
+    "dictionary": "Diccionario",
+    "spelling": "Ortografía",
+    "documents": "Documentos",
+    "audio": "Audio",
+    "contributors": "Colaboradores",
+    "languages": "Lenguas",
+    "learn": "Aprender"
+  },
+  "audio_page": {
+    "title": "Audio en {{language}}",
+    "subtitle": "Grabaciones vinculadas a palabras de esta lengua.",
+    "loading": "Cargando audio…",
+    "empty_title": "Aún no hay grabaciones de audio.",
+    "empty_hint": "La subida de audio está en el plan: las grabaciones aparecerán aquí cuando los colaboradores las añadan.",
+    "linked_words": "palabras vinculadas"
+  },
+  "contributors_page": {
+    "title": "Colaboradores del {{language}}",
+    "subtitle": "Todas las personas que se han unido o han contribuido a esta lengua.",
+    "loading": "Cargando colaboradores…",
+    "empty": "Aún no hay colaboradores para esta lengua.",
+    "col_user": "Usuario",
+    "col_proficiency": "Nivel",
+    "col_words": "Palabras",
+    "col_documents": "Documentos"
+  },
+  "footer": {
+    "copyright": "© 2026 Nativo - Preservando el patrimonio lingüístico"
+  },
+  "latest_text": {
+    "heading": "Recién preservado en {{language}}",
+    "read_more": "Leer el texto completo"
+  },
+  "learn": {
+    "heading": "Aprende {{language}}",
+    "subtitle": "Entra leyendo: cada texto se apoya en las palabras que ya conoces.",
+    "guest_banner": "Ya puedes leerlo todo. Crea una cuenta para registrar las palabras que conoces y recibir el siguiente texto adecuado para ti.",
+    "guest_banner_cta": "Regístrate para guardar tu progreso",
+    "loading": "Construyendo tu camino…",
+    "load_failed": "No se pudo cargar el camino de aprendizaje.",
+    "empty": "Aún no hay textos listos para aprender en {{language}}.",
+    "empty_hint": "Un texto entra en el camino cuando todas sus palabras están vinculadas al diccionario. Editores: terminad de vincular un texto corto y aparecerá aquí.",
+    "progress": "{{done}} de {{total}} textos leídos",
+    "step_completed": "Leído",
+    "step_no_new_words": "Sin palabras nuevas: una lectura cómoda",
+    "step_new_word_one": "1 palabra nueva",
+    "step_new_words": "{{n}} palabras nuevas",
+    "step_known": "{{pct}}% conocido",
+    "step_start": "Empezar a leer",
+    "step_tough": "será difícil"
+  }
+}
