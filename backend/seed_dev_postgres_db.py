@@ -118,7 +118,7 @@ BAVARIAN_WORDS: dict[str, str | None] = {
     "esn": "to eat",
     "a": "a",
     "bredsn": "pretzel",
-    "Gcihdl": "little story",
+    "gcihdl": "little story",
 }
 
 # Graded lessons: (title, content, words-to-link in reading order). Content
@@ -255,8 +255,8 @@ def seed_database():
             Text(
                 document_id=story_doc.id,
                 language_id=bavarian.id,
-                title="A Gcihdl",
-                content="Servus bainánd! Des is a gloans Gcihdl af Boaric.",
+                title="A gcihdl",
+                content="Servus bainánd! Des is a gloans gcihdl af Boaric.",
                 document_type=DocumentType.STORY,
                 created_by_id=admin.id,
                 is_primary=True,

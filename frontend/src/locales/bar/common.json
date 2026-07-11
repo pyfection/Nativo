@@ -145,19 +145,19 @@
   "learn": {
     "heading": "{{language}} leana",
     "subtitle": "Lés di ei - a iéds dokument baud af de veata af, de'st co kensd.",
-    "guest_banner": "Du kanst iads co óis lésn. Máh da a konto, das ma da de rihtign nékstn dokument aussuaha kena.",
-    "guest_banner_cta": "Registria di, das da blads bleibd",
+    "guest_banner": "Du ko'st iads co óis lésn. Máh da a konto, das ma da de rihtign nékstn dokument aussuaha kena.",
+    "guest_banner_cta": "Registria di, das da blóds blaibd",
     "loading": "Dei vég vead baud…",
     "load_failed": "Da leanvég hod ned lón kena.",
-    "empty": "In {{language}} san no koane dokument fias leana bereid.",
-    "empty_hint": "A dokument kimt in'n vég, ven olle veata mim veatabuah valinkd san.",
-    "progress": "{{done}} fo {{total}} dokument glesn",
-    "step_completed": "Glesn",
-    "step_no_new_words": "Koane neihn veata — a gmiadlihs lésn",
-    "step_new_word_one": "1 neihs voat",
-    "step_new_words": "{{n}} neihe veata",
-    "step_known": "{{pct}}% bekant",
-    "step_start": "Foanga ó dsum lésn",
-    "step_tough": "vead cvá"
+    "empty": "In {{language}} san no koane dokument fias leana dó.",
+    "empty_hint": "A dokument kimt in'n vég, ven olle veata mim veatabuah falinkd san.",
+    "progress": "{{done}} fo {{total}} dokument glésn",
+    "step_completed": "Glésn",
+    "step_no_new_words": "Koane naia veata — a gmiadlihs lésn",
+    "step_new_word_one": "1 nais voat",
+    "step_new_words": "{{n}} naie veata",
+    "step_known": "{{pct}}% gvusd",
+    "step_start": "Fáng o dsum lésn",
+    "step_tough": "vead cvar"
   }
 }
