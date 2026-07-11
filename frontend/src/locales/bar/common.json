@@ -92,7 +92,8 @@
     "documents": "Dokument",
     "audio": "Ton",
     "contributors": "Midheifa",
-    "languages": "Cbráha"
+    "languages": "Cbráha",
+    "learn": "Leana"
   },
   "activity": {
     "heading": "Letsde duan in {{language}}",
@@ -140,5 +141,23 @@
   "latest_text": {
     "heading": "Fric dahóitn in {{language}}",
     "read_more": "As gándse dokument lésn"
+  },
+  "learn": {
+    "heading": "{{language}} leana",
+    "subtitle": "Les di eini — iads dokument baut af de veata auf, de'st scho kenst.",
+    "guest_banner": "Du kanst iads scho ollas les'n. Mocha da a konto, das ma da de rihtign nekstn dokument aussuahn kenan.",
+    "guest_banner_cta": "Registria di, das da blats bleibt",
+    "loading": "Dei vég vead baut…",
+    "load_failed": "Da leanvég hod ned lón kena.",
+    "empty": "In {{language}} san no koane dokument fias leana bereid.",
+    "empty_hint": "A dokument kimt in'n vég, ven olle veata mim veatabuah valinkt san.",
+    "progress": "{{done}} fo {{total}} dokument glesn",
+    "step_completed": "Glesn",
+    "step_no_new_words": "Koane neihn veata — a gmiadlihs les'n",
+    "step_new_word_one": "1 neihs voat",
+    "step_new_words": "{{n}} neihe veata",
+    "step_known": "{{pct}}% bekant",
+    "step_start": "Ofanga dsum les'n",
+    "step_tough": "vead schwa"
   }
 }

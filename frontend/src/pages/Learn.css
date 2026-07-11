@@ -1,0 +1,148 @@
+.learn-page {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 4rem;
+}
+
+.learn-header h1 {
+  margin-bottom: 0.25rem;
+}
+
+.learn-subtitle {
+  margin: 0 0 1.5rem;
+  opacity: 0.75;
+}
+
+.learn-guest-banner {
+  margin-bottom: 1.5rem;
+  padding: 0.85rem 1.1rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.learn-empty {
+  padding: 2rem 0;
+  text-align: center;
+}
+
+.learn-empty-hint {
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+.learn-progress-line {
+  margin: 0 0 1rem;
+  font-size: 0.85rem;
+  opacity: 0.75;
+}
+
+/* ---------- The track ---------- */
+
+.learn-track {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+
+/* The vertical line connecting the steps. */
+.learn-track::before {
+  content: '';
+  position: absolute;
+  left: 0.85rem;
+  top: 0.5rem;
+  bottom: 0.5rem;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.learn-step {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 0.5rem 0;
+}
+
+.learn-step-marker {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+  width: 1.75rem;
+  height: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  background: var(--base1, #0a2733);
+  font-size: 0.8rem;
+  margin-top: 0.4rem;
+}
+
+.learn-step-completed .learn-step-marker {
+  border-color: var(--accent, #a9c2bd);
+  color: var(--accent, #a9c2bd);
+}
+
+.learn-step-recommended .learn-step-marker {
+  border-color: currentColor;
+}
+
+.learn-step-upcoming {
+  opacity: 0.7;
+}
+
+.learn-step-card {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.9rem;
+  padding: 0.85rem 1.1rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.learn-step-card:hover {
+  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.learn-step-recommended .learn-step-card {
+  border-color: var(--accent, #a9c2bd);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.learn-step-title {
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+.learn-step-meta {
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.learn-step-rating {
+  margin-left: 0.35rem;
+}
+
+.learn-step-go {
+  margin-left: auto;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.learn-step-warning {
+  margin-left: auto;
+  font-size: 0.78rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 200, 100, 0.5);
+  color: rgba(255, 210, 130, 0.9);
+}

@@ -28,6 +28,18 @@ const ICON_PROPS = {
 
 const NAV_ITEMS: NavItem[] = [
   {
+    path: '/learn',
+    labelKey: 'nav.learn',
+    // Graduation cap — the guided learning path
+    icon: (
+      <svg {...ICON_PROPS}>
+        <path d="M12 4L2 9L12 14L22 9L12 4Z" />
+        <path d="M6 11.5V16C6 16 8.5 18 12 18C15.5 18 18 16 18 16V11.5" />
+        <path d="M22 9V14" />
+      </svg>
+    ),
+  },
+  {
     path: '/words',
     labelKey: 'nav.words',
     // Custom "Αω" glyph icon — fill is fine here because <text> doesn't

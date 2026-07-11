@@ -120,7 +120,8 @@
     "documents": "Documents",
     "audio": "Audio",
     "contributors": "Contributors",
-    "languages": "Languages"
+    "languages": "Languages",
+    "learn": "Learn"
   },
   "audio_page": {
     "title": "{{language}} audio",
@@ -146,5 +147,23 @@
   "latest_text": {
     "heading": "Freshly preserved in {{language}}",
     "read_more": "Read the whole text"
+  },
+  "learn": {
+    "heading": "Learn {{language}}",
+    "subtitle": "Read your way in — each text builds on the words you already know.",
+    "guest_banner": "You can read everything right now. Create an account to track the words you know and get the right next text picked for you.",
+    "guest_banner_cta": "Sign up to keep your place",
+    "loading": "Building your path…",
+    "load_failed": "Failed to load the learning path.",
+    "empty": "No texts are ready for learning in {{language}} yet.",
+    "empty_hint": "A text joins the path once its words are fully linked to the dictionary. Editors: finish linking a short text and it will appear here.",
+    "progress": "{{done}} of {{total}} texts read",
+    "step_completed": "Read",
+    "step_no_new_words": "No new words — a comfortable read",
+    "step_new_word_one": "1 new word",
+    "step_new_words": "{{n}} new words",
+    "step_known": "{{pct}}% known",
+    "step_start": "Start reading",
+    "step_tough": "will be tough"
   }
 }
