@@ -14,10 +14,10 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import get_db
 from app.limiter import limiter
-from app.models.text import Text
+from app.models.text import Text, TextStatus
 from app.models.user import User
 from app.models.user_language import UserLanguage
-from app.models.word import Lexeme
+from app.models.word import Lexeme, LexemeStatus
 
 router = APIRouter()
 
@@ -58,16 +58,24 @@ def get_activity(
     # Pull a small over-fetch from each source then merge + sort.
     over = max(limit * 2, 20)
 
+    # Unreviewed suggestions and rejected content don't belong in a public
+    # feed — hide pending/archived entries from both sources.
     recent_words = (
         db.query(Lexeme)
-        .filter(Lexeme.language_id == language_id)
+        .filter(
+            Lexeme.language_id == language_id,
+            Lexeme.status.notin_([LexemeStatus.PENDING_REVIEW, LexemeStatus.ARCHIVED]),
+        )
         .order_by(Lexeme.created_at.desc())
         .limit(over)
         .all()
     )
     recent_texts = (
         db.query(Text)
-        .filter(Text.language_id == language_id)
+        .filter(
+            Text.language_id == language_id,
+            Text.status == TextStatus.PUBLISHED,
+        )
         .order_by(Text.created_at.desc())
         .limit(over)
         .all()

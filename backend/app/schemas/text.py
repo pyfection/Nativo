@@ -7,7 +7,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.models.text import DocumentType, TextFormat
+from app.models.text import DocumentType, TextFormat, TextStatus
 from app.models.text_word_link import TextWordLinkStatus
 
 
@@ -52,6 +52,7 @@ class TextInDB(TextBase):
     """Schema for text as stored in database"""
 
     id: UUID
+    status: TextStatus = TextStatus.PUBLISHED
     created_by_id: UUID
     created_at: datetime
     updated_at: datetime
@@ -151,6 +152,29 @@ class TextFilter(BaseModel):
     created_by_id: UUID | None = None
     skip: int = Field(0, ge=0)
     limit: int = Field(100, ge=1, le=1000)
+
+
+class TextSuggestion(BaseModel):
+    """A pending text suggestion as shown in the reviewer's queue."""
+
+    id: UUID
+    document_id: UUID | None = None
+    title: str
+    content: str
+    document_type: DocumentType
+    language_id: UUID | None = None
+    status: TextStatus
+    notes: str | None = None
+    created_at: datetime
+    creator_username: str | None = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class TextRejection(BaseModel):
+    """Optional reason a reviewer gives when rejecting a text suggestion."""
+
+    reason: str | None = Field(None, max_length=500)
 
 
 class TextStatistics(BaseModel):

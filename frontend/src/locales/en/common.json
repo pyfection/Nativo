@@ -338,7 +338,11 @@
     "th_actions": "Actions",
     "view_document": "View document",
     "edit_document": "Edit document",
-    "link_words": "Link words"
+    "link_words": "Link words",
+    "suggest_document": "Suggest a Document",
+    "suggest_notice": "Have a {{language}} text that's missing? You can suggest it — a reviewer will check it before it's published.",
+    "suggest_link": "Suggest a document",
+    "review_queue": "Review suggestions"
   },
   "spelling_page": {
     "title": "Spelling lookup",
@@ -646,7 +650,10 @@
     "notes_placeholder": "Internal notes or additional information",
     "cancel": "Cancel",
     "creating": "Creating...",
-    "create_document": "Create Document"
+    "create_document": "Create Document",
+    "suggest_title": "Suggest a Document",
+    "suggest_note": "You're suggesting this document. A reviewer will check it before it appears publicly.",
+    "suggest_document": "Suggest Document"
   },
   "edit_doc": {
     "load_failed": "Failed to load document",
@@ -903,7 +910,7 @@
   },
   "review": {
     "title": "{{language}} suggestions",
-    "subtitle": "Words proposed by the community, waiting for your verdict. Approving publishes them; frequent good suggesters are automatically promoted to editors.",
+    "subtitle": "Words and documents proposed by the community, waiting for your verdict. Approving publishes them; frequent good suggesters are automatically promoted to editors.",
     "loading": "Loading suggestions…",
     "load_failed": "Failed to load suggestions.",
     "action_failed": "That action failed. Please try again.",
@@ -912,6 +919,8 @@
     "approve": "Approve",
     "reject": "Reject",
     "reject_reason_prompt": "Why is this rejected? (optional, shown to nobody yet but kept in the notes)",
-    "no_permission": "Reviewing suggestions requires verify permission for this language."
+    "no_permission": "Reviewing suggestions requires verify permission for this language.",
+    "words_heading": "Words",
+    "texts_heading": "Documents"
   }
 }

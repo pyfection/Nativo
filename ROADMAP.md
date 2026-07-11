@@ -4,17 +4,20 @@
 
 Ranked by value after the open-platform + learning-path work landed.
 
-1. **Suggester tier — fix the contribution dead-end.** `in progress`
-   Every guest CTA says "create an account to contribute", but a fresh
-   account can't contribute: joining grants viewer only and all writes
-   require per-language `can_edit`. Build the flow sketched in CLAUDE.md:
-   authenticated users submit new words as `LexemeStatus.PENDING_REVIEW`
-   instead of 403; `can_verify` holders get a review queue (approve →
-   published+verified, reject → archived with note); auto-grant `can_edit`
-   after N approved suggestions; permission notices become "suggest it".
-   Phase B: same for texts (needs a `status` column on Text + published-only
-   filtering on document reads). Edits to existing records stay deferred
-   (ChangeProposal queue, per CLAUDE.md).
+1. **Suggester tier — fix the contribution dead-end.** `done`
+   Shipped in two phases. Phase A (words): authenticated users submit new
+   words as `LexemeStatus.PENDING_REVIEW` instead of 403; `can_verify`
+   holders get a review queue at /review (approve → published+verified,
+   reject → archived with note); auto-grant `can_edit` after 5 approved
+   suggestions; permission notices became "suggest it". Phase B (texts):
+   `Text.status` column (pending_review/published/archived), non-editors'
+   documents/translations land pending, published-only filtering on all
+   document reads (list/detail/links, activity feed, statistics, learning
+   path) with author + reviewer visibility, text queue/approve/reject
+   endpoints, texts section on /review, suggest mode on the add-document
+   form. Still deferred: edits to existing records (ChangeProposal queue,
+   per CLAUDE.md) and counting approved *texts* toward auto-promotion
+   (currently words only).
 2. **Durable audio, then narrated texts.** Urgent half: uploads on Fly are
    ephemeral without a volume — a redeploy destroys recordings. Move
    `file_storage` to object storage (Tigris/S3) or mount a volume now.

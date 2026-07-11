@@ -10,3 +10,12 @@
   border-radius: 16px;
   padding: 28px;
 }
+
+.add-document-suggestion-note {
+  margin-top: 0.5rem;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid rgba(120, 190, 255, 0.35);
+  border-radius: 8px;
+  font-size: 0.88rem;
+  opacity: 0.9;
+}

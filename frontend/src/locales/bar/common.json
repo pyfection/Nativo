@@ -300,7 +300,7 @@
   },
   "review": {
     "title": "{{language}}-foacleg",
-    "subtitle": "Veata fo da gmoacáfd, de af dei uateil vartn. Genemign faefntlihd se; vea oft guade foacleg máht, vead automatic editor.",
+    "subtitle": "Veata und dokumenta fo da gmoacáfd, de af dei uateil vartn. Genemign faefntlihd se; vea oft guade foacleg máht, vead automatic editor.",
     "loading": "Foacleg lón…",
     "load_failed": "De foacleg hom ned lón kena.",
     "action_failed": "Des hod ned funkdsioniad. Brobia's no amoi.",
@@ -309,6 +309,8 @@
     "approve": "Genemign",
     "reject": "Óblena",
     "reject_reason_prompt": "Varum vead des óbglent? (freivillig; bleibt in de notidsn)",
-    "no_permission": "Fias briafn brauhst as briaf-reht fia de cbráh."
+    "no_permission": "Fias briafn brauhst as briaf-reht fia de cbráh.",
+    "words_heading": "Veata",
+    "texts_heading": "Dokumenta"
   }
 }

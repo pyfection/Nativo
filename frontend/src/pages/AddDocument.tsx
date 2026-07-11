@@ -5,6 +5,7 @@ import documentService, { CreateDocumentData } from '../services/documentService
 import { DOCUMENT_TYPE_OPTIONS } from '../utils/documentTypes';
 import { DocumentType } from '../types/text';
 import { Language } from '../App';
+import { useAuth } from '../contexts/AuthContext';
 import './AddDocument.css';
 
 interface AddDocumentProps {
@@ -14,6 +15,10 @@ interface AddDocumentProps {
 export default function AddDocument({ selectedLanguage }: AddDocumentProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { canEditLanguage } = useAuth();
+  // Non-editors submit suggestions: same form, but the result lands in the
+  // review queue instead of publishing directly.
+  const isSuggestion = !canEditLanguage(selectedLanguage.id);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState<CreateDocumentData>({
@@ -61,8 +66,11 @@ export default function AddDocument({ selectedLanguage }: AddDocumentProps) {
   return (
     <div className="add-document-page">
       <div className="page-header">
-        <h1>{t('add_doc.title')}</h1>
+        <h1>{isSuggestion ? t('add_doc.suggest_title') : t('add_doc.title')}</h1>
         <p>{t('add_doc.subtitle')}</p>
+        {isSuggestion && (
+          <p className="add-document-suggestion-note">{t('add_doc.suggest_note')}</p>
+        )}
       </div>
 
       <form onSubmit={handleSubmit} className="document-form">
@@ -140,7 +148,11 @@ export default function AddDocument({ selectedLanguage }: AddDocumentProps) {
             {t('add_doc.cancel')}
           </button>
           <button type="submit" className="btn-primary" disabled={loading}>
-            {loading ? t('add_doc.creating') : t('add_doc.create_document')}
+            {loading
+              ? t('add_doc.creating')
+              : isSuggestion
+                ? t('add_doc.suggest_document')
+                : t('add_doc.create_document')}
           </button>
         </div>
       </form>

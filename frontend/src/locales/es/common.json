@@ -347,7 +347,11 @@
     "th_actions": "Acciones",
     "view_document": "Ver documento",
     "edit_document": "Editar documento",
-    "link_words": "Vincular palabras"
+    "link_words": "Vincular palabras",
+    "suggest_document": "Sugerir documento",
+    "suggest_notice": "¿Tienes un texto en {{language}} que falta? Puedes sugerirlo: un revisor lo comprobará antes de publicarse.",
+    "suggest_link": "Sugerir un documento",
+    "review_queue": "Revisar sugerencias"
   },
   "spelling_page": {
     "title": "Consulta ortográfica",
@@ -655,7 +659,10 @@
     "notes_placeholder": "Notas internas o información adicional",
     "cancel": "Cancelar",
     "creating": "Creando...",
-    "create_document": "Crear documento"
+    "create_document": "Crear documento",
+    "suggest_title": "Sugerir un documento",
+    "suggest_note": "Estás sugiriendo este documento. Un revisor lo comprobará antes de que aparezca públicamente.",
+    "suggest_document": "Sugerir documento"
   },
   "edit_doc": {
     "load_failed": "No se pudo cargar el documento",
@@ -912,7 +919,7 @@
   },
   "review": {
     "title": "Sugerencias del {{language}}",
-    "subtitle": "Palabras propuestas por la comunidad, a la espera de tu veredicto. Aprobar las publica; quienes sugieren bien con frecuencia pasan automáticamente a editores.",
+    "subtitle": "Palabras y documentos propuestos por la comunidad, a la espera de tu veredicto. Aprobar los publica; quienes sugieren bien con frecuencia pasan automáticamente a editores.",
     "loading": "Cargando sugerencias…",
     "load_failed": "No se pudieron cargar las sugerencias.",
     "action_failed": "La acción falló. Inténtalo de nuevo.",
@@ -921,6 +928,8 @@
     "approve": "Aprobar",
     "reject": "Rechazar",
     "reject_reason_prompt": "¿Por qué se rechaza? (opcional; se guarda en las notas)",
-    "no_permission": "Revisar sugerencias requiere permiso de verificación para esta lengua."
+    "no_permission": "Revisar sugerencias requiere permiso de verificación para esta lengua.",
+    "words_heading": "Palabras",
+    "texts_heading": "Documentos"
   }
 }

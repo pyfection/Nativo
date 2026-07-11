@@ -39,6 +39,13 @@ export enum TextFormat {
   MARKDOWN = 'markdown',
 }
 
+/** Publication state: suggestions from non-editors start pending_review. */
+export enum TextStatus {
+  PENDING_REVIEW = 'pending_review',
+  PUBLISHED = 'published',
+  ARCHIVED = 'archived',
+}
+
 export interface TextWordLink {
   id: string;
   text_id: string;
@@ -86,6 +93,7 @@ export interface Text {
   content: string;
   document_type: DocumentType;
   format?: TextFormat;
+  status?: TextStatus;
   language_id?: string;
   document_id?: string;
   is_primary: boolean;

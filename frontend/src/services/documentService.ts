@@ -6,9 +6,23 @@ import {
   DocumentListItem,
   DocumentFilter,
 } from '../types/document';
-import { Text, TextCreate, TextUpdate } from '../types/text';
+import { Text, TextCreate, TextStatus, TextUpdate } from '../types/text';
 
 export type CreateDocumentData = TextCreate;
+
+/** A pending text suggestion as shown in the reviewer's queue. */
+export interface TextSuggestion {
+  id: string;
+  document_id?: string | null;
+  title: string;
+  content: string;
+  document_type: string;
+  language_id?: string | null;
+  status: TextStatus;
+  notes?: string | null;
+  created_at: string;
+  creator_username?: string | null;
+}
 
 /**
  * Document service for managing documents and their texts (translations).
@@ -89,6 +103,37 @@ const documentService = {
    */
   async deleteText(documentId: string, textId: string): Promise<void> {
     await api.delete(`/api/v1/documents/${documentId}/texts/${textId}`);
+  },
+
+  /**
+   * List pending text suggestions for a language (reviewers only).
+   */
+  async listSuggestions(languageId: string): Promise<TextSuggestion[]> {
+    const response = await api.get<TextSuggestion[]>('/api/v1/documents/suggestions', {
+      params: { language_id: languageId },
+    });
+    return response.data;
+  },
+
+  /**
+   * Approve a pending text suggestion — it becomes published.
+   */
+  async approveText(documentId: string, textId: string): Promise<Text> {
+    const response = await api.post<Text>(
+      `/api/v1/documents/${documentId}/texts/${textId}/approve`
+    );
+    return response.data;
+  },
+
+  /**
+   * Reject a pending text suggestion with an optional reason.
+   */
+  async rejectText(documentId: string, textId: string, reason?: string): Promise<Text> {
+    const response = await api.post<Text>(
+      `/api/v1/documents/${documentId}/texts/${textId}/reject`,
+      reason ? { reason } : {}
+    );
+    return response.data;
   },
 
   /**

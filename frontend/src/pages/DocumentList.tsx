@@ -16,7 +16,7 @@ export default function DocumentList({ selectedLanguage }: DocumentListProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, canEditLanguage } = useAuth();
+  const { isAuthenticated, canEditLanguage, canVerifyLanguage } = useAuth();
   const [documents, setDocuments] = useState<DocumentListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -26,6 +26,7 @@ export default function DocumentList({ selectedLanguage }: DocumentListProps) {
 
   // Check if user can edit this language
   const canEdit = selectedLanguage ? canEditLanguage(selectedLanguage.id) : false;
+  const canVerify = selectedLanguage ? canVerifyLanguage(selectedLanguage.id) : false;
 
   useEffect(() => {
     fetchDocuments();
@@ -89,21 +90,31 @@ export default function DocumentList({ selectedLanguage }: DocumentListProps) {
           <h1>{t('docs_page.title')}</h1>
           <p>{t('docs_page.subtitle')}</p>
         </div>
-        {canEdit && (
-          <button onClick={() => navigate('/documents/add')} className="btn-primary">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/>
-            </svg>
-            {t('docs_page.add_document')}
-          </button>
-        )}
+        <div className="page-header-actions">
+          {canVerify && (
+            <button onClick={() => navigate('/review')} className="btn-secondary">
+              {t('docs_page.review_queue')}
+            </button>
+          )}
+          {isAuthenticated && (
+            <button onClick={() => navigate('/documents/add')} className="btn-primary">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/>
+              </svg>
+              {canEdit ? t('docs_page.add_document') : t('docs_page.suggest_document')}
+            </button>
+          )}
+        </div>
       </div>
 
       {!canEdit && selectedLanguage && (
         <div style={{ padding: '1rem', backgroundColor: '#fff3cd', border: '1px solid #ffc107', borderRadius: '4px', marginBottom: '1rem' }}>
           <p style={{ margin: 0, color: '#856404' }}>
             {isAuthenticated ? (
-              <>{t('docs_page.no_permission')}</>
+              <>
+                {t('docs_page.suggest_notice', { language: languageDisplayName(selectedLanguage) })}{' '}
+                <Link to="/documents/add">{t('docs_page.suggest_link')}</Link>
+              </>
             ) : (
               <>
                 {t('docs_page.banner_pre', { language: languageDisplayName(selectedLanguage) })}{' '}

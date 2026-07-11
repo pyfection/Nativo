@@ -35,6 +35,20 @@ class DocumentType(str, enum.Enum):
     OTHER = "other"
 
 
+class TextStatus(str, enum.Enum):
+    """Publication state of a Text.
+
+    Editors' texts are born `published` (the historical behaviour — the
+    column's server_default keeps every pre-existing row published).
+    Suggestions from non-editors land as `pending_review` and only become
+    readable to everyone once a reviewer approves; rejection archives them.
+    """
+
+    PENDING_REVIEW = "pending_review"
+    PUBLISHED = "published"
+    ARCHIVED = "archived"
+
+
 class TextFormat(str, enum.Enum):
     """How a Text.content should be rendered to the user.
 
@@ -83,6 +97,20 @@ class Text(Base):
         nullable=False,
         default=TextFormat.PLAIN,
         server_default=TextFormat.PLAIN.value,
+    )
+
+    # Publication state. values_callable: send the lowercase `.value` so it
+    # matches the Postgres enum labels (same pattern as `format` above).
+    status = Column(
+        SQLEnum(
+            TextStatus,
+            name="textstatus",
+            values_callable=lambda e: [m.value for m in e],
+        ),
+        nullable=False,
+        default=TextStatus.PUBLISHED,
+        server_default=TextStatus.PUBLISHED.value,
+        index=True,
     )
 
     # Language of the content itself

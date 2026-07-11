@@ -29,7 +29,7 @@ from app.models.learning import (
     UserLexemeKnowledge,
     UserTextProgress,
 )
-from app.models.text import Text
+from app.models.text import Text, TextStatus
 from app.models.text_word_link import TextWordLink, TextWordLinkStatus
 from app.models.word import Lexeme, WordForm
 
@@ -209,7 +209,10 @@ def get_learning_path(
     """
     texts = (
         db.query(Text)
-        .filter(Text.language_id == language_id)
+        .filter(
+            Text.language_id == language_id,
+            Text.status == TextStatus.PUBLISHED,
+        )
         .order_by(Text.created_at.asc())
         .all()
     )

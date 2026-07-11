@@ -15,7 +15,7 @@ from app.api.deps import get_db
 from app.models.audio import Audio
 from app.models.document import Document
 from app.models.language import Language
-from app.models.text import Text
+from app.models.text import Text, TextStatus
 from app.models.user import User
 from app.models.user_language import UserLanguage
 from app.models.word import Lexeme, WordForm, word_form_audio
@@ -63,7 +63,11 @@ def _language_stats(db: Session, language_id: UUID) -> dict:
 
     total_documents = (
         db.query(func.count(distinct(Text.document_id)))
-        .filter(Text.language_id == language_id, Text.document_id.is_not(None))
+        .filter(
+            Text.language_id == language_id,
+            Text.document_id.is_not(None),
+            Text.status == TextStatus.PUBLISHED,
+        )
         .scalar()
         or 0
     )
