@@ -9,7 +9,7 @@
     "read_writing_standard": "De {{language}}-Cdandard les'n"
   },
   "hero_v2": {
-    "eyebrow": "Olle dsvoa vohan vad a cbráh cdui",
+    "eyebrow": "Óle dsvoa voha vad a cbráh cdui",
     "heading_pre": "Réts de",
     "heading_emphasis": "veata",
     "heading_post": "befoas' nima gibt.",
@@ -243,7 +243,7 @@
     "title": "Bai {{language}} midmáha",
     "must_be_logged_in": "Du muast ogmeit sei, um bai oana cbráh midsumáha",
     "join_failed": "S'baidrédn hód ned funkdsioniad",
-    "intro_pre": "Suah da dei kena-level as in",
+    "intro_pre": "Via guad ko'st du",
     "intro_post": "Des heift de ándan dsum visn, via guad das'd bisd.",
     "native_label": "Muadacbráh",
     "native_description": "Des is dei easte cbráh oda du redst's via a muadacbráhla",
@@ -256,7 +256,8 @@
     "permissions_note": "Rehte dsum beávatn und briafn fo inhoit gém bai de administratoan.",
     "cancel": "Óbbréha",
     "joining": "Baidrédn…",
-    "join_language": "Bai da cbráh midmáha"
+    "join_language": "Bai da cbráh midmáha",
+    "intro_punct": "?"
   },
   "languages_page": {
     "load_failed": "De cbráha hom ned lón kena",

@@ -74,8 +74,8 @@ export default function JoinLanguageModal({ isOpen, onClose, language, onJoined 
     <Modal isOpen={isOpen} onClose={onClose} title={t('join_modal.title', { language: languageDisplayName(language) })}>
       <form onSubmit={handleSubmit} className="join-language-form">
         <p className="join-language-intro">
-          {t('join_modal.intro_pre')} <strong>{languageDisplayName(language)}</strong> ({language.nativeName}).{' '}
-          {t('join_modal.intro_post')}
+          {t('join_modal.intro_pre')} <strong>{languageDisplayName(language)}</strong> ({language.nativeName})
+          {t('join_modal.intro_punct')} {t('join_modal.intro_post')}
         </p>
 
         <div className="proficiency-options">

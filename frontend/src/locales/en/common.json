@@ -262,7 +262,8 @@
     "permissions_note": "Permissions to edit and verify content are granted by administrators.",
     "cancel": "Cancel",
     "joining": "Joining...",
-    "join_language": "Join Language"
+    "join_language": "Join Language",
+    "intro_punct": "."
   },
   "languages_page": {
     "load_failed": "Failed to load languages",

@@ -271,7 +271,8 @@
     "permissions_note": "Los permisos para editar y verificar contenido los conceden los administradores.",
     "cancel": "Cancelar",
     "joining": "Uniéndote...",
-    "join_language": "Unirse a la lengua"
+    "join_language": "Unirse a la lengua",
+    "intro_punct": "."
   },
   "languages_page": {
     "load_failed": "No se pudieron cargar las lenguas",
