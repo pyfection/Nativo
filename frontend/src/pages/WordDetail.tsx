@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 import { Language } from '../App';
 import AudioRecorder from '../components/common/AudioRecorder';
@@ -14,6 +15,7 @@ import wordService, {
   UpdateWordFormData,
   WordForm,
 } from '../services/wordService';
+import { languageDisplayName } from '../utils/languageName';
 import './WordDetail.css';
 
 interface WordDetailProps {
@@ -42,6 +44,7 @@ const ASPECT_OPTIONS = [
  * permission on the lexeme's language.
  */
 export default function WordDetail({ languages }: WordDetailProps) {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { canEditLanguage } = useAuth();
@@ -75,11 +78,11 @@ export default function WordDetail({ languages }: WordDetailProps) {
       setSynonyms(syn);
       setAntonyms(ant);
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to load word');
+      setError(err.response?.data?.detail || t('word_detail.load_failed'));
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, t]);
 
   useEffect(() => {
     refresh();
@@ -88,13 +91,13 @@ export default function WordDetail({ languages }: WordDetailProps) {
   // Auto-dismiss toasts.
   useEffect(() => {
     if (!actionMessage) return;
-    const t = setTimeout(() => setActionMessage(null), 4000);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => setActionMessage(null), 4000);
+    return () => clearTimeout(timer);
   }, [actionMessage]);
   useEffect(() => {
     if (!actionError) return;
-    const t = setTimeout(() => setActionError(null), 8000);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => setActionError(null), 8000);
+    return () => clearTimeout(timer);
   }, [actionError]);
 
   if (loading) {
@@ -102,7 +105,7 @@ export default function WordDetail({ languages }: WordDetailProps) {
       <div className="word-detail-page">
         <div className="loading-state">
           <div className="loading-spinner" />
-          <p>Loading word…</p>
+          <p>{t('word_detail.loading')}</p>
         </div>
       </div>
     );
@@ -112,9 +115,9 @@ export default function WordDetail({ languages }: WordDetailProps) {
     return (
       <div className="word-detail-page">
         <div className="error-state">
-          <p>{error ?? 'Word not found.'}</p>
+          <p>{error ?? t('word_detail.not_found')}</p>
           <Link to="/words" className="btn btn-ghost">
-            ← Back to words
+            {t('word_detail.back_to_words')}
           </Link>
         </div>
       </div>
@@ -128,9 +131,9 @@ export default function WordDetail({ languages }: WordDetailProps) {
           type="button"
           className="btn-link"
           onClick={() => navigate('/words')}
-          title="Return to the word list"
+          title={t('word_detail.back_to_words_title')}
         >
-          ← Back to words
+          {t('word_detail.back_to_words')}
         </button>
         <div className="word-detail-title-row">
           <h1 className="word-detail-lemma">{lexeme.lemma}</h1>
@@ -144,23 +147,25 @@ export default function WordDetail({ languages }: WordDetailProps) {
             {lexeme.status.replace('_', ' ')}
           </span>
           {lexeme.is_verified && (
-            <span className="status-badge status-verified" title="Verified by an editor">
-              ✓ verified
+            <span className="status-badge status-verified" title={t('word_detail.verified_title')}>
+              {t('word_detail.verified_badge')}
             </span>
           )}
         </div>
         {language && (
           <p className="word-detail-language">
-            {language.name} <span className="muted">· {language.nativeName}</span>
+            {languageDisplayName(language)} <span className="muted">· {language.nativeName}</span>
             {language.writingStandardDocumentId && (
               <>
                 {' · '}
                 <Link
                   to={`/languages/${language.id}/standard`}
                   className="word-detail-standard-link"
-                  title={`${language.name} writing standard`}
+                  title={t('word_detail.standard_link_title', {
+                    language: languageDisplayName(language),
+                  })}
                 >
-                  📖 Standard
+                  📖 {t('word_detail.standard_link')}
                 </Link>
               </>
             )}
@@ -178,15 +183,16 @@ export default function WordDetail({ languages }: WordDetailProps) {
       />
 
       <RelationsSection
-        title="Translations"
-        items={translations.map((t) => ({
-          id: t.id,
-          lemma: t.lemma,
-          language_id: t.language_id,
-          language_name: t.language_name ?? languages.find((l) => l.id === t.language_id)?.name,
-          notes: t.notes,
+        title={t('word_detail.translations')}
+        addButtonTitle={t('word_detail.add_translation_title')}
+        items={translations.map((tr) => ({
+          id: tr.id,
+          lemma: tr.lemma,
+          language_id: tr.language_id,
+          language_name: tr.language_name ?? languages.find((l) => l.id === tr.language_id)?.name,
+          notes: tr.notes,
         }))}
-        emptyHint="Link this word to its translations in other languages."
+        emptyHint={t('word_detail.translations_empty_hint')}
         searchLanguageIds={languages
           .filter((l) => l.id !== lexeme.language_id)
           .map((l) => l.id)
@@ -199,18 +205,19 @@ export default function WordDetail({ languages }: WordDetailProps) {
           await wordService.addTranslation(lexeme.id, { other_lexeme_id: otherId });
           const refreshed = await wordService.listTranslations(lexeme.id);
           setTranslations(refreshed);
-          setActionMessage('Translation linked.');
+          setActionMessage(t('word_detail.translation_linked'));
         }}
         onRemove={async (otherId) => {
           await wordService.removeTranslation(lexeme.id, otherId);
-          setTranslations((prev) => prev.filter((t) => t.id !== otherId));
-          setActionMessage('Translation removed.');
+          setTranslations((prev) => prev.filter((tr) => tr.id !== otherId));
+          setActionMessage(t('word_detail.translation_removed'));
         }}
         onError={setActionError}
       />
 
       <RelationsSection
-        title="Synonyms"
+        title={t('word_detail.synonyms')}
+        addButtonTitle={t('word_detail.add_synonym_title')}
         items={synonyms.map((s) => ({
           id: s.id,
           lemma: s.lemma,
@@ -218,7 +225,7 @@ export default function WordDetail({ languages }: WordDetailProps) {
           language_name: s.language_name ?? languages.find((l) => l.id === s.language_id)?.name,
           notes: s.nuance ? `(${s.nuance})${s.notes ? ' ' + s.notes : ''}` : s.notes,
         }))}
-        emptyHint="Words in the same language with overlapping meaning."
+        emptyHint={t('word_detail.synonyms_empty_hint')}
         searchLanguageIds={lexeme.language_id}
         canEdit={canEdit}
         canAdd
@@ -227,18 +234,19 @@ export default function WordDetail({ languages }: WordDetailProps) {
           await wordService.addSynonym(lexeme.id, { other_lexeme_id: otherId });
           const refreshed = await wordService.listSynonyms(lexeme.id);
           setSynonyms(refreshed);
-          setActionMessage('Synonym linked.');
+          setActionMessage(t('word_detail.synonym_linked'));
         }}
         onRemove={async (otherId) => {
           await wordService.removeSynonym(lexeme.id, otherId);
           setSynonyms((prev) => prev.filter((s) => s.id !== otherId));
-          setActionMessage('Synonym removed.');
+          setActionMessage(t('word_detail.synonym_removed'));
         }}
         onError={setActionError}
       />
 
       <RelationsSection
-        title="Antonyms"
+        title={t('word_detail.antonyms')}
+        addButtonTitle={t('word_detail.add_antonym_title')}
         items={antonyms.map((a) => ({
           id: a.id,
           lemma: a.lemma,
@@ -246,7 +254,7 @@ export default function WordDetail({ languages }: WordDetailProps) {
           language_name: a.language_name ?? languages.find((l) => l.id === a.language_id)?.name,
           notes: a.antonym_type ? `(${a.antonym_type})${a.notes ? ' ' + a.notes : ''}` : a.notes,
         }))}
-        emptyHint="Words in the same language with opposite meaning."
+        emptyHint={t('word_detail.antonyms_empty_hint')}
         searchLanguageIds={lexeme.language_id}
         canEdit={canEdit}
         canAdd
@@ -255,12 +263,12 @@ export default function WordDetail({ languages }: WordDetailProps) {
           await wordService.addAntonym(lexeme.id, { other_lexeme_id: otherId });
           const refreshed = await wordService.listAntonyms(lexeme.id);
           setAntonyms(refreshed);
-          setActionMessage('Antonym linked.');
+          setActionMessage(t('word_detail.antonym_linked'));
         }}
         onRemove={async (otherId) => {
           await wordService.removeAntonym(lexeme.id, otherId);
           setAntonyms((prev) => prev.filter((a) => a.id !== otherId));
-          setActionMessage('Antonym removed.');
+          setActionMessage(t('word_detail.antonym_removed'));
         }}
         onError={setActionError}
       />
@@ -274,8 +282,8 @@ export default function WordDetail({ languages }: WordDetailProps) {
                 type="button"
                 className="toast-dismiss"
                 onClick={() => setActionError(null)}
-                aria-label="Dismiss"
-                title="Dismiss"
+                aria-label={t('word_detail.dismiss')}
+                title={t('word_detail.dismiss')}
               >
                 ×
               </button>
@@ -288,8 +296,8 @@ export default function WordDetail({ languages }: WordDetailProps) {
                 type="button"
                 className="toast-dismiss"
                 onClick={() => setActionMessage(null)}
-                aria-label="Dismiss"
-                title="Dismiss"
+                aria-label={t('word_detail.dismiss')}
+                title={t('word_detail.dismiss')}
               >
                 ×
               </button>
@@ -314,6 +322,7 @@ interface FormsSectionProps {
 }
 
 function FormsSection({ lexeme, canEdit, onChange, onMessage, onError }: FormsSectionProps) {
+  const { t } = useTranslation();
   const [showAdd, setShowAdd] = useState(false);
   const [draft, setDraft] = useState<UpdateWordFormData>({});
   const [busy, setBusy] = useState(false);
@@ -338,9 +347,9 @@ function FormsSection({ lexeme, canEdit, onChange, onMessage, onError }: FormsSe
       await onChange();
       setShowAdd(false);
       setDraft({});
-      onMessage('Form added.');
+      onMessage(t('word_detail.form_added'));
     } catch (err: any) {
-      onError(err.response?.data?.detail || 'Failed to add form');
+      onError(err.response?.data?.detail || t('word_detail.add_form_failed'));
     } finally {
       setBusy(false);
     }
@@ -365,9 +374,9 @@ function FormsSection({ lexeme, canEdit, onChange, onMessage, onError }: FormsSe
       await onChange();
       setEditingId(null);
       setEditDraft({});
-      onMessage('Form updated.');
+      onMessage(t('word_detail.form_updated'));
     } catch (err: any) {
-      onError(err.response?.data?.detail || 'Failed to update form');
+      onError(err.response?.data?.detail || t('word_detail.update_form_failed'));
     } finally {
       setBusy(false);
     }
@@ -375,17 +384,17 @@ function FormsSection({ lexeme, canEdit, onChange, onMessage, onError }: FormsSe
 
   const handleDelete = async (form: WordForm) => {
     if (form.is_lemma) {
-      onError("Can't delete the lemma form. Mark another form as lemma first.");
+      onError(t('word_detail.cannot_delete_lemma'));
       return;
     }
-    if (!window.confirm(`Delete form "${form.form}"?`)) return;
+    if (!window.confirm(t('word_detail.confirm_delete_form', { form: form.form }))) return;
     setBusy(true);
     try {
       await wordService.deleteForm(form.id);
       await onChange();
-      onMessage('Form deleted.');
+      onMessage(t('word_detail.form_deleted'));
     } catch (err: any) {
-      onError(err.response?.data?.detail || 'Failed to delete form');
+      onError(err.response?.data?.detail || t('word_detail.delete_form_failed'));
     } finally {
       setBusy(false);
     }
@@ -394,15 +403,15 @@ function FormsSection({ lexeme, canEdit, onChange, onMessage, onError }: FormsSe
   return (
     <section className="word-detail-section">
       <div className="word-detail-section-header">
-        <h2>Forms ({lexeme.forms?.length ?? 0})</h2>
+        <h2>{t('word_detail.forms_heading', { count: lexeme.forms?.length ?? 0 })}</h2>
         {canEdit && !showAdd && (
           <button
             type="button"
             className="btn btn-ghost btn-sm"
             onClick={() => setShowAdd(true)}
-            title="Add an inflected form (plural, case form, conjugation, etc.) to this dictionary entry."
+            title={t('word_detail.add_form_title')}
           >
-            + Add form
+            {t('word_detail.add_form')}
           </button>
         )}
       </div>
@@ -429,8 +438,8 @@ function FormsSection({ lexeme, canEdit, onChange, onMessage, onError }: FormsSe
                   <div className="form-row-main">
                     <span className="form-text">{form.form}</span>
                     {form.is_lemma && (
-                      <span className="form-badge form-badge-lemma" title="Citation form for this entry">
-                        lemma
+                      <span className="form-badge form-badge-lemma" title={t('word_detail.lemma_badge_title')}>
+                        {t('word_detail.lemma_badge')}
                       </span>
                     )}
                     {form.romanization && (
@@ -469,9 +478,9 @@ function FormsSection({ lexeme, canEdit, onChange, onMessage, onError }: FormsSe
                             notes: form.notes,
                           });
                         }}
-                        title="Edit this form"
+                        title={t('word_detail.edit_form_title')}
                       >
-                        Edit
+                        {t('word_detail.edit')}
                       </button>
                       <button
                         type="button"
@@ -480,11 +489,11 @@ function FormsSection({ lexeme, canEdit, onChange, onMessage, onError }: FormsSe
                         disabled={form.is_lemma}
                         title={
                           form.is_lemma
-                            ? 'The lemma form cannot be deleted from here. Mark another form as lemma first.'
-                            : 'Delete this form'
+                            ? t('word_detail.lemma_delete_title')
+                            : t('word_detail.delete_form_title')
                         }
                       >
-                        Delete
+                        {t('word_detail.delete')}
                       </button>
                     </div>
                   )}
@@ -545,21 +554,22 @@ interface FormEditorProps {
 }
 
 function FormEditor({ draft, setDraft, onSave, onCancel, busy, isAdd }: FormEditorProps) {
+  const { t } = useTranslation();
   return (
     <div className="form-editor">
       <div className="form-editor-row">
         <label>
-          Form *
+          {t('word_detail.form_label')}
           <input
             type="text"
             value={draft.form ?? ''}
             onChange={(e) => setDraft({ ...draft, form: e.target.value })}
-            placeholder="Surface form"
+            placeholder={t('word_detail.form_placeholder')}
             autoFocus
           />
         </label>
         <label>
-          Romanization
+          {t('word_detail.romanization_label')}
           <input
             type="text"
             value={draft.romanization ?? ''}
@@ -567,18 +577,18 @@ function FormEditor({ draft, setDraft, onSave, onCancel, busy, isAdd }: FormEdit
           />
         </label>
         <label>
-          IPA
+          {t('word_detail.ipa_label')}
           <input
             type="text"
             value={draft.ipa_pronunciation ?? ''}
             onChange={(e) => setDraft({ ...draft, ipa_pronunciation: e.target.value })}
-            placeholder="e.g. ˈkat"
+            placeholder={t('word_detail.ipa_placeholder')}
           />
         </label>
       </div>
       <div className="form-editor-row">
         <label>
-          Plurality
+          {t('word_detail.plurality_label')}
           <select
             value={draft.plurality ?? ''}
             onChange={(e) => setDraft({ ...draft, plurality: e.target.value })}
@@ -591,7 +601,7 @@ function FormEditor({ draft, setDraft, onSave, onCancel, busy, isAdd }: FormEdit
           </select>
         </label>
         <label>
-          Case
+          {t('word_detail.case_label')}
           <select
             value={draft.grammatical_case ?? ''}
             onChange={(e) => setDraft({ ...draft, grammatical_case: e.target.value })}
@@ -604,7 +614,7 @@ function FormEditor({ draft, setDraft, onSave, onCancel, busy, isAdd }: FormEdit
           </select>
         </label>
         <label>
-          Verb aspect
+          {t('word_detail.verb_aspect_label')}
           <select
             value={draft.verb_aspect ?? ''}
             onChange={(e) => setDraft({ ...draft, verb_aspect: e.target.value })}
@@ -618,12 +628,12 @@ function FormEditor({ draft, setDraft, onSave, onCancel, busy, isAdd }: FormEdit
         </label>
       </div>
       <label className="form-editor-notes">
-        Notes
+        {t('word_detail.notes_label')}
         <input
           type="text"
           value={draft.notes ?? ''}
           onChange={(e) => setDraft({ ...draft, notes: e.target.value })}
-          placeholder="e.g. 3sg present indicative"
+          placeholder={t('word_detail.notes_placeholder')}
         />
       </label>
       <div className="form-editor-actions">
@@ -633,7 +643,7 @@ function FormEditor({ draft, setDraft, onSave, onCancel, busy, isAdd }: FormEdit
           onClick={onSave}
           disabled={busy || !draft.form?.trim()}
         >
-          {isAdd ? 'Add' : 'Save'}
+          {isAdd ? t('word_detail.add') : t('word_detail.save')}
         </button>
         <button
           type="button"
@@ -641,7 +651,7 @@ function FormEditor({ draft, setDraft, onSave, onCancel, busy, isAdd }: FormEdit
           onClick={onCancel}
           disabled={busy}
         >
-          Cancel
+          {t('word_detail.cancel')}
         </button>
       </div>
     </div>
@@ -662,6 +672,8 @@ interface RelationItem {
 
 interface RelationsSectionProps {
   title: string;
+  /** Tooltip for the "+ Add" button (already localized by the caller). */
+  addButtonTitle: string;
   items: RelationItem[];
   emptyHint: string;
   /** Comma-separated language ids to constrain the picker search. */
@@ -677,6 +689,7 @@ interface RelationsSectionProps {
 
 function RelationsSection({
   title,
+  addButtonTitle,
   items,
   emptyHint,
   searchLanguageIds,
@@ -687,6 +700,7 @@ function RelationsSection({
   onRemove,
   onError,
 }: RelationsSectionProps) {
+  const { t } = useTranslation();
   const [picking, setPicking] = useState(false);
 
   return (
@@ -700,9 +714,9 @@ function RelationsSection({
             type="button"
             className="btn btn-ghost btn-sm"
             onClick={() => setPicking(true)}
-            title={`Add a new ${title.toLowerCase().replace(/s$/, '')} link`}
+            title={addButtonTitle}
           >
-            + Add
+            {t('word_detail.add_relation')}
           </button>
         )}
       </div>
@@ -720,11 +734,11 @@ function RelationsSection({
                 <Link
                   to={`/words/${item.id}`}
                   className="relation-lemma"
-                  title={`Open ${item.lemma}`}
+                  title={t('word_detail.open_word_title', { lemma: item.lemma })}
                 >
                   {item.lemma}
                 </Link>
-                {lang && <span className="relation-language">{lang.name}</span>}
+                {lang && <span className="relation-language">{languageDisplayName(lang)}</span>}
                 {item.notes && <span className="relation-notes">{item.notes}</span>}
                 {canEdit && (
                   <button
@@ -734,12 +748,12 @@ function RelationsSection({
                       try {
                         await onRemove(item.id);
                       } catch (err: any) {
-                        onError(err.response?.data?.detail || 'Failed to remove');
+                        onError(err.response?.data?.detail || t('word_detail.remove_failed'));
                       }
                     }}
-                    title="Remove this link"
+                    title={t('word_detail.remove_link_title')}
                   >
-                    Remove
+                    {t('word_detail.remove')}
                   </button>
                 )}
               </li>
@@ -757,7 +771,7 @@ function RelationsSection({
               await onAdd(otherId);
               setPicking(false);
             } catch (err: any) {
-              onError(err.response?.data?.detail || 'Failed to add');
+              onError(err.response?.data?.detail || t('word_detail.add_failed'));
             }
           }}
           onCancel={() => setPicking(false)}
@@ -775,6 +789,7 @@ interface RelationPickerProps {
 }
 
 function RelationPicker({ searchLanguageIds, excludeIds, onPick, onCancel }: RelationPickerProps) {
+  const { t } = useTranslation();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<LexemeWithForms[]>([]);
   const [searching, setSearching] = useState(false);
@@ -809,12 +824,12 @@ function RelationPicker({ searchLanguageIds, excludeIds, onPick, onCancel }: Rel
         type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Type to search…"
+        placeholder={t('word_detail.picker_placeholder')}
         autoFocus
       />
-      {searching && <p className="relation-picker-status">Searching…</p>}
+      {searching && <p className="relation-picker-status">{t('word_detail.picker_searching')}</p>}
       {!searching && query.trim().length >= 2 && results.length === 0 && (
-        <p className="relation-picker-status">No matches.</p>
+        <p className="relation-picker-status">{t('word_detail.picker_no_matches')}</p>
       )}
       {results.length > 0 && (
         <ul className="relation-picker-results">
@@ -836,7 +851,7 @@ function RelationPicker({ searchLanguageIds, excludeIds, onPick, onCancel }: Rel
         </ul>
       )}
       <button type="button" className="btn btn-ghost btn-sm" onClick={onCancel}>
-        Cancel
+        {t('word_detail.cancel')}
       </button>
     </div>
   );

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 import documentService from '../services/documentService';
 import wordLinkService from '../services/wordLinkService';
@@ -18,6 +19,7 @@ import {
 import { Language } from '../App';
 import { useAuth } from '../contexts/AuthContext';
 import { getDocumentTypeLabel } from '../utils/documentTypes';
+import { languageDisplayName } from '../utils/languageName';
 import './DocumentLinking.css';
 
 // Mirror backend app.utils.text_normalize.fold_for_match so the UI can tell
@@ -47,96 +49,97 @@ const LETTER_REGEX =
     }
   })();
 
+// `label` values are i18n keys, resolved with t() at render time.
 const PART_OF_SPEECH_OPTIONS = [
-  { value: 'noun', label: 'Noun' },
-  { value: 'verb', label: 'Verb' },
-  { value: 'adjective', label: 'Adjective' },
-  { value: 'adverb', label: 'Adverb' },
-  { value: 'pronoun', label: 'Pronoun' },
-  { value: 'preposition', label: 'Preposition' },
-  { value: 'conjunction', label: 'Conjunction' },
-  { value: 'interjection', label: 'Interjection' },
-  { value: 'article', label: 'Article' },
-  { value: 'determiner', label: 'Determiner' },
-  { value: 'particle', label: 'Particle' },
-  { value: 'numeral', label: 'Numeral' },
-  { value: 'classifier', label: 'Classifier' },
-  { value: 'other', label: 'Other' },
+  { value: 'noun', label: 'linking.opt_noun' },
+  { value: 'verb', label: 'linking.opt_verb' },
+  { value: 'adjective', label: 'linking.opt_adjective' },
+  { value: 'adverb', label: 'linking.opt_adverb' },
+  { value: 'pronoun', label: 'linking.opt_pronoun' },
+  { value: 'preposition', label: 'linking.opt_preposition' },
+  { value: 'conjunction', label: 'linking.opt_conjunction' },
+  { value: 'interjection', label: 'linking.opt_interjection' },
+  { value: 'article', label: 'linking.opt_article' },
+  { value: 'determiner', label: 'linking.opt_determiner' },
+  { value: 'particle', label: 'linking.opt_particle' },
+  { value: 'numeral', label: 'linking.opt_numeral' },
+  { value: 'classifier', label: 'linking.opt_classifier' },
+  { value: 'other', label: 'linking.opt_other' },
 ];
 
 const GENDER_OPTIONS = [
-  { value: 'masculine', label: 'Masculine' },
-  { value: 'feminine', label: 'Feminine' },
-  { value: 'neuter', label: 'Neuter' },
-  { value: 'common', label: 'Common' },
-  { value: 'animate', label: 'Animate' },
-  { value: 'inanimate', label: 'Inanimate' },
-  { value: 'not_applicable', label: 'Not applicable' },
+  { value: 'masculine', label: 'linking.opt_masculine' },
+  { value: 'feminine', label: 'linking.opt_feminine' },
+  { value: 'neuter', label: 'linking.opt_neuter' },
+  { value: 'common', label: 'linking.opt_common' },
+  { value: 'animate', label: 'linking.opt_animate' },
+  { value: 'inanimate', label: 'linking.opt_inanimate' },
+  { value: 'not_applicable', label: 'linking.opt_not_applicable' },
 ];
 
 const PLURALITY_OPTIONS = [
-  { value: 'singular', label: 'Singular' },
-  { value: 'plural', label: 'Plural' },
-  { value: 'dual', label: 'Dual' },
-  { value: 'trial', label: 'Trial' },
-  { value: 'paucal', label: 'Paucal' },
-  { value: 'collective', label: 'Collective' },
-  { value: 'not_applicable', label: 'Not applicable' },
+  { value: 'singular', label: 'linking.opt_singular' },
+  { value: 'plural', label: 'linking.opt_plural' },
+  { value: 'dual', label: 'linking.opt_dual' },
+  { value: 'trial', label: 'linking.opt_trial' },
+  { value: 'paucal', label: 'linking.opt_paucal' },
+  { value: 'collective', label: 'linking.opt_collective' },
+  { value: 'not_applicable', label: 'linking.opt_not_applicable' },
 ];
 
 const CASE_OPTIONS = [
-  { value: 'nominative', label: 'Nominative' },
-  { value: 'accusative', label: 'Accusative' },
-  { value: 'genitive', label: 'Genitive' },
-  { value: 'dative', label: 'Dative' },
-  { value: 'ablative', label: 'Ablative' },
-  { value: 'locative', label: 'Locative' },
-  { value: 'instrumental', label: 'Instrumental' },
-  { value: 'vocative', label: 'Vocative' },
-  { value: 'partitive', label: 'Partitive' },
-  { value: 'comitative', label: 'Comitative' },
-  { value: 'essive', label: 'Essive' },
-  { value: 'translative', label: 'Translative' },
-  { value: 'ergative', label: 'Ergative' },
-  { value: 'absolutive', label: 'Absolutive' },
-  { value: 'not_applicable', label: 'Not applicable' },
+  { value: 'nominative', label: 'linking.opt_nominative' },
+  { value: 'accusative', label: 'linking.opt_accusative' },
+  { value: 'genitive', label: 'linking.opt_genitive' },
+  { value: 'dative', label: 'linking.opt_dative' },
+  { value: 'ablative', label: 'linking.opt_ablative' },
+  { value: 'locative', label: 'linking.opt_locative' },
+  { value: 'instrumental', label: 'linking.opt_instrumental' },
+  { value: 'vocative', label: 'linking.opt_vocative' },
+  { value: 'partitive', label: 'linking.opt_partitive' },
+  { value: 'comitative', label: 'linking.opt_comitative' },
+  { value: 'essive', label: 'linking.opt_essive' },
+  { value: 'translative', label: 'linking.opt_translative' },
+  { value: 'ergative', label: 'linking.opt_ergative' },
+  { value: 'absolutive', label: 'linking.opt_absolutive' },
+  { value: 'not_applicable', label: 'linking.opt_not_applicable' },
 ];
 
 const VERB_ASPECT_OPTIONS = [
-  { value: 'perfective', label: 'Perfective' },
-  { value: 'imperfective', label: 'Imperfective' },
-  { value: 'progressive', label: 'Progressive' },
-  { value: 'continuous', label: 'Continuous' },
-  { value: 'habitual', label: 'Habitual' },
-  { value: 'iterative', label: 'Iterative' },
-  { value: 'inchoative', label: 'Inchoative' },
-  { value: 'perfect', label: 'Perfect' },
-  { value: 'prospective', label: 'Prospective' },
-  { value: 'not_applicable', label: 'Not applicable' },
-  { value: 'other', label: 'Other' },
+  { value: 'perfective', label: 'linking.opt_perfective' },
+  { value: 'imperfective', label: 'linking.opt_imperfective' },
+  { value: 'progressive', label: 'linking.opt_progressive' },
+  { value: 'continuous', label: 'linking.opt_continuous' },
+  { value: 'habitual', label: 'linking.opt_habitual' },
+  { value: 'iterative', label: 'linking.opt_iterative' },
+  { value: 'inchoative', label: 'linking.opt_inchoative' },
+  { value: 'perfect', label: 'linking.opt_perfect' },
+  { value: 'prospective', label: 'linking.opt_prospective' },
+  { value: 'not_applicable', label: 'linking.opt_not_applicable' },
+  { value: 'other', label: 'linking.opt_other' },
 ];
 
 const ANIMACY_OPTIONS = [
-  { value: 'animate', label: 'Animate' },
-  { value: 'inanimate', label: 'Inanimate' },
-  { value: 'human', label: 'Human' },
-  { value: 'non_human', label: 'Non-human' },
-  { value: 'personal', label: 'Personal' },
-  { value: 'impersonal', label: 'Impersonal' },
-  { value: 'not_applicable', label: 'Not applicable' },
+  { value: 'animate', label: 'linking.opt_animate' },
+  { value: 'inanimate', label: 'linking.opt_inanimate' },
+  { value: 'human', label: 'linking.opt_human' },
+  { value: 'non_human', label: 'linking.opt_non_human' },
+  { value: 'personal', label: 'linking.opt_personal' },
+  { value: 'impersonal', label: 'linking.opt_impersonal' },
+  { value: 'not_applicable', label: 'linking.opt_not_applicable' },
 ];
 
 const REGISTER_OPTIONS = [
-  { value: 'formal', label: 'Formal' },
-  { value: 'informal', label: 'Informal' },
-  { value: 'colloquial', label: 'Colloquial' },
-  { value: 'slang', label: 'Slang' },
-  { value: 'ceremonial', label: 'Ceremonial' },
-  { value: 'archaic', label: 'Archaic' },
-  { value: 'taboo', label: 'Taboo' },
-  { value: 'poetic', label: 'Poetic' },
-  { value: 'technical', label: 'Technical' },
-  { value: 'neutral', label: 'Neutral' },
+  { value: 'formal', label: 'linking.opt_formal' },
+  { value: 'informal', label: 'linking.opt_informal' },
+  { value: 'colloquial', label: 'linking.opt_colloquial' },
+  { value: 'slang', label: 'linking.opt_slang' },
+  { value: 'ceremonial', label: 'linking.opt_ceremonial' },
+  { value: 'archaic', label: 'linking.opt_archaic' },
+  { value: 'taboo', label: 'linking.opt_taboo' },
+  { value: 'poetic', label: 'linking.opt_poetic' },
+  { value: 'technical', label: 'linking.opt_technical' },
+  { value: 'neutral', label: 'linking.opt_neutral' },
 ];
 
 const parseTags = (value: string): string[] =>
@@ -260,7 +263,10 @@ interface EnrichedSearchHit extends LexemeWithForms {
  *   /<romanization>/ · /<IPA>/                               (only if present)
  *   <lemma notes>                                             (full notes block)
  */
-function buildLinkTooltip(link: TextWordLink): string {
+function buildLinkTooltip(
+  link: TextWordLink,
+  t: (key: string, options?: Record<string, unknown>) => string,
+): string {
   const form = link.word_text ?? '';
   const lemma = link.word_lemma;
   const isInflection = !!(lemma && form && lemma !== form);
@@ -274,7 +280,7 @@ function buildLinkTooltip(link: TextWordLink): string {
   return [
     form,
     isInflection
-      ? `Form of "${lemma}"${lemmaMeaningSnippet ? ` — ${lemmaMeaningSnippet}` : ''}`
+      ? `${t('linking.form_of', { lemma })}${lemmaMeaningSnippet ? ` — ${lemmaMeaningSnippet}` : ''}`
       : '',
     link.word_form_notes ?? '',
     pronunciation,
@@ -295,6 +301,7 @@ interface DocumentLinkingProps {
 }
 
 export default function DocumentLinking({ selectedLanguage, languages }: DocumentLinkingProps) {
+  const { t } = useTranslation();
   const { documentId } = useParams<{ documentId: string }>();
   const location = useLocation();
   const navigate = useNavigate();
@@ -382,14 +389,14 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
           setActiveTextId(fallback?.id ?? null);
         }
       } catch (err: any) {
-        setError(err?.response?.data?.detail || 'Failed to load document for linking');
+        setError(err?.response?.data?.detail || t('linking.failed_load_document'));
       } finally {
         if (withLoader) {
           setLoading(false);
         }
       }
     },
-    [documentId, activeTextId, initialState, selectedLanguage.id],
+    [documentId, activeTextId, initialState, selectedLanguage.id, t],
   );
 
   useEffect(() => {
@@ -772,7 +779,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
       const lexeme = await wordService.getById(lexemeId);
       const lemmaForm = lexeme.forms.find((f) => f.is_lemma) ?? lexeme.forms[0];
       if (!lemmaForm) {
-        setActionError('Lexeme has no forms to link');
+        setActionError(t('linking.lexeme_no_forms'));
         return;
       }
       const payload: TextWordLinkCreate = {
@@ -786,14 +793,17 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
       const recorded = await maybeRecordAltSpelling(lemmaForm.id, lemmaForm.form);
       setActionMessage(
         recorded
-          ? `Linked, and saved “${selectedSpan.text?.trim()}” as an alternative spelling of “${lemmaForm.form}”.`
-          : 'Link created successfully.',
+          ? t('linking.linked_saved_alt_spelling', {
+              original: selectedSpan.text?.trim(),
+              form: lemmaForm.form,
+            })
+          : t('linking.link_created'),
       );
       setSearchResults([]);
       setDuplicateHints([]);
       setShowNewWordForm(false);
     } catch (err: any) {
-      setActionError(err?.response?.data?.detail || 'Failed to create link');
+      setActionError(err?.response?.data?.detail || t('linking.failed_create_link'));
     } finally {
       setIsSaving(false);
     }
@@ -808,9 +818,9 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
         status: TextWordLinkStatus.CONFIRMED,
       });
       applyLinkUpdate(updated);
-      setActionMessage('Link confirmed.');
+      setActionMessage(t('linking.link_confirmed'));
     } catch (err: any) {
-      setActionError(err?.response?.data?.detail || 'Failed to confirm link');
+      setActionError(err?.response?.data?.detail || t('linking.failed_confirm_link'));
     } finally {
       setIsSaving(false);
     }
@@ -825,9 +835,9 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
         status: TextWordLinkStatus.REJECTED,
       });
       applyLinkUpdate(updated);
-      setActionMessage('Suggestion rejected.');
+      setActionMessage(t('linking.suggestion_rejected'));
     } catch (err: any) {
-      setActionError(err?.response?.data?.detail || 'Failed to reject suggestion');
+      setActionError(err?.response?.data?.detail || t('linking.failed_reject_suggestion'));
     } finally {
       setIsSaving(false);
     }
@@ -840,9 +850,9 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
     try {
       await wordLinkService.remove(activeText.id, link.id);
       removeLinkFromState(link.text_id, link.id);
-      setActionMessage('Link removed.');
+      setActionMessage(t('linking.link_removed'));
     } catch (err: any) {
-      setActionError(err?.response?.data?.detail || 'Failed to remove link');
+      setActionError(err?.response?.data?.detail || t('linking.failed_remove_link'));
     } finally {
       setIsSaving(false);
     }
@@ -855,9 +865,9 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
     try {
       await wordLinkService.regenerateSuggestions(activeText.id);
       await fetchDocument(false);
-      setActionMessage('Suggestions regenerated for this text.');
+      setActionMessage(t('linking.suggestions_regenerated_text'));
     } catch (err: any) {
-      setActionError(err?.response?.data?.detail || 'Failed to regenerate suggestions');
+      setActionError(err?.response?.data?.detail || t('linking.failed_regenerate_suggestions'));
     } finally {
       setIsSuggesting(false);
     }
@@ -870,9 +880,9 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
     try {
       const data = await documentService.regenerateLinkSuggestions(documentId);
       setDocumentData(data);
-      setActionMessage('Suggestions regenerated for all texts.');
+      setActionMessage(t('linking.suggestions_regenerated_all'));
     } catch (err: any) {
-      setActionError(err?.response?.data?.detail || 'Failed to regenerate document suggestions');
+      setActionError(err?.response?.data?.detail || t('linking.failed_regenerate_doc_suggestions'));
     } finally {
       setIsSuggesting(false);
     }
@@ -888,7 +898,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
     const query = selectedSpan?.text?.trim();
     if (!query) {
       if (!silent) {
-        setActionError('Select some text in the document to search for similar words.');
+        setActionError(t('linking.select_text_to_search'));
       }
       return;
     }
@@ -920,18 +930,18 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
       );
       setSearchResults(enriched);
       if (enriched.length === 0 && !silent) {
-        setActionMessage('No similar words found for the current selection.');
+        setActionMessage(t('linking.no_similar_words'));
       }
     } catch {
       setSearchResults([]);
       if (!silent) {
-        setActionError('Failed to search for similar words.');
+        setActionError(t('linking.failed_search_words'));
       }
     } finally {
       setSearchLoading(false);
     }
     },
-    [selectedLanguage?.id, selectedSpan?.text],
+    [selectedLanguage?.id, selectedSpan?.text, t],
   );
 
   // Auto-search existing words whenever a fresh, unlinked span is selected, so
@@ -1059,7 +1069,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
     if (!activeText || !selectedSpan) return;
     const trimmedLemma = (newWordData.lemma ?? '').trim();
     if (!trimmedLemma) {
-      setActionError('Word is required before creating a new entry.');
+      setActionError(t('linking.word_required'));
       return;
     }
     setIsSaving(true);
@@ -1092,7 +1102,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
       // newWord is a LexemeWithForms; pick the lemma form for the link.
       const lemmaForm = newWord.forms.find((f) => f.is_lemma) ?? newWord.forms[0];
       if (!lemmaForm) {
-        setActionError('Created lexeme has no form to link to');
+        setActionError(t('linking.created_lexeme_no_form'));
         return;
       }
       const linkPayload: TextWordLinkCreate = {
@@ -1114,21 +1124,21 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
       setDuplicateHints([]);
       setActionMessage(
         recorded
-          ? `Word created and linked, and “${selectedSpan.text?.trim()}” saved as an alternative spelling.`
-          : 'Word created and linked.',
+          ? t('linking.word_created_linked_alt', { original: selectedSpan.text?.trim() })
+          : t('linking.word_created_linked'),
       );
     } catch (err: any) {
-      setActionError(err?.response?.data?.detail || 'Failed to create and link word');
+      setActionError(err?.response?.data?.detail || t('linking.failed_create_link_word'));
     } finally {
       setIsSaving(false);
     }
   };
 
   const formatLanguageDisplay = (text: Text | undefined) => {
-    if (!text?.language_id) return 'Unknown language';
+    if (!text?.language_id) return t('linking.unknown_language');
     const language = languageMap.get(text.language_id.toString());
-    if (!language) return 'Unknown language';
-    return `${language.name}${
+    if (!language) return t('linking.unknown_language');
+    return `${languageDisplayName(language)}${
       language.nativeName && language.nativeName !== language.name ? ` (${language.nativeName})` : ''
     }`;
   };
@@ -1146,7 +1156,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
       <div className="document-linking-page">
         <div className="loading-state">
           <div className="loading-spinner" />
-          <p>Loading document...</p>
+          <p>{t('linking.loading_document')}</p>
         </div>
       </div>
     );
@@ -1156,9 +1166,9 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
     return (
       <div className="document-linking-page">
         <div className="error-state">
-          <p>{error || 'Document not available for linking.'}</p>
+          <p>{error || t('linking.document_not_available')}</p>
           <button className="btn-secondary" onClick={handleBackToDocument}>
-            Back to Document
+            {t('linking.back_to_document')}
           </button>
         </div>
       </div>
@@ -1175,11 +1185,11 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
           <button
             className="btn-link"
             onClick={handleBackToDocument}
-            title="Return to the document detail page"
+            title={t('linking.back_to_document_title')}
           >
-            ← Back to Document
+            ← {t('linking.back_to_document')}
           </button>
-          <h1>Link Words · {activeText.title}</h1>
+          <h1>{t('linking.link_words')} · {activeText.title}</h1>
           <p className="document-linking-subtitle">
             {activeLanguageDisplay} · {getDocumentTypeLabel(activeText.document_type)}
           </p>
@@ -1187,37 +1197,37 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
         <div className="document-linking-actions">
           <label
             className="toggle-control"
-            title="When on, clicking a single word inside a longer phrase will expand the selection to the whole word boundary."
+            title={t('linking.auto_expand_title')}
           >
             <input
               type="checkbox"
               checked={autoExpandSelection}
               onChange={(event) => setAutoExpandSelection(event.target.checked)}
             />
-            <span>Auto-expand selection</span>
+            <span>{t('linking.auto_expand_selection')}</span>
           </label>
           <button
             className="btn-secondary"
             onClick={handleRegenerateSuggestionsForText}
             disabled={!canEdit || isSuggesting}
-            title="Rebuild auto-suggested word links for THIS text only. Existing confirmed or rejected links are preserved; new suggestions appear where matching dictionary words are found."
+            title={t('linking.regen_text_title')}
           >
-            {isSuggesting ? 'Rebuilding…' : 'Regenerate Text Suggestions'}
+            {isSuggesting ? t('linking.rebuilding') : t('linking.regen_text_suggestions')}
           </button>
           <button
             className="btn-secondary"
             onClick={handleRegenerateForDocument}
             disabled={!canEdit || isSuggesting}
-            title="Rebuild auto-suggested word links for EVERY text in this document (all translations). Existing confirmed or rejected links are preserved."
+            title={t('linking.regen_doc_title')}
           >
-            {isSuggesting ? 'Working…' : 'Regenerate Document Suggestions'}
+            {isSuggesting ? t('linking.working') : t('linking.regen_doc_suggestions')}
           </button>
         </div>
       </div>
 
       {!canEdit && (
         <div className="document-linking-info">
-          You have read-only access for this language. Linking actions are disabled.
+          {t('linking.read_only_info')}
         </div>
       )}
 
@@ -1233,8 +1243,8 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                 type="button"
                 className="toast-dismiss"
                 onClick={() => setActionError(null)}
-                aria-label="Dismiss error"
-                title="Dismiss"
+                aria-label={t('linking.dismiss_error')}
+                title={t('linking.dismiss')}
               >
                 ×
               </button>
@@ -1247,8 +1257,8 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                 type="button"
                 className="toast-dismiss"
                 onClick={() => setActionMessage(null)}
-                aria-label="Dismiss message"
-                title="Dismiss"
+                aria-label={t('linking.dismiss_message')}
+                title={t('linking.dismiss')}
               >
                 ×
               </button>
@@ -1259,7 +1269,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
 
       <div className="document-linking-grid">
         <aside className="document-linking-sidebar">
-          <h2>Texts ({documentData.texts.length})</h2>
+          <h2>{t('linking.texts_heading')} ({documentData.texts.length})</h2>
           <ul className="translation-list">
             {documentData.texts.map((text) => (
               <li key={text.id}>
@@ -1274,7 +1284,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                   <span className="translation-title">{text.title}</span>
                   <span className="translation-meta">
                     {formatLanguageDisplay(text)}
-                    {text.is_primary ? ' · Primary' : ''}
+                    {text.is_primary ? ` · ${t('linking.primary')}` : ''}
                   </span>
                 </button>
               </li>
@@ -1284,10 +1294,10 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
 
         <main className="document-linking-content">
           <div className="token-legend">
-            <span className="legend-chip legend-unlinked">Unlinked</span>
-            <span className="legend-chip legend-suggested">Suggested</span>
-            <span className="legend-chip legend-confirmed">Linked</span>
-            <span className="legend-chip legend-rejected">Rejected</span>
+            <span className="legend-chip legend-unlinked">{t('linking.legend_unlinked')}</span>
+            <span className="legend-chip legend-suggested">{t('linking.legend_suggested')}</span>
+            <span className="legend-chip legend-confirmed">{t('linking.legend_linked')}</span>
+            <span className="legend-chip legend-rejected">{t('linking.legend_rejected')}</span>
           </div>
           <div
             ref={textContainerRef}
@@ -1328,13 +1338,13 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
 
         <aside className="document-linking-panel">
           <section>
-            <h2>Selection</h2>
+            <h2>{t('linking.selection_heading')}</h2>
             {selectedSpan ? (
               <>
                 <div className="selection-preview">
                   <span className="selection-text">{selectedSpan.text}</span>
                   <span className={`selection-status status-${selectedStatus}`}>
-                    {selectedSpan.link ? selectedSpan.link.status : 'unlinked'}
+                    {t(`linking.status_${selectedSpan.link ? selectedSpan.link.status : 'unlinked'}`)}
                   </span>
                 </div>
                 <div className="selection-toolbar">
@@ -1342,18 +1352,18 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                     type="button"
                     className="btn-link"
                     onClick={clearSelection}
-                    title="Deselect the current span without changing any links"
+                    title={t('linking.clear_selection_title')}
                   >
-                    Clear selection
+                    {t('linking.clear_selection')}
                   </button>
                 </div>
                 {selectedSpan.link ? (
                   <div className="selection-actions">
                     <div
                       className="selection-meta"
-                      title={buildLinkTooltip(selectedSpan.link)}
+                      title={buildLinkTooltip(selectedSpan.link, t)}
                     >
-                      <strong>Word:</strong>{' '}
+                      <strong>{t('linking.word_label')}</strong>{' '}
                       <span className="selection-meta-word">
                         {selectedSpan.link.word_text ??
                           `#${selectedSpan.link.word_form_id}`}
@@ -1369,37 +1379,37 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                         className="btn-primary"
                         onClick={() => handleConfirmLink(selectedSpan.link!)}
                         disabled={!canEdit || isSaving}
-                        title="Accept this suggested link — the span will be marked as a confirmed dictionary reference."
+                        title={t('linking.confirm_link_title')}
                       >
-                        Confirm
+                        {t('linking.confirm')}
                       </button>
                       <button
                         className="btn-secondary"
                         onClick={() => handleRejectLink(selectedSpan.link!)}
                         disabled={!canEdit || isSaving}
-                        title="Mark this suggestion as wrong. It stays in the database (so it's not re-suggested) but no longer counts as a link."
+                        title={t('linking.reject_link_title')}
                       >
-                        Reject
+                        {t('linking.reject')}
                       </button>
                       <button
                         className="btn-secondary"
                         onClick={() => handleRemoveLink(selectedSpan.link!)}
                         disabled={!canEdit || isSaving}
-                        title="Delete this link entirely. The span becomes unlinked, and the next Regenerate may suggest it again."
+                        title={t('linking.unlink_title')}
                       >
-                        Unlink
+                        {t('linking.unlink')}
                       </button>
                     </div>
                   </div>
                 ) : (
                   <div className="selection-actions">
                     <p className="selection-help">
-                      Link this selection to an existing word or create a new one.
+                      {t('linking.selection_help')}
                     </p>
                     {canEdit && (
                       <label
                         className="alt-spelling-toggle"
-                        title="When the linked word is spelled differently from this selection, save the selection as an alternative spelling of it."
+                        title={t('linking.alt_spelling_title')}
                       >
                         <input
                           type="checkbox"
@@ -1407,8 +1417,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                           onChange={(event) => setRecordAltSpelling(event.target.checked)}
                         />
                         <span>
-                          Also save “{selectedSpan.text?.trim()}” as an alternative spelling when it
-                          differs from the linked word
+                          {t('linking.alt_spelling_label', { text: selectedSpan.text?.trim() })}
                         </span>
                       </label>
                     )}
@@ -1417,15 +1426,15 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                         className="btn-secondary"
                         onClick={() => runWordSearch()}
                         disabled={!canEdit || searchLoading}
-                        title="Find dictionary entries matching the selected text — including via recorded alternative spellings. Results show meanings; hover any for full detail."
+                        title={t('linking.search_words_title')}
                       >
-                        {searchLoading ? 'Searching…' : 'Search existing words'}
+                        {searchLoading ? t('linking.searching') : t('linking.search_existing_words')}
                       </button>
                     </div>
                     <div className="search-results">
-                      {searchLoading && <p>Searching…</p>}
+                      {searchLoading && <p>{t('linking.searching')}</p>}
                       {!searchLoading && searchResults.length === 0 && (
-                        <p>No words found.</p>
+                        <p>{t('linking.no_words_found')}</p>
                       )}
                       {searchResults.map((word) => {
                         const lemmaForm =
@@ -1442,13 +1451,15 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                           word.lemma,
                           metaBits.length > 0 ? `[${metaBits.join(' · ')}]` : '',
                           lemmaForm?.romanization
-                            ? `Romanization: ${lemmaForm.romanization}`
+                            ? t('linking.tooltip_romanization', { value: lemmaForm.romanization })
                             : '',
                           lemmaForm?.ipa_pronunciation
-                            ? `IPA: /${lemmaForm.ipa_pronunciation}/`
+                            ? t('linking.tooltip_ipa', { value: lemmaForm.ipa_pronunciation })
                             : '',
-                          translationsText ? `Translations: ${translationsText}` : '',
-                          word.notes ? `Notes: ${word.notes}` : '',
+                          translationsText
+                            ? t('linking.tooltip_translations', { value: translationsText })
+                            : '',
+                          word.notes ? t('linking.tooltip_notes', { value: word.notes }) : '',
                         ]
                           .filter(Boolean)
                           .join('\n');
@@ -1485,11 +1496,11 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                               className="btn-primary"
                               onClick={() => handleLinkToWord(word.id)}
                               disabled={!canEdit || isSaving}
-                              title={`Link the selected text to "${word.lemma}"${
+                              title={`${t('linking.link_to_word_title', { word: word.lemma })}${
                                 translationsText ? ` (${translationsText})` : ''
                               }`}
                             >
-                              Link
+                              {t('linking.link')}
                             </button>
                           </div>
                         );
@@ -1523,13 +1534,13 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                             setShowNewWordForm(true);
                           }}
                           disabled={!canEdit}
-                          title="Open a form to add this span as a brand-new dictionary entry, then link the selection to it in one step."
+                          title={t('linking.create_new_word_title')}
                         >
-                          Create new word
+                          {t('linking.create_new_word')}
                         </button>
                       ) : (
                         <div className="new-word-form">
-                          <label htmlFor="new-word">Word *</label>
+                          <label htmlFor="new-word">{t('linking.word_field')} *</label>
                           <input
                             id="new-word"
                             type="text"
@@ -1540,7 +1551,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                             disabled={!canEdit}
                           />
 
-                          <label htmlFor="new-word-romanization">Romanization</label>
+                          <label htmlFor="new-word-romanization">{t('linking.romanization')}</label>
                           <input
                             id="new-word-romanization"
                             type="text"
@@ -1554,7 +1565,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                             disabled={!canEdit}
                           />
 
-                          <label htmlFor="new-word-ipa">IPA Pronunciation</label>
+                          <label htmlFor="new-word-ipa">{t('linking.ipa_pronunciation')}</label>
                           <input
                             id="new-word-ipa"
                             type="text"
@@ -1568,7 +1579,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                             disabled={!canEdit}
                           />
 
-                          <label htmlFor="new-word-part-of-speech">Part of Speech</label>
+                          <label htmlFor="new-word-part-of-speech">{t('linking.part_of_speech')}</label>
                           <select
                             id="new-word-part-of-speech"
                             value={newWordData.part_of_speech || ''}
@@ -1580,15 +1591,15 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                             }
                             disabled={!canEdit}
                           >
-                            <option value="">Select...</option>
+                            <option value="">{t('linking.select_placeholder')}</option>
                             {PART_OF_SPEECH_OPTIONS.map((option) => (
                               <option key={option.value} value={option.value}>
-                                {option.label}
+                                {t(option.label)}
                               </option>
                             ))}
                           </select>
 
-                          <label htmlFor="new-word-gender">Gender</label>
+                          <label htmlFor="new-word-gender">{t('linking.gender')}</label>
                           <select
                             id="new-word-gender"
                             value={newWordData.gender || ''}
@@ -1600,15 +1611,15 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                             }
                             disabled={!canEdit}
                           >
-                            <option value="">Select...</option>
+                            <option value="">{t('linking.select_placeholder')}</option>
                             {GENDER_OPTIONS.map((option) => (
                               <option key={option.value} value={option.value}>
-                                {option.label}
+                                {t(option.label)}
                               </option>
                             ))}
                           </select>
 
-                          <label htmlFor="new-word-plurality">Plurality</label>
+                          <label htmlFor="new-word-plurality">{t('linking.plurality')}</label>
                           <select
                             id="new-word-plurality"
                             value={newWordData.plurality || ''}
@@ -1620,15 +1631,15 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                             }
                             disabled={!canEdit}
                           >
-                            <option value="">Select...</option>
+                            <option value="">{t('linking.select_placeholder')}</option>
                             {PLURALITY_OPTIONS.map((option) => (
                               <option key={option.value} value={option.value}>
-                                {option.label}
+                                {t(option.label)}
                               </option>
                             ))}
                           </select>
 
-                          <label htmlFor="new-word-case">Grammatical Case</label>
+                          <label htmlFor="new-word-case">{t('linking.grammatical_case')}</label>
                           <select
                             id="new-word-case"
                             value={newWordData.grammatical_case || ''}
@@ -1640,15 +1651,15 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                             }
                             disabled={!canEdit}
                           >
-                            <option value="">Select...</option>
+                            <option value="">{t('linking.select_placeholder')}</option>
                             {CASE_OPTIONS.map((option) => (
                               <option key={option.value} value={option.value}>
-                                {option.label}
+                                {t(option.label)}
                               </option>
                             ))}
                           </select>
 
-                          <label htmlFor="new-word-verb-aspect">Verb Aspect</label>
+                          <label htmlFor="new-word-verb-aspect">{t('linking.verb_aspect')}</label>
                           <select
                             id="new-word-verb-aspect"
                             value={newWordData.verb_aspect || ''}
@@ -1660,15 +1671,15 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                             }
                             disabled={!canEdit}
                           >
-                            <option value="">Select...</option>
+                            <option value="">{t('linking.select_placeholder')}</option>
                             {VERB_ASPECT_OPTIONS.map((option) => (
                               <option key={option.value} value={option.value}>
-                                {option.label}
+                                {t(option.label)}
                               </option>
                             ))}
                           </select>
 
-                          <label htmlFor="new-word-animacy">Animacy</label>
+                          <label htmlFor="new-word-animacy">{t('linking.animacy')}</label>
                           <select
                             id="new-word-animacy"
                             value={newWordData.animacy || ''}
@@ -1680,15 +1691,15 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                             }
                             disabled={!canEdit}
                           >
-                            <option value="">Select...</option>
+                            <option value="">{t('linking.select_placeholder')}</option>
                             {ANIMACY_OPTIONS.map((option) => (
                               <option key={option.value} value={option.value}>
-                                {option.label}
+                                {t(option.label)}
                               </option>
                             ))}
                           </select>
 
-                          <label htmlFor="new-word-register">Language Register</label>
+                          <label htmlFor="new-word-register">{t('linking.language_register')}</label>
                           <select
                             id="new-word-register"
                             value={newWordData.language_register || ''}
@@ -1700,15 +1711,15 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                             }
                             disabled={!canEdit}
                           >
-                            <option value="">Select...</option>
+                            <option value="">{t('linking.select_placeholder')}</option>
                             {REGISTER_OPTIONS.map((option) => (
                               <option key={option.value} value={option.value}>
-                                {option.label}
+                                {t(option.label)}
                               </option>
                             ))}
                           </select>
 
-                          <label htmlFor="new-word-definition">Definition</label>
+                          <label htmlFor="new-word-definition">{t('linking.definition')}</label>
                           <textarea
                             id="new-word-definition"
                             rows={3}
@@ -1719,7 +1730,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                             disabled={!canEdit}
                           />
 
-                          <label htmlFor="new-word-literal">Literal Translation</label>
+                          <label htmlFor="new-word-literal">{t('linking.literal_translation')}</label>
                           <textarea
                             id="new-word-literal"
                             rows={2}
@@ -1733,7 +1744,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                             disabled={!canEdit}
                           />
 
-                          <label htmlFor="new-word-context">Context Notes</label>
+                          <label htmlFor="new-word-context">{t('linking.context_notes')}</label>
                           <textarea
                             id="new-word-context"
                             rows={2}
@@ -1747,7 +1758,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                             disabled={!canEdit}
                           />
 
-                          <label htmlFor="new-word-usage">Usage Examples</label>
+                          <label htmlFor="new-word-usage">{t('linking.usage_examples')}</label>
                           <textarea
                             id="new-word-usage"
                             rows={3}
@@ -1761,20 +1772,20 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                             disabled={!canEdit}
                           />
 
-                          <label htmlFor="new-word-tags">Tags (comma separated)</label>
+                          <label htmlFor="new-word-tags">{t('linking.tags_label')}</label>
                           <input
                             id="new-word-tags"
                             type="text"
                             value={newWordTagsInput}
                             onChange={(event) => setNewWordTagsInput(event.target.value)}
                             disabled={!canEdit}
-                            placeholder="e.g., nature, ceremonial"
+                            placeholder={t('linking.tags_placeholder')}
                           />
 
                           {duplicateHints.length > 0 && (
                             <div className="duplicate-hint" role="status">
                               <p className="duplicate-hint-lead">
-                                Already in the dictionary — link instead of creating a duplicate?
+                                {t('linking.duplicate_hint_lead')}
                               </p>
                               <ul className="duplicate-hint-list">
                                 {duplicateHints.map((hint) => (
@@ -1783,8 +1794,10 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                                       <strong>{hint.standardForm}</strong>
                                       {hint.viaVariant && (
                                         <em className="duplicate-hint-via">
-                                          {' '}
-                                          · “{newWordData.lemma.trim()}” is a known spelling of it
+                                          {' · '}
+                                          {t('linking.known_spelling_of', {
+                                            word: newWordData.lemma.trim(),
+                                          })}
                                         </em>
                                       )}
                                     </span>
@@ -1793,9 +1806,11 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                                       className="btn-secondary"
                                       onClick={() => handleLinkToWord(hint.lexemeId)}
                                       disabled={!canEdit || isSaving}
-                                      title={`Link the selection to the existing entry “${hint.standardForm}”.`}
+                                      title={t('linking.link_existing_title', {
+                                        word: hint.standardForm,
+                                      })}
                                     >
-                                      Link to this
+                                      {t('linking.link_to_this')}
                                     </button>
                                   </li>
                                 ))}
@@ -1812,9 +1827,9 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                                 isSaving ||
                                 !newWordData.lemma.trim()
                               }
-                              title="Save this as a new dictionary entry and immediately link the selected text to it."
+                              title={t('linking.create_and_link_title')}
                             >
-                              Create & Link
+                              {t('linking.create_and_link')}
                             </button>
                             <button
                               className="btn-secondary"
@@ -1839,9 +1854,9 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                                 });
                               }}
                               disabled={isSaving}
-                              title="Close the form and discard the new-word details"
+                              title={t('linking.cancel_new_word_title')}
                             >
-                              Cancel
+                              {t('linking.cancel')}
                             </button>
                           </div>
                         </div>
@@ -1851,14 +1866,14 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                 )}
               </>
             ) : (
-              <p>Highlight any portion of the document to review or manage its link.</p>
+              <p>{t('linking.highlight_help')}</p>
             )}
           </section>
 
           <section className="suggestions-section">
-            <h2>Suggestions ({suggestions.length})</h2>
+            <h2>{t('linking.suggestions_heading')} ({suggestions.length})</h2>
             {suggestions.length === 0 ? (
-              <p>No suggestions available. Try regenerating to get new suggestions.</p>
+              <p>{t('linking.no_suggestions')}</p>
             ) : (
               <ul className="suggestion-list">
                 {suggestions.map((link) => {
@@ -1869,7 +1884,7 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                   const formLabel =
                     link.word_text ??
                     activeText.content.slice(link.start_char, link.end_char);
-                  const linkTooltip = buildLinkTooltip(link);
+                  const linkTooltip = buildLinkTooltip(link, t);
                   return (
                     <li
                       key={link.id}
@@ -1895,17 +1910,17 @@ export default function DocumentLinking({ selectedLanguage, languages }: Documen
                           className="btn-primary"
                           onClick={() => handleConfirmLink(link)}
                           disabled={!canEdit || isSaving}
-                          title="Accept this suggestion as a confirmed link without leaving the suggestions list."
+                          title={t('linking.confirm_suggestion_title')}
                         >
-                          Confirm
+                          {t('linking.confirm')}
                         </button>
                         <button
                           className="btn-secondary"
                           onClick={() => handleRejectLink(link)}
                           disabled={!canEdit || isSaving}
-                          title="Mark this suggestion as wrong. It won't be re-proposed by future Regenerate runs."
+                          title={t('linking.reject_suggestion_title')}
                         >
-                          Reject
+                          {t('linking.reject')}
                         </button>
                       </div>
                     </li>

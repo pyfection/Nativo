@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import './Register.css';
 
 export default function Register() {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     email: '',
     username: '',
@@ -25,13 +27,13 @@ export default function Register() {
 
     // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('auth.passwords_no_match'));
       return;
     }
 
     // Validate password length
     if (formData.password.length < 8) {
-      setError('Password must be at least 8 characters long');
+      setError(t('auth.password_min_length', { n: 8 }));
       return;
     }
 
@@ -45,7 +47,7 @@ export default function Register() {
       });
       navigate(from, { replace: true });
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Registration failed. Please try again.');
+      setError(err.response?.data?.detail || t('auth.registration_failed'));
     } finally {
       setLoading(false);
     }
@@ -63,15 +65,15 @@ export default function Register() {
       <div className="register-container">
         <div className="register-header">
           <h1 className="register-logo">Nativo<b>.</b></h1>
-          <h2 className="register-title">Join Our Community</h2>
-          <p className="register-subtitle">Help preserve endangered languages for future generations</p>
+          <h2 className="register-title">{t('auth.join_community_title')}</h2>
+          <p className="register-subtitle">{t('auth.register_subtitle')}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="register-form">
           {error && <div className="error-message">{error}</div>}
 
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">{t('auth.email_label')}</label>
             <input
               type="email"
               id="email"
@@ -80,12 +82,12 @@ export default function Register() {
               onChange={handleChange}
               required
               autoComplete="email"
-              placeholder="your.email@example.com"
+              placeholder={t('auth.email_placeholder')}
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="username">Username</label>
+            <label htmlFor="username">{t('auth.username_label')}</label>
             <input
               type="text"
               id="username"
@@ -94,13 +96,13 @@ export default function Register() {
               onChange={handleChange}
               required
               autoComplete="username"
-              placeholder="Choose a username"
+              placeholder={t('auth.username_placeholder')}
               minLength={3}
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password">{t('auth.password_label')}</label>
             <input
               type="password"
               id="password"
@@ -109,13 +111,13 @@ export default function Register() {
               onChange={handleChange}
               required
               autoComplete="new-password"
-              placeholder="Create a password (min 8 characters)"
+              placeholder={t('auth.create_password_placeholder', { n: 8 })}
               minLength={8}
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="confirmPassword">Confirm Password</label>
+            <label htmlFor="confirmPassword">{t('auth.confirm_password_label')}</label>
             <input
               type="password"
               id="confirmPassword"
@@ -124,26 +126,26 @@ export default function Register() {
               onChange={handleChange}
               required
               autoComplete="new-password"
-              placeholder="Confirm your password"
+              placeholder={t('auth.confirm_password_placeholder')}
               minLength={8}
             />
           </div>
 
           <button type="submit" className="register-button" disabled={loading}>
-            {loading ? 'Creating account...' : 'Create Account'}
+            {loading ? t('auth.creating_account') : t('auth.create_account')}
           </button>
         </form>
 
         <div className="register-footer">
           <p>
-            Already have an account?{' '}
+            {t('auth.have_account_pre')}{' '}
             <Link to="/login" state={location.state} className="login-link">
-              Sign in here
+              {t('auth.sign_in_link')}
             </Link>
           </p>
           <p>
             <Link to="/" className="home-link">
-              ← Back to Home
+              {t('auth.back_to_home')}
             </Link>
           </p>
         </div>

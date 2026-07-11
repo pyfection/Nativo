@@ -1,3 +1,4 @@
+import i18n from '../i18n';
 import { DocumentType } from '../types/text';
 
 export const DOCUMENT_TYPE_OPTIONS: Array<{ value: DocumentType; label: string }> = [
@@ -27,9 +28,9 @@ export const documentTypeLabelMap: Record<DocumentType, string> = DOCUMENT_TYPE_
 );
 
 export function getDocumentTypeLabel(type: DocumentType | string | undefined): string {
-  if (!type) return 'Unknown';
+  if (!type) return i18n.t('doc_types.unknown', { defaultValue: 'Unknown' });
 
-  const label =
+  const fallback =
     documentTypeLabelMap[type as DocumentType] ??
     type
       .toString()
@@ -37,5 +38,6 @@ export function getDocumentTypeLabel(type: DocumentType | string | undefined): s
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(' ');
 
-  return label;
+  // Localized via doc_types.<enum value>; falls back to the English label.
+  return i18n.t(`doc_types.${type}`, { defaultValue: fallback });
 }

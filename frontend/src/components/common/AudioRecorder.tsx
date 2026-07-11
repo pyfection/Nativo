@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 import { useAuth } from '../../contexts/AuthContext';
 import {
@@ -43,6 +44,7 @@ export default function AudioRecorder({
   onError,
   onMessage,
 }: AudioRecorderProps) {
+  const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
   const location = useLocation();
   const [audios, setAudios] = useState<AudioListItem[]>([]);
@@ -149,9 +151,9 @@ export default function AudioRecorder({
           const refreshed = await listAudioForForm(wordFormId);
           setAudios(refreshed);
           onChange?.(refreshed);
-          onMessage?.('Recording uploaded.');
+          onMessage?.(t('audio_recorder.recording_uploaded'));
         } catch (err: any) {
-          onError?.(err.response?.data?.detail || 'Upload failed');
+          onError?.(err.response?.data?.detail || t('audio_recorder.upload_failed'));
         } finally {
           setStatus('idle');
           setElapsed(0);
@@ -165,8 +167,8 @@ export default function AudioRecorder({
     } catch (err: any) {
       onError?.(
         err.name === 'NotAllowedError'
-          ? 'Microphone access denied. Allow it in your browser settings to record.'
-          : 'Could not start recording.',
+          ? t('audio_recorder.mic_access_denied')
+          : t('audio_recorder.could_not_start'),
       );
     }
   };
@@ -178,15 +180,15 @@ export default function AudioRecorder({
   };
 
   const handleDelete = async (audio: AudioListItem) => {
-    if (!window.confirm('Delete this recording?')) return;
+    if (!window.confirm(t('audio_recorder.confirm_delete'))) return;
     try {
       await deleteAudio(audio.id);
       const refreshed = audios.filter((a) => a.id !== audio.id);
       setAudios(refreshed);
       onChange?.(refreshed);
-      onMessage?.('Recording deleted.');
+      onMessage?.(t('audio_recorder.recording_deleted'));
     } catch (err: any) {
-      onError?.(err.response?.data?.detail || 'Failed to delete recording.');
+      onError?.(err.response?.data?.detail || t('audio_recorder.delete_failed'));
     }
   };
 
@@ -201,32 +203,32 @@ export default function AudioRecorder({
                 className="btn btn-accent btn-sm"
                 onClick={startRecording}
                 disabled={status === 'uploading'}
-                title="Record a pronunciation for this form using your microphone."
+                title={t('audio_recorder.record_button_title')}
               >
-                {status === 'uploading' ? 'Uploading…' : '● Record'}
+                {status === 'uploading' ? t('audio_recorder.uploading') : t('audio_recorder.record')}
               </button>
             ) : (
               <button
                 type="button"
                 className="btn btn-ghost btn-sm audio-recorder-stop"
                 onClick={stopRecording}
-                title="Stop recording and upload."
+                title={t('audio_recorder.stop_button_title')}
               >
-                ■ Stop ({elapsed.toFixed(1)}s)
+                {t('audio_recorder.stop', { s: elapsed.toFixed(1) })}
               </button>
             )}
           </>
         )}
         {unsupported && (
           <span className="audio-recorder-unsupported">
-            Recording isn't supported in this browser.
+            {t('audio_recorder.unsupported')}
           </span>
         )}
         {/* The moment read-only runs out is the moment to invite a signup:
             a guest looking at a form nobody has recorded yet. */}
         {!isAuthenticated && audios.length === 0 && (
           <Link to="/register" state={{ from: location }} className="audio-recorder-guest-cta">
-            No recording yet — sign up to lend your voice
+            {t('audio_recorder.guest_cta')}
           </Link>
         )}
       </div>
@@ -243,11 +245,13 @@ export default function AudioRecorder({
               />
               <div className="audio-recorder-row-meta">
                 {audio.duration != null && (
-                  <span className="audio-recorder-duration">{audio.duration}s</span>
+                  <span className="audio-recorder-duration">
+                    {t('audio_recorder.duration_seconds', { s: audio.duration })}
+                  </span>
                 )}
                 {audio.uploader_username && (
                   <span className="audio-recorder-uploader">
-                    by {audio.uploader_username}
+                    {t('audio_recorder.by_uploader', { username: audio.uploader_username })}
                   </span>
                 )}
               </div>
@@ -256,9 +260,9 @@ export default function AudioRecorder({
                   type="button"
                   className="btn btn-ghost btn-xs"
                   onClick={() => handleDelete(audio)}
-                  title="Delete this recording"
+                  title={t('audio_recorder.delete_button_title')}
                 >
-                  Delete
+                  {t('audio_recorder.delete')}
                 </button>
               )}
             </li>

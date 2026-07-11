@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import documentService from '../services/documentService';
 import { DocumentListItem } from '../types/document';
 import { Language } from '../App';
 import { useAuth } from '../contexts/AuthContext';
+import { languageDisplayName } from '../utils/languageName';
 import './DocumentList.css';
 
 interface DocumentListProps {
@@ -11,6 +13,7 @@ interface DocumentListProps {
 }
 
 export default function DocumentList({ selectedLanguage }: DocumentListProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated, canEditLanguage } = useAuth();
@@ -47,7 +50,7 @@ export default function DocumentList({ selectedLanguage }: DocumentListProps) {
       const data = await documentService.getAll(params);
       setDocuments(data);
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to load documents');
+      setError(err.response?.data?.detail || t('docs_page.error_load'));
     } finally {
       setLoading(false);
     }
@@ -73,7 +76,7 @@ export default function DocumentList({ selectedLanguage }: DocumentListProps) {
     return (
       <div className="document-list-page">
         <div className="error-state">
-          <p>Please select a language to view documents.</p>
+          <p>{t('docs_page.select_language')}</p>
         </div>
       </div>
     );
@@ -83,15 +86,15 @@ export default function DocumentList({ selectedLanguage }: DocumentListProps) {
     <div className="document-list-page">
       <div className="page-header">
         <div>
-          <h1>Documents</h1>
-          <p>Browse and manage text documents and content</p>
+          <h1>{t('docs_page.title')}</h1>
+          <p>{t('docs_page.subtitle')}</p>
         </div>
         {canEdit && (
           <button onClick={() => navigate('/documents/add')} className="btn-primary">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
               <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/>
             </svg>
-            Add Document
+            {t('docs_page.add_document')}
           </button>
         )}
       </div>
@@ -100,15 +103,12 @@ export default function DocumentList({ selectedLanguage }: DocumentListProps) {
         <div style={{ padding: '1rem', backgroundColor: '#fff3cd', border: '1px solid #ffc107', borderRadius: '4px', marginBottom: '1rem' }}>
           <p style={{ margin: 0, color: '#856404' }}>
             {isAuthenticated ? (
-              <>
-                You don't have permission to add documents to this language. Contact an
-                administrator to request access.
-              </>
+              <>{t('docs_page.no_permission')}</>
             ) : (
               <>
-                Have a {selectedLanguage.name} text to preserve?{' '}
-                <Link to="/register" state={{ from: location }}>Create a free account</Link> to
-                contribute.
+                {t('docs_page.banner_pre', { language: languageDisplayName(selectedLanguage) })}{' '}
+                <Link to="/register" state={{ from: location }}>{t('docs_page.banner_link')}</Link>{' '}
+                {t('docs_page.banner_post')}
               </>
             )}
           </p>
@@ -119,20 +119,20 @@ export default function DocumentList({ selectedLanguage }: DocumentListProps) {
       <div className="filters-section">
         <div className="filters">
           <div className="filter-group search-group">
-            <label htmlFor="search">Search</label>
+            <label htmlFor="search">{t('docs_page.search_label')}</label>
             <input
               type="text"
               id="search"
               name="search"
               value={filters.search}
               onChange={handleFilterChange}
-              placeholder="Search title or content..."
+              placeholder={t('docs_page.search_placeholder')}
             />
           </div>
 
           {filters.search && (
             <button onClick={clearFilters} className="btn-clear-filters">
-              Clear Filters
+              {t('docs_page.clear_filters')}
             </button>
           )}
         </div>
@@ -142,7 +142,7 @@ export default function DocumentList({ selectedLanguage }: DocumentListProps) {
       {loading ? (
         <div className="loading-state">
           <div className="loading-spinner"></div>
-          <p>Loading documents...</p>
+          <p>{t('docs_page.loading')}</p>
         </div>
       ) : error ? (
         <div className="error-state">
@@ -150,10 +150,10 @@ export default function DocumentList({ selectedLanguage }: DocumentListProps) {
         </div>
       ) : documents.length === 0 ? (
         <div className="empty-state">
-          <h3>No documents found</h3>
-          <p>Start by adding your first document to the collection</p>
+          <h3>{t('docs_page.empty_title')}</h3>
+          <p>{t('docs_page.empty_subtitle')}</p>
           <button onClick={() => navigate('/documents/add')} className="btn-primary">
-            Add First Document
+            {t('docs_page.add_first_document')}
           </button>
         </div>
       ) : (
@@ -161,12 +161,12 @@ export default function DocumentList({ selectedLanguage }: DocumentListProps) {
           <table className="documents-table">
             <thead>
               <tr>
-                <th>Title</th>
-                <th>Content Preview</th>
-                <th>Source</th>
-                <th>Languages</th>
-                <th>Date</th>
-                <th>Actions</th>
+                <th>{t('docs_page.th_title')}</th>
+                <th>{t('docs_page.th_content_preview')}</th>
+                <th>{t('docs_page.th_source')}</th>
+                <th>{t('docs_page.th_languages')}</th>
+                <th>{t('docs_page.th_date')}</th>
+                <th>{t('docs_page.th_actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -184,8 +184,8 @@ export default function DocumentList({ selectedLanguage }: DocumentListProps) {
                       type="button"
                       className="icon-button"
                       onClick={() => navigate(`/documents/${doc.id}`)}
-                      aria-label="View document"
-                      title="View document"
+                      aria-label={t('docs_page.view_document')}
+                      title={t('docs_page.view_document')}
                     >
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z" />
@@ -197,8 +197,8 @@ export default function DocumentList({ selectedLanguage }: DocumentListProps) {
                         type="button"
                         className="icon-button"
                         onClick={() => navigate(`/documents/${doc.id}/edit`)}
-                        aria-label="Edit document"
-                        title="Edit document"
+                        aria-label={t('docs_page.edit_document')}
+                        title={t('docs_page.edit_document')}
                       >
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M12 20h9" />
@@ -211,8 +211,8 @@ export default function DocumentList({ selectedLanguage }: DocumentListProps) {
                         type="button"
                         className="icon-button"
                         onClick={() => navigate(`/documents/${doc.id}/link`)}
-                        aria-label="Link words"
-                        title="Link words"
+                        aria-label={t('docs_page.link_words')}
+                        title={t('docs_page.link_words')}
                       >
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M10 13a5 5 0 0 1 7.54-.54l2 2a5 5 0 0 1-7.07 7.07l-1.29-1.3" />

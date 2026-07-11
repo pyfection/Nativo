@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import documentService from '../services/documentService';
 import { DocumentWithTexts } from '../types/document';
 import { Text, TextUpdate, DocumentType, TextFormat } from '../types/text';
 import { Language } from '../App';
 import { useAuth } from '../contexts/AuthContext';
-import { DOCUMENT_TYPE_OPTIONS, getDocumentTypeLabel } from '../utils/documentTypes';
+import { DOCUMENT_TYPE_OPTIONS } from '../utils/documentTypes';
+import { languageDisplayName } from '../utils/languageName';
 import './EditDocument.css';
 
 interface EditDocumentProps {
@@ -19,6 +21,7 @@ export default function EditDocument({ selectedLanguage, languages }: EditDocume
   const location = useLocation();
   const navigate = useNavigate();
   const { canEditLanguage } = useAuth();
+  const { t } = useTranslation();
 
   const [document, setDocument] = useState<DocumentWithTexts | null>(null);
   const [selectedTextId, setSelectedTextId] = useState<string>('');
@@ -50,14 +53,14 @@ export default function EditDocument({ selectedLanguage, languages }: EditDocume
         setDocument(data);
         setError('');
       } catch (err: any) {
-        setError(err?.response?.data?.detail || 'Failed to load document');
+        setError(err?.response?.data?.detail || t('edit_doc.load_failed'));
       } finally {
         setLoading(false);
       }
     };
 
     fetchDocument();
-  }, [documentId]);
+  }, [documentId, t]);
 
   useEffect(() => {
     if (!document) return;
@@ -143,7 +146,7 @@ export default function EditDocument({ selectedLanguage, languages }: EditDocume
 
     if (!documentId || !selectedTextId) return;
     if (!canEdit) {
-      setError('You do not have permission to edit this translation.');
+      setError(t('edit_doc.no_permission'));
       return;
     }
 
@@ -161,14 +164,14 @@ export default function EditDocument({ selectedLanguage, languages }: EditDocume
       setSaving(true);
       setError('');
       await documentService.updateText(documentId, selectedTextId, payload);
-      setSuccess('Document updated successfully.');
+      setSuccess(t('edit_doc.update_success'));
       navigate(`/documents/${documentId}`);
     } catch (err: any) {
       const detail = err?.response?.data?.detail;
       const message = Array.isArray(detail)
         ? detail.map((item: { msg?: string }) => item?.msg).filter(Boolean).join(', ')
         : detail;
-      setError(message || 'Failed to update document');
+      setError(message || t('edit_doc.update_failed'));
     } finally {
       setSaving(false);
     }
@@ -179,7 +182,7 @@ export default function EditDocument({ selectedLanguage, languages }: EditDocume
       <div className="edit-document-page">
         <div className="loading-state">
           <div className="loading-spinner" />
-          <p>Loading document...</p>
+          <p>{t('edit_doc.loading')}</p>
         </div>
       </div>
     );
@@ -191,7 +194,7 @@ export default function EditDocument({ selectedLanguage, languages }: EditDocume
         <div className="error-state">
           <p>{error}</p>
           <button onClick={handleBack} className="btn-secondary">
-            Back to Document
+            {t('edit_doc.back_to_document')}
           </button>
         </div>
       </div>
@@ -202,9 +205,9 @@ export default function EditDocument({ selectedLanguage, languages }: EditDocume
     return (
       <div className="edit-document-page">
         <div className="empty-state">
-          <h3>Document not found</h3>
+          <h3>{t('edit_doc.not_found')}</h3>
           <button className="btn-primary" onClick={handleBack}>
-            Return to Documents
+            {t('edit_doc.return_to_documents')}
           </button>
         </div>
       </div>
@@ -220,21 +223,21 @@ export default function EditDocument({ selectedLanguage, languages }: EditDocume
       <div className="page-header">
         <div>
           <button className="btn-link" onClick={handleBack}>
-            ← Back to Document
+            ← {t('edit_doc.back_to_document')}
           </button>
-          <h1>Edit Document</h1>
+          <h1>{t('edit_doc.title')}</h1>
           <p className="page-subtitle">
             {selectedLanguageInfo
-              ? `${selectedLanguageInfo.name}${
+              ? `${languageDisplayName(selectedLanguageInfo)}${
                   selectedLanguageInfo.nativeName ? ` (${selectedLanguageInfo.nativeName})` : ''
                 }`
-              : 'Unknown Language'}{' '}
-            · {getDocumentTypeLabel(selectedText.document_type)}
+              : t('edit_doc.unknown_language')}{' '}
+            · {t(`edit_doc.type_${selectedText.document_type}`)}
           </p>
         </div>
         <div className="language-availability">
           <span className="language-availability-label">
-            Available in {document.texts.length} language{document.texts.length === 1 ? '' : 's'}
+            {t('edit_doc.available_in_languages', { count: document.texts.length })}
           </span>
           <div className="language-availability-list">
             {document.texts.map((text) => {
@@ -250,9 +253,9 @@ export default function EditDocument({ selectedLanguage, languages }: EditDocume
                   disabled={!canEdit && text.id !== selectedTextId}
                 >
                   {language
-                    ? `${language.name}${language.nativeName ? ` (${language.nativeName})` : ''}`
+                    ? `${languageDisplayName(language)}${language.nativeName ? ` (${language.nativeName})` : ''}`
                     : text.title}
-                  {text.is_primary ? ' • Primary' : ''}
+                  {text.is_primary ? ` • ${t('edit_doc.primary')}` : ''}
                 </button>
               );
             })}
@@ -262,8 +265,7 @@ export default function EditDocument({ selectedLanguage, languages }: EditDocume
 
       {!canEdit && (
         <div className="warning-banner">
-          You don't have permission to edit this translation. Contact an administrator to request
-          access.
+          {t('edit_doc.no_permission_banner')}
         </div>
       )}
 
@@ -273,7 +275,7 @@ export default function EditDocument({ selectedLanguage, languages }: EditDocume
 
         <div className="form-grid">
           <div className="form-group">
-            <label htmlFor="title">Title *</label>
+            <label htmlFor="title">{t('edit_doc.title_label')}</label>
             <input
               id="title"
               name="title"
@@ -286,7 +288,7 @@ export default function EditDocument({ selectedLanguage, languages }: EditDocume
           </div>
 
           <div className="form-group">
-            <label htmlFor="document_type">Document Type *</label>
+            <label htmlFor="document_type">{t('edit_doc.type_label')}</label>
             <select
               id="document_type"
               name="document_type"
@@ -296,7 +298,7 @@ export default function EditDocument({ selectedLanguage, languages }: EditDocume
             >
               {DOCUMENT_TYPE_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
-                  {option.label}
+                  {t(`edit_doc.type_${option.value}`)}
                 </option>
               ))}
             </select>
@@ -305,9 +307,9 @@ export default function EditDocument({ selectedLanguage, languages }: EditDocume
           <div className="form-group">
             <label
               htmlFor="format"
-              title="How the content is rendered. Markdown enables headings, lists and tables — use this for writing-standard references."
+              title={t('edit_doc.format_title')}
             >
-              Format
+              {t('edit_doc.format_label')}
             </label>
             <select
               id="format"
@@ -316,13 +318,13 @@ export default function EditDocument({ selectedLanguage, languages }: EditDocume
               onChange={handleFieldChange}
               disabled={!canEdit || saving}
             >
-              <option value={TextFormat.PLAIN}>Plain (prose)</option>
-              <option value={TextFormat.MARKDOWN}>Markdown</option>
+              <option value={TextFormat.PLAIN}>{t('edit_doc.format_plain')}</option>
+              <option value={TextFormat.MARKDOWN}>{t('edit_doc.format_markdown')}</option>
             </select>
           </div>
 
           <div className="form-group">
-            <label htmlFor="source">Source</label>
+            <label htmlFor="source">{t('edit_doc.source_label')}</label>
             <input
               id="source"
               name="source"
@@ -334,7 +336,7 @@ export default function EditDocument({ selectedLanguage, languages }: EditDocume
           </div>
 
           <div className="form-group">
-            <label htmlFor="notes">Notes</label>
+            <label htmlFor="notes">{t('edit_doc.notes_label')}</label>
             <textarea
               id="notes"
               name="notes"
@@ -346,14 +348,14 @@ export default function EditDocument({ selectedLanguage, languages }: EditDocume
           </div>
 
           <div className="form-group">
-            <label htmlFor="learning_order">Learning path position</label>
+            <label htmlFor="learning_order">{t('edit_doc.learning_order_label')}</label>
             <input
               id="learning_order"
               name="learning_order"
               type="number"
               min={1}
-              placeholder="automatic"
-              title="Pin this text to a fixed position at the start of the guided learning path. Leave empty to let the path order it by difficulty."
+              placeholder={t('edit_doc.learning_order_placeholder')}
+              title={t('edit_doc.learning_order_title')}
               value={formData.learning_order ?? ''}
               onChange={handleFieldChange}
               disabled={!canEdit || saving}
@@ -362,7 +364,7 @@ export default function EditDocument({ selectedLanguage, languages }: EditDocume
         </div>
 
         <div className="form-group">
-          <label htmlFor="content">Content *</label>
+          <label htmlFor="content">{t('edit_doc.content_label')}</label>
           <textarea
             id="content"
             name="content"
@@ -376,10 +378,10 @@ export default function EditDocument({ selectedLanguage, languages }: EditDocume
 
         <div className="form-actions">
           <button type="button" className="btn-secondary" onClick={handleBack} disabled={saving}>
-            Cancel
+            {t('edit_doc.cancel')}
           </button>
           <button type="submit" className="btn-primary" disabled={!canEdit || saving}>
-            {saving ? 'Saving...' : 'Save Changes'}
+            {saving ? t('edit_doc.saving') : t('edit_doc.save_changes')}
           </button>
         </div>
       </form>

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import documentService from '../services/documentService';
 import languageService from '../services/languageService';
 import { DocumentWithTexts } from '../types/document';
@@ -7,6 +8,7 @@ import { Text } from '../types/text';
 import { Language } from '../App';
 import { useAuth } from '../contexts/AuthContext';
 import { getDocumentTypeLabel } from '../utils/documentTypes';
+import { languageDisplayName } from '../utils/languageName';
 import './DocumentDetail.css';
 
 interface DocumentDetailProps {
@@ -15,6 +17,7 @@ interface DocumentDetailProps {
 }
 
 export default function DocumentDetail({ selectedLanguage, languages }: DocumentDetailProps) {
+  const { t } = useTranslation();
   const { documentId } = useParams<{ documentId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -56,7 +59,7 @@ export default function DocumentDetail({ selectedLanguage, languages }: Document
           ),
         );
       } catch (err: any) {
-        setError(err?.response?.data?.detail || 'Failed to load document');
+        setError(err?.response?.data?.detail || t('doc_detail.error_load'));
       } finally {
         setLoading(false);
       }
@@ -107,7 +110,7 @@ export default function DocumentDetail({ selectedLanguage, languages }: Document
       <div className="document-detail-page">
         <div className="loading-state">
           <div className="loading-spinner" />
-          <p>Loading document...</p>
+          <p>{t('doc_detail.loading')}</p>
         </div>
       </div>
     );
@@ -119,7 +122,7 @@ export default function DocumentDetail({ selectedLanguage, languages }: Document
         <div className="error-state">
           <p>{error}</p>
           <button className="btn-secondary" onClick={handleBack}>
-            Back to Documents
+            {t('doc_detail.back_to_documents')}
           </button>
         </div>
       </div>
@@ -130,9 +133,9 @@ export default function DocumentDetail({ selectedLanguage, languages }: Document
     return (
       <div className="document-detail-page">
         <div className="empty-state">
-          <h3>Document not found</h3>
+          <h3>{t('doc_detail.not_found')}</h3>
           <button className="btn-primary" onClick={handleBack}>
-            Return to Documents
+            {t('doc_detail.return_to_documents')}
           </button>
         </div>
       </div>
@@ -143,10 +146,10 @@ export default function DocumentDetail({ selectedLanguage, languages }: Document
     return (
       <div className="document-detail-page">
         <div className="empty-state">
-          <h3>This document has no texts yet</h3>
-          <p>Add a translation to start working with this document.</p>
+          <h3>{t('doc_detail.no_texts_title')}</h3>
+          <p>{t('doc_detail.no_texts_subtitle')}</p>
           <button className="btn-secondary" onClick={handleBack}>
-            Back to Documents
+            {t('doc_detail.back_to_documents')}
           </button>
         </div>
       </div>
@@ -165,25 +168,25 @@ export default function DocumentDetail({ selectedLanguage, languages }: Document
       <div className="document-header">
         <div>
           <button className="btn-link" onClick={handleBack}>
-            ← Back to Documents
+            ← {t('doc_detail.back_to_documents')}
           </button>
           <h1>{activeText.title}</h1>
           <p className="document-subtitle">
             {textLanguage
-              ? `${textLanguage.name}${
+              ? `${languageDisplayName(textLanguage)}${
                   textLanguage.nativeName ? ` (${textLanguage.nativeName})` : ''
                 }`
-              : 'Unknown Language'}{' '}
+              : t('doc_detail.unknown_language')}{' '}
             · {getDocumentTypeLabel(activeText.document_type)}
           </p>
         </div>
         <div className="document-header-actions">
           <button className="btn-secondary" onClick={handleBack}>
-            Back
+            {t('doc_detail.back')}
           </button>
           {canEdit && (
             <button className="btn-secondary" onClick={handleLink}>
-              Link Words
+              {t('doc_detail.link_words')}
             </button>
           )}
           {isAdmin && activeText?.language_id && documentId && (
@@ -192,8 +195,8 @@ export default function DocumentDetail({ selectedLanguage, languages }: Document
               disabled={savingStandard}
               title={
                 languagesUsingThisStandard.has(activeText.language_id)
-                  ? 'Remove this document as the language’s writing standard.'
-                  : 'Promote this document to be the language’s writing standard. It will then appear on the language strip on Home and on /languages/<id>/standard.'
+                  ? t('doc_detail.standard_remove_title')
+                  : t('doc_detail.standard_promote_title')
               }
               onClick={async () => {
                 if (!activeText.language_id) return;
@@ -211,20 +214,20 @@ export default function DocumentDetail({ selectedLanguage, languages }: Document
                     return next;
                   });
                 } catch (err: any) {
-                  alert(err.response?.data?.detail || 'Failed to update writing standard');
+                  alert(err.response?.data?.detail || t('doc_detail.error_update_standard'));
                 } finally {
                   setSavingStandard(false);
                 }
               }}
             >
               {languagesUsingThisStandard.has(activeText.language_id)
-                ? '✓ Writing standard'
-                : '📖 Mark as writing standard'}
+                ? `✓ ${t('doc_detail.standard_on')}`
+                : `📖 ${t('doc_detail.standard_off')}`}
             </button>
           )}
           {canEdit && (
             <button className="btn-primary" onClick={handleEdit}>
-              Edit Document
+              {t('doc_detail.edit_document')}
             </button>
           )}
         </div>
@@ -232,7 +235,7 @@ export default function DocumentDetail({ selectedLanguage, languages }: Document
 
       <div className="document-content-grid">
         <aside className="document-sidebar">
-          <h2>Available in {document.texts.length} language{document.texts.length === 1 ? '' : 's'}</h2>
+          <h2>{t('doc_detail.available_in', { count: document.texts.length })}</h2>
           <ul className="translation-list">
             {document.texts.map((text) => {
               const language = text.language_id
@@ -248,11 +251,11 @@ export default function DocumentDetail({ selectedLanguage, languages }: Document
                     <span className="translation-title">{text.title}</span>
                     <span className="translation-meta">
                       {language
-                        ? `${language.name}${
+                        ? `${languageDisplayName(language)}${
                             language.nativeName ? ` (${language.nativeName})` : ''
                           }`
-                        : 'Unknown'}
-                      {text.is_primary ? ' · Primary' : ''}
+                        : t('doc_detail.unknown')}
+                      {text.is_primary ? ` · ${t('doc_detail.primary')}` : ''}
                     </span>
                   </button>
                 </li>
@@ -263,11 +266,11 @@ export default function DocumentDetail({ selectedLanguage, languages }: Document
               signup exactly there instead of hiding the gap from guests. */}
           {!isAuthenticated && (
             <p className="translation-guest-cta">
-              Missing your language?{' '}
+              {t('doc_detail.cta_pre')}{' '}
               <Link to="/register" state={{ from: location }}>
-                Sign up to add a translation
+                {t('doc_detail.cta_link')}
               </Link>
-              .
+              {t('doc_detail.cta_post')}
             </p>
           )}
         </aside>
@@ -275,27 +278,27 @@ export default function DocumentDetail({ selectedLanguage, languages }: Document
         <article className="document-content">
           <div className="document-meta">
             <div>
-              <span className="meta-label">Document Type</span>
+              <span className="meta-label">{t('doc_detail.meta_document_type')}</span>
               <span className="meta-value">{getDocumentTypeLabel(activeText.document_type)}</span>
             </div>
             {activeText.source && (
               <div>
-                <span className="meta-label">Source</span>
+                <span className="meta-label">{t('doc_detail.meta_source')}</span>
                 <span className="meta-value">{activeText.source}</span>
               </div>
             )}
             {activeText.notes && (
               <div>
-                <span className="meta-label">Notes</span>
+                <span className="meta-label">{t('doc_detail.meta_notes')}</span>
                 <span className="meta-value">{activeText.notes}</span>
               </div>
             )}
             <div>
-              <span className="meta-label">Created</span>
+              <span className="meta-label">{t('doc_detail.meta_created')}</span>
               <span className="meta-value">{createdAt}</span>
             </div>
             <div>
-              <span className="meta-label">Last Updated</span>
+              <span className="meta-label">{t('doc_detail.meta_last_updated')}</span>
               <span className="meta-value">{updatedAt}</span>
             </div>
           </div>

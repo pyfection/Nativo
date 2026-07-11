@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import wordService, { SpellingVariant } from '../../services/wordService';
 import './SpellingVariants.css';
@@ -31,6 +32,7 @@ export default function SpellingVariants({
   onMessage,
   onError,
 }: SpellingVariantsProps) {
+  const { t } = useTranslation();
   const [variants, setVariants] = useState<SpellingVariant[]>([]);
   const [showAdd, setShowAdd] = useState(false);
   const [variantDraft, setVariantDraft] = useState('');
@@ -74,23 +76,23 @@ export default function SpellingVariants({
         [...prev, created].sort((a, b) => a.variant.localeCompare(b.variant)),
       );
       resetAdd();
-      onMessage?.('Spelling variant added.');
+      onMessage?.(t('spelling_variants.variant_added'));
     } catch (err: any) {
-      onError?.(err.response?.data?.detail || 'Failed to add spelling variant.');
+      onError?.(err.response?.data?.detail || t('spelling_variants.add_failed'));
     } finally {
       setBusy(false);
     }
   };
 
   const handleRemove = async (variant: SpellingVariant) => {
-    if (!window.confirm(`Remove the spelling "${variant.variant}"?`)) return;
+    if (!window.confirm(t('spelling_variants.confirm_remove', { variant: variant.variant }))) return;
     setBusy(true);
     try {
       await wordService.removeSpelling(variant.id);
       setVariants((prev) => prev.filter((v) => v.id !== variant.id));
-      onMessage?.('Spelling variant removed.');
+      onMessage?.(t('spelling_variants.variant_removed'));
     } catch (err: any) {
-      onError?.(err.response?.data?.detail || 'Failed to remove spelling variant.');
+      onError?.(err.response?.data?.detail || t('spelling_variants.remove_failed'));
     } finally {
       setBusy(false);
     }
@@ -102,8 +104,8 @@ export default function SpellingVariants({
   return (
     <div className="spelling-variants">
       <div className="spelling-variants-head">
-        <span className="spelling-variants-label" title="Other ways this form is written outside the standard orthography.">
-          Also written
+        <span className="spelling-variants-label" title={t('spelling_variants.label_title')}>
+          {t('spelling_variants.also_written')}
         </span>
         {variants.length === 0 && <span className="spelling-variants-empty">—</span>}
         {variants.map((variant) => (
@@ -115,8 +117,8 @@ export default function SpellingVariants({
                 className="spelling-chip-remove"
                 onClick={() => handleRemove(variant)}
                 disabled={busy}
-                aria-label={`Remove spelling ${variant.variant}`}
-                title="Remove this spelling"
+                aria-label={t('spelling_variants.remove_aria', { variant: variant.variant })}
+                title={t('spelling_variants.remove_title')}
               >
                 ✕
               </button>
@@ -128,9 +130,9 @@ export default function SpellingVariants({
             type="button"
             className="btn btn-ghost btn-xs"
             onClick={() => setShowAdd(true)}
-            title="Record another way this form is written."
+            title={t('spelling_variants.add_title')}
           >
-            + add spelling
+            {t('spelling_variants.add_spelling')}
           </button>
         )}
       </div>
@@ -140,7 +142,7 @@ export default function SpellingVariants({
           <input
             type="text"
             className="spelling-variants-input"
-            placeholder="e.g. eich"
+            placeholder={t('spelling_variants.variant_placeholder')}
             value={variantDraft}
             autoFocus
             onChange={(e) => setVariantDraft(e.target.value)}
@@ -152,7 +154,7 @@ export default function SpellingVariants({
           <input
             type="text"
             className="spelling-variants-input spelling-variants-note"
-            placeholder="note (optional) — e.g. older spelling"
+            placeholder={t('spelling_variants.note_placeholder')}
             value={noteDraft}
             onChange={(e) => setNoteDraft(e.target.value)}
             onKeyDown={(e) => {
@@ -166,10 +168,10 @@ export default function SpellingVariants({
             onClick={handleAdd}
             disabled={busy || !variantDraft.trim()}
           >
-            Add
+            {t('spelling_variants.add')}
           </button>
           <button type="button" className="btn btn-ghost btn-xs" onClick={resetAdd} disabled={busy}>
-            Cancel
+            {t('spelling_variants.cancel')}
           </button>
         </div>
       )}

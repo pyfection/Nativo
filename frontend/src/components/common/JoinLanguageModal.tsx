@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Modal from './Modal';
 import { languageDisplayName } from '../../utils/languageName';
 import { Language } from '../../App';
@@ -16,27 +17,28 @@ interface JoinLanguageModalProps {
 const PROFICIENCY_LEVELS = [
   {
     value: 'native' as const,
-    label: 'Native Speaker',
-    description: 'This is your first language or you speak it at a native level',
+    label: 'join_modal.native_label',
+    description: 'join_modal.native_description',
   },
   {
     value: 'fluent' as const,
-    label: 'Fluent',
-    description: 'You can speak, read, and write fluently with minimal errors',
+    label: 'join_modal.fluent_label',
+    description: 'join_modal.fluent_description',
   },
   {
     value: 'intermediate' as const,
-    label: 'Intermediate',
-    description: 'You have a good working knowledge but still learning',
+    label: 'join_modal.intermediate_label',
+    description: 'join_modal.intermediate_description',
   },
   {
     value: 'beginner' as const,
-    label: 'Beginner',
-    description: 'You are just starting to learn this language',
+    label: 'join_modal.beginner_label',
+    description: 'join_modal.beginner_description',
   },
 ];
 
 export default function JoinLanguageModal({ isOpen, onClose, language, onJoined }: JoinLanguageModalProps) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [selectedProficiency, setSelectedProficiency] = useState<ProficiencyLevel>('beginner');
   const [loading, setLoading] = useState(false);
@@ -45,7 +47,7 @@ export default function JoinLanguageModal({ isOpen, onClose, language, onJoined 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
-      setError('You must be logged in to join a language');
+      setError(t('join_modal.must_be_logged_in'));
       return;
     }
 
@@ -62,18 +64,18 @@ export default function JoinLanguageModal({ isOpen, onClose, language, onJoined 
       }
       onClose();
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to join language');
+      setError(err.response?.data?.detail || t('join_modal.join_failed'));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={`Join ${languageDisplayName(language)}`}>
+    <Modal isOpen={isOpen} onClose={onClose} title={t('join_modal.title', { language: languageDisplayName(language) })}>
       <form onSubmit={handleSubmit} className="join-language-form">
         <p className="join-language-intro">
-          Select your proficiency level in <strong>{language.name}</strong> ({language.nativeName}).
-          This helps others understand your expertise.
+          {t('join_modal.intro_pre')} <strong>{languageDisplayName(language)}</strong> ({language.nativeName}).{' '}
+          {t('join_modal.intro_post')}
         </p>
 
         <div className="proficiency-options">
@@ -88,8 +90,8 @@ export default function JoinLanguageModal({ isOpen, onClose, language, onJoined 
                 className="proficiency-radio"
               />
               <div className="proficiency-content">
-                <div className="proficiency-label">{level.label}</div>
-                <div className="proficiency-description">{level.description}</div>
+                <div className="proficiency-label">{t(level.label)}</div>
+                <div className="proficiency-description">{t(level.description)}</div>
               </div>
             </label>
           ))}
@@ -99,7 +101,7 @@ export default function JoinLanguageModal({ isOpen, onClose, language, onJoined 
           <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
             <path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0zM7.5 4.5v2h1v-2h-1zm0 3v5h1v-5h-1z"/>
           </svg>
-          <span>Permissions to edit and verify content are granted by administrators.</span>
+          <span>{t('join_modal.permissions_note')}</span>
         </div>
 
         {error && (
@@ -110,10 +112,10 @@ export default function JoinLanguageModal({ isOpen, onClose, language, onJoined 
 
         <div className="join-language-actions">
           <button type="button" onClick={onClose} className="btn-secondary" disabled={loading}>
-            Cancel
+            {t('join_modal.cancel')}
           </button>
           <button type="submit" className="btn-primary" disabled={loading}>
-            {loading ? 'Joining...' : 'Join Language'}
+            {loading ? t('join_modal.joining') : t('join_modal.join_language')}
           </button>
         </div>
       </form>

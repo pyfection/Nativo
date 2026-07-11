@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import './Login.css';
 
 export default function Login() {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -26,7 +28,7 @@ export default function Login() {
       await login(formData);
       navigate(from, { replace: true });
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Login failed. Please try again.');
+      setError(err.response?.data?.detail || t('auth.login_failed'));
     } finally {
       setLoading(false);
     }
@@ -44,15 +46,15 @@ export default function Login() {
       <div className="login-container">
         <div className="login-header">
           <h1 className="login-logo">Nativo<b>.</b></h1>
-          <h2 className="login-title">Welcome Back</h2>
-          <p className="login-subtitle">Sign in to continue preserving languages</p>
+          <h2 className="login-title">{t('auth.welcome_back')}</h2>
+          <p className="login-subtitle">{t('auth.sign_in_subtitle')}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="login-form">
           {error && <div className="error-message">{error}</div>}
 
           <div className="form-group">
-            <label htmlFor="username">Email or Username</label>
+            <label htmlFor="username">{t('auth.email_or_username_label')}</label>
             <input
               type="text"
               id="username"
@@ -61,12 +63,12 @@ export default function Login() {
               onChange={handleChange}
               required
               autoComplete="username"
-              placeholder="Enter your email or username"
+              placeholder={t('auth.email_or_username_placeholder')}
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password">{t('auth.password_label')}</label>
             <input
               type="password"
               id="password"
@@ -75,26 +77,26 @@ export default function Login() {
               onChange={handleChange}
               required
               autoComplete="current-password"
-              placeholder="Enter your password"
+              placeholder={t('auth.password_placeholder')}
               minLength={8}
             />
           </div>
 
           <button type="submit" className="login-button" disabled={loading}>
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? t('auth.signing_in') : t('auth.sign_in')}
           </button>
         </form>
 
         <div className="login-footer">
           <p>
-            Don't have an account?{' '}
+            {t('auth.no_account_pre')}{' '}
             <Link to="/register" state={location.state} className="register-link">
-              Register here
+              {t('auth.register_link')}
             </Link>
           </p>
           <p>
             <Link to="/" className="home-link">
-              ← Back to Home
+              {t('auth.back_to_home')}
             </Link>
           </p>
         </div>

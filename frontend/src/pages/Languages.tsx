@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import languageService, { LanguageResponse } from '../services/languageService';
 import { useAuth } from '../contexts/AuthContext';
 import LanguageCard from '../components/languages/LanguageCard';
+import { languageDisplayName } from '../utils/languageName';
 import './Languages.css';
 
 export default function Languages() {
+  const { t } = useTranslation();
   const { user, isAuthenticated, refreshUserProficiencies } = useAuth();
   const [languages, setLanguages] = useState<LanguageResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -28,7 +31,7 @@ export default function Languages() {
       
       setLanguages(detailedLanguages);
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to load languages');
+      setError(err.response?.data?.detail || t('languages_page.load_failed'));
     } finally {
       setLoading(false);
     }
@@ -43,8 +46,9 @@ export default function Languages() {
     // Text search
     if (search) {
       const searchLower = search.toLowerCase();
-      const matchesSearch = 
+      const matchesSearch =
         language.name.toLowerCase().includes(searchLower) ||
+        languageDisplayName(language).toLowerCase().includes(searchLower) ||
         language.native_name?.toLowerCase().includes(searchLower) ||
         language.description?.toLowerCase().includes(searchLower);
       if (!matchesSearch) return false;
@@ -63,7 +67,7 @@ export default function Languages() {
   if (loading) {
     return (
       <div className="languages-page">
-        <div className="loading-state">Loading languages...</div>
+        <div className="loading-state">{t('languages_page.loading')}</div>
       </div>
     );
   }
@@ -80,8 +84,8 @@ export default function Languages() {
     <div className="languages-page">
       <div className="page-header">
         <div>
-          <h1>Languages</h1>
-          <p>Browse and join languages to start contributing</p>
+          <h1>{t('languages_page.title')}</h1>
+          <p>{t('languages_page.subtitle')}</p>
         </div>
       </div>
 
@@ -93,7 +97,7 @@ export default function Languages() {
           </svg>
           <input
             type="text"
-            placeholder="Search languages..."
+            placeholder={t('languages_page.search_placeholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="search-input"
@@ -107,19 +111,19 @@ export default function Languages() {
               className={`filter-tab ${filter === 'all' ? 'active' : ''}`}
               onClick={() => setFilter('all')}
             >
-              All Languages ({languages.length})
+              {t('languages_page.all_tab', { n: languages.length })}
             </button>
             <button
               className={`filter-tab ${filter === 'joined' ? 'active' : ''}`}
               onClick={() => setFilter('joined')}
             >
-              Joined ({user?.language_proficiencies?.length || 0})
+              {t('languages_page.joined_tab', { n: user?.language_proficiencies?.length || 0 })}
             </button>
             <button
               className={`filter-tab ${filter === 'not-joined' ? 'active' : ''}`}
               onClick={() => setFilter('not-joined')}
             >
-              Not Joined ({languages.length - (user?.language_proficiencies?.length || 0)})
+              {t('languages_page.not_joined_tab', { n: languages.length - (user?.language_proficiencies?.length || 0) })}
             </button>
           </div>
         )}
@@ -128,7 +132,7 @@ export default function Languages() {
       {/* Languages Grid */}
       {filteredLanguages.length === 0 ? (
         <div className="empty-state">
-          <p>No languages found matching your criteria.</p>
+          <p>{t('languages_page.no_results')}</p>
         </div>
       ) : (
         <div className="languages-grid">

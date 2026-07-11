@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { Language } from '../App';
 import wordService, { CreateLexemeData } from '../services/wordService';
+import { languageDisplayName } from '../utils/languageName';
 import './AddWord.css';
 
 interface AddWordProps {
@@ -143,6 +145,7 @@ const REGISTER_OPTIONS = [
 
 export default function AddWord({ selectedLanguage }: AddWordProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -222,7 +225,7 @@ export default function AddWord({ selectedLanguage }: AddWordProps) {
       // translations / synonyms / antonyms without an extra click.
       navigate(`/words/${created.id}`);
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to create word');
+      setError(err.response?.data?.detail || t('add_word.create_failed'));
     } finally {
       setLoading(false);
     }
@@ -239,9 +242,10 @@ export default function AddWord({ selectedLanguage }: AddWordProps) {
   return (
     <div className="add-word-page">
       <div className="page-header">
-        <h1>Add New Word</h1>
+        <h1>{t('add_word.title')}</h1>
         <p>
-          Adding word to: <strong>{selectedLanguage.name} ({selectedLanguage.nativeName})</strong>
+          {t('add_word.adding_to')}{' '}
+          <strong>{languageDisplayName(selectedLanguage)} ({selectedLanguage.nativeName})</strong>
         </p>
       </div>
 
@@ -249,11 +253,11 @@ export default function AddWord({ selectedLanguage }: AddWordProps) {
           word — this is the moment they need them. */}
       {selectedLanguage.writingStandardDocumentId && (
         <div className="add-word-standard-hint">
-          📖 First time writing in {selectedLanguage.name}?{' '}
+          📖 {t('add_word.standard_hint_question', { language: languageDisplayName(selectedLanguage) })}{' '}
           <Link to={`/languages/${selectedLanguage.id}/standard`}>
-            Read the writing standard
+            {t('add_word.standard_hint_link')}
           </Link>{' '}
-          before you start, so your spelling matches the dictionary.
+          {t('add_word.standard_hint_after')}
         </div>
       )}
 
@@ -262,7 +266,7 @@ export default function AddWord({ selectedLanguage }: AddWordProps) {
 
         <div className="form-row">
           <div className="form-group">
-            <label htmlFor="lemma">Lemma (canonical form) *</label>
+            <label htmlFor="lemma">{t('add_word.lemma_label')}</label>
             <input
               type="text"
               id="lemma"
@@ -270,63 +274,63 @@ export default function AddWord({ selectedLanguage }: AddWordProps) {
               value={formData.lemma}
               onChange={handleChange}
               required
-              placeholder="Citation form of the word"
+              placeholder={t('add_word.lemma_placeholder')}
             />
           </div>
         </div>
 
         <div className="form-row">
           <div className="form-group">
-            <label htmlFor="romanization">Romanization</label>
+            <label htmlFor="romanization">{t('add_word.romanization_label')}</label>
             <input
               type="text"
               id="romanization"
               name="romanization"
               value={formData.romanization}
               onChange={handleChange}
-              placeholder="Latin script transliteration"
+              placeholder={t('add_word.romanization_placeholder')}
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="ipa_pronunciation">IPA Pronunciation</label>
+            <label htmlFor="ipa_pronunciation">{t('add_word.ipa_label')}</label>
             <input
               type="text"
               id="ipa_pronunciation"
               name="ipa_pronunciation"
               value={formData.ipa_pronunciation}
               onChange={handleChange}
-              placeholder="e.g. kˈæt"
+              placeholder={t('add_word.ipa_placeholder')}
             />
           </div>
         </div>
 
         <div className="form-row">
           <div className="form-group">
-            <label htmlFor="part_of_speech">Part of Speech</label>
+            <label htmlFor="part_of_speech">{t('add_word.pos_label')}</label>
             <select
               id="part_of_speech"
               name="part_of_speech"
               value={formData.part_of_speech}
               onChange={handleChange}
             >
-              <option value="">Select…</option>
-              {PART_OF_SPEECH_OPTIONS.map(([v, l]) => (
-                <option key={v} value={v}>{l}</option>
+              <option value="">{t('add_word.select_placeholder')}</option>
+              {PART_OF_SPEECH_OPTIONS.map(([v]) => (
+                <option key={v} value={v}>{t(`add_word.pos_${v}`)}</option>
               ))}
             </select>
           </div>
 
           <div className="form-group">
-            <label htmlFor="language_register">Register</label>
+            <label htmlFor="language_register">{t('add_word.register_label')}</label>
             <select
               id="language_register"
               name="language_register"
               value={formData.language_register}
               onChange={handleChange}
             >
-              {REGISTER_OPTIONS.map(([v, l]) => (
-                <option key={v} value={v}>{l}</option>
+              {REGISTER_OPTIONS.map(([v]) => (
+                <option key={v} value={v}>{t(`add_word.register_${v}`)}</option>
               ))}
             </select>
           </div>
@@ -334,21 +338,21 @@ export default function AddWord({ selectedLanguage }: AddWordProps) {
 
         <div className="form-row">
           <div className="form-group">
-            <label htmlFor="gender">Gender</label>
+            <label htmlFor="gender">{t('add_word.gender_label')}</label>
             <select id="gender" name="gender" value={formData.gender} onChange={handleChange}>
-              <option value="">Select…</option>
-              {GENDER_OPTIONS.map(([v, l]) => (
-                <option key={v} value={v}>{l}</option>
+              <option value="">{t('add_word.select_placeholder')}</option>
+              {GENDER_OPTIONS.map(([v]) => (
+                <option key={v} value={v}>{t(`add_word.gender_${v}`)}</option>
               ))}
             </select>
           </div>
 
           <div className="form-group">
-            <label htmlFor="animacy">Animacy</label>
+            <label htmlFor="animacy">{t('add_word.animacy_label')}</label>
             <select id="animacy" name="animacy" value={formData.animacy} onChange={handleChange}>
-              <option value="">Select…</option>
-              {ANIMACY_OPTIONS.map(([v, l]) => (
-                <option key={v} value={v}>{l}</option>
+              <option value="">{t('add_word.select_placeholder')}</option>
+              {ANIMACY_OPTIONS.map(([v]) => (
+                <option key={v} value={v}>{t(`add_word.animacy_${v}`)}</option>
               ))}
             </select>
           </div>
@@ -356,31 +360,31 @@ export default function AddWord({ selectedLanguage }: AddWordProps) {
 
         <div className="form-row">
           <div className="form-group">
-            <label htmlFor="plurality">Plurality (this form)</label>
+            <label htmlFor="plurality">{t('add_word.plurality_label')}</label>
             <select
               id="plurality"
               name="plurality"
               value={formData.plurality}
               onChange={handleChange}
             >
-              <option value="">Select…</option>
-              {PLURALITY_OPTIONS.map(([v, l]) => (
-                <option key={v} value={v}>{l}</option>
+              <option value="">{t('add_word.select_placeholder')}</option>
+              {PLURALITY_OPTIONS.map(([v]) => (
+                <option key={v} value={v}>{t(`add_word.plurality_${v}`)}</option>
               ))}
             </select>
           </div>
 
           <div className="form-group">
-            <label htmlFor="grammatical_case">Grammatical Case (this form)</label>
+            <label htmlFor="grammatical_case">{t('add_word.case_label')}</label>
             <select
               id="grammatical_case"
               name="grammatical_case"
               value={formData.grammatical_case}
               onChange={handleChange}
             >
-              <option value="">Select…</option>
-              {CASE_OPTIONS.map(([v, l]) => (
-                <option key={v} value={v}>{l}</option>
+              <option value="">{t('add_word.select_placeholder')}</option>
+              {CASE_OPTIONS.map(([v]) => (
+                <option key={v} value={v}>{t(`add_word.case_${v}`)}</option>
               ))}
             </select>
           </div>
@@ -388,54 +392,54 @@ export default function AddWord({ selectedLanguage }: AddWordProps) {
 
         <div className="form-row">
           <div className="form-group">
-            <label htmlFor="verb_aspect">Verb Aspect (this form)</label>
+            <label htmlFor="verb_aspect">{t('add_word.aspect_label')}</label>
             <select
               id="verb_aspect"
               name="verb_aspect"
               value={formData.verb_aspect}
               onChange={handleChange}
             >
-              <option value="">Select…</option>
-              {VERB_ASPECT_OPTIONS.map(([v, l]) => (
-                <option key={v} value={v}>{l}</option>
+              <option value="">{t('add_word.select_placeholder')}</option>
+              {VERB_ASPECT_OPTIONS.map(([v]) => (
+                <option key={v} value={v}>{t(`add_word.aspect_${v}`)}</option>
               ))}
             </select>
           </div>
         </div>
 
         <div className="form-group">
-          <label htmlFor="source">Source / Citation</label>
+          <label htmlFor="source">{t('add_word.source_label')}</label>
           <input
             type="text"
             id="source"
             name="source"
             value={formData.source}
             onChange={handleChange}
-            placeholder="Where this word was documented"
+            placeholder={t('add_word.source_placeholder')}
           />
         </div>
 
         <div className="form-group">
-          <label htmlFor="notes">Internal Notes</label>
+          <label htmlFor="notes">{t('add_word.notes_label')}</label>
           <textarea
             id="notes"
             name="notes"
             value={formData.notes}
             onChange={handleChange}
             rows={3}
-            placeholder="Editorial notes, not shown to the public"
+            placeholder={t('add_word.notes_placeholder')}
           />
         </div>
 
         <div className="form-group">
-          <label htmlFor="tags">Tags (comma-separated)</label>
+          <label htmlFor="tags">{t('add_word.tags_label')}</label>
           <input
             type="text"
             id="tags"
             name="tags"
             value={tagsInput}
             onChange={(e) => setTagsInput(e.target.value)}
-            placeholder="e.g. nature, ceremonial"
+            placeholder={t('add_word.tags_placeholder')}
           />
         </div>
 
@@ -443,27 +447,27 @@ export default function AddWord({ selectedLanguage }: AddWordProps) {
             The lemma form is captured above; these are the variations. */}
         <fieldset className="additional-forms">
           <legend>
-            Additional forms
+            {t('add_word.additional_forms_legend')}
             <span className="additional-forms-hint">
-              Plurals, case forms, verb conjugations… one row each.
+              {t('add_word.additional_forms_hint')}
             </span>
           </legend>
           {additionalForms.map((form, idx) => (
             <div key={idx} className="additional-form-row">
               <div className="form-row">
                 <div className="form-group">
-                  <label>Form *</label>
+                  <label>{t('add_word.form_label')}</label>
                   <input
                     type="text"
                     value={form.form}
                     onChange={(e) =>
                       updateAdditionalForm(idx, { form: e.target.value })
                     }
-                    placeholder="e.g. máhsd"
+                    placeholder={t('add_word.form_placeholder')}
                   />
                 </div>
                 <div className="form-group">
-                  <label>Romanization</label>
+                  <label>{t('add_word.romanization_label')}</label>
                   <input
                     type="text"
                     value={form.romanization}
@@ -473,7 +477,7 @@ export default function AddWord({ selectedLanguage }: AddWordProps) {
                   />
                 </div>
                 <div className="form-group">
-                  <label>IPA</label>
+                  <label>{t('add_word.ipa_short_label')}</label>
                   <input
                     type="text"
                     value={form.ipa_pronunciation}
@@ -485,7 +489,7 @@ export default function AddWord({ selectedLanguage }: AddWordProps) {
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Plurality</label>
+                  <label>{t('add_word.form_plurality_label')}</label>
                   <select
                     value={form.plurality}
                     onChange={(e) =>
@@ -493,15 +497,15 @@ export default function AddWord({ selectedLanguage }: AddWordProps) {
                     }
                   >
                     <option value="">—</option>
-                    {PLURALITY_OPTIONS.map(([v, l]) => (
+                    {PLURALITY_OPTIONS.map(([v]) => (
                       <option key={v} value={v}>
-                        {l}
+                        {t(`add_word.plurality_${v}`)}
                       </option>
                     ))}
                   </select>
                 </div>
                 <div className="form-group">
-                  <label>Case</label>
+                  <label>{t('add_word.form_case_label')}</label>
                   <select
                     value={form.grammatical_case}
                     onChange={(e) =>
@@ -509,15 +513,15 @@ export default function AddWord({ selectedLanguage }: AddWordProps) {
                     }
                   >
                     <option value="">—</option>
-                    {CASE_OPTIONS.map(([v, l]) => (
+                    {CASE_OPTIONS.map(([v]) => (
                       <option key={v} value={v}>
-                        {l}
+                        {t(`add_word.case_${v}`)}
                       </option>
                     ))}
                   </select>
                 </div>
                 <div className="form-group">
-                  <label>Verb aspect</label>
+                  <label>{t('add_word.form_aspect_label')}</label>
                   <select
                     value={form.verb_aspect}
                     onChange={(e) =>
@@ -525,23 +529,23 @@ export default function AddWord({ selectedLanguage }: AddWordProps) {
                     }
                   >
                     <option value="">—</option>
-                    {VERB_ASPECT_OPTIONS.map(([v, l]) => (
+                    {VERB_ASPECT_OPTIONS.map(([v]) => (
                       <option key={v} value={v}>
-                        {l}
+                        {t(`add_word.aspect_${v}`)}
                       </option>
                     ))}
                   </select>
                 </div>
               </div>
               <div className="form-group">
-                <label>Notes</label>
+                <label>{t('add_word.form_notes_label')}</label>
                 <input
                   type="text"
                   value={form.notes}
                   onChange={(e) =>
                     updateAdditionalForm(idx, { notes: e.target.value })
                   }
-                  placeholder="e.g. 2sg present indicative"
+                  placeholder={t('add_word.form_notes_placeholder')}
                 />
               </div>
               <div className="additional-form-actions">
@@ -549,9 +553,9 @@ export default function AddWord({ selectedLanguage }: AddWordProps) {
                   type="button"
                   className="btn-secondary"
                   onClick={() => removeAdditionalForm(idx)}
-                  title="Remove this form"
+                  title={t('add_word.remove_form_title')}
                 >
-                  Remove
+                  {t('add_word.remove')}
                 </button>
               </div>
             </div>
@@ -560,22 +564,22 @@ export default function AddWord({ selectedLanguage }: AddWordProps) {
             type="button"
             className="btn-secondary additional-form-add"
             onClick={addAdditionalForm}
-            title="Add another inflected form (e.g. plural, conjugation)"
+            title={t('add_word.add_form_title')}
           >
-            + Add form
+            {t('add_word.add_form')}
           </button>
         </fieldset>
 
         <div className="form-actions">
           <button type="button" onClick={() => navigate('/words')} className="btn-secondary">
-            Cancel
+            {t('add_word.cancel')}
           </button>
           <button
             type="submit"
             className="btn-primary"
             disabled={loading || !formData.lemma.trim()}
           >
-            {loading ? 'Creating…' : 'Create Word'}
+            {loading ? t('add_word.creating') : t('add_word.create_word')}
           </button>
         </div>
       </form>

@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import wordService, {
   LexemeWithForms,
   TranslationLink,
 } from '../services/wordService';
 import { Language } from '../App';
 import { useAuth } from '../contexts/AuthContext';
+import { languageDisplayName } from '../utils/languageName';
 import './Dictionary.css';
 
 interface DictionaryProps {
@@ -20,6 +22,7 @@ interface ResultWithTranslations extends LexemeWithForms {
 }
 
 export default function Dictionary({ selectedLanguage, languages }: DictionaryProps) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchDirection, setSearchDirection] = useState<SearchDirection>('current-to-known');
@@ -85,7 +88,7 @@ export default function Dictionary({ selectedLanguage, languages }: DictionaryPr
       const status = err.response?.status;
       const detail = err.response?.data?.detail;
       const suffix = status ? ` (HTTP ${status})` : '';
-      setError(detail ? `${detail}${suffix}` : `Failed to search words${suffix}`);
+      setError(detail ? `${detail}${suffix}` : `${t('dictionary_page.search_failed')}${suffix}`);
     } finally {
       setLoading(false);
     }
@@ -111,10 +114,13 @@ export default function Dictionary({ selectedLanguage, languages }: DictionaryPr
 
   const groupTranslationsByLanguage = (translations: TranslationLink[]) => {
     const grouped: { [key: string]: TranslationLink[] } = {};
-    translations.forEach((t) => {
-      const langName = t.language_name || 'Unknown';
+    translations.forEach((tr) => {
+      const lang = languages.find((l) => l.id === tr.language_id);
+      const langName = lang
+        ? languageDisplayName(lang)
+        : tr.language_name || t('dictionary_page.unknown_language');
       if (!grouped[langName]) grouped[langName] = [];
-      grouped[langName].push(t);
+      grouped[langName].push(tr);
     });
     return grouped;
   };
@@ -125,8 +131,8 @@ export default function Dictionary({ selectedLanguage, languages }: DictionaryPr
   return (
     <div className="dictionary-page">
       <div className="dictionary-header">
-        <h1>Dictionary</h1>
-        <p className="subtitle">Look up words and their translations</p>
+        <h1>{t('dictionary_page.title')}</h1>
+        <p className="subtitle">{t('dictionary_page.subtitle')}</p>
       </div>
 
       <div className="search-section">
@@ -134,7 +140,7 @@ export default function Dictionary({ selectedLanguage, languages }: DictionaryPr
           <input
             type="text"
             className="search-input"
-            placeholder="Enter word to search..."
+            placeholder={t('dictionary_page.search_placeholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyPress={handleKeyPress}
@@ -144,17 +150,17 @@ export default function Dictionary({ selectedLanguage, languages }: DictionaryPr
             onClick={handleSearch}
             disabled={loading || !searchQuery.trim()}
           >
-            {loading ? 'Searching...' : 'Search'}
+            {loading ? t('dictionary_page.searching') : t('dictionary_page.search')}
           </button>
         </div>
 
         <div className="direction-toggle">
           <button className="toggle-button" onClick={toggleSearchDirection}>
-            <span className="toggle-label">Search direction:</span>
+            <span className="toggle-label">{t('dictionary_page.search_direction')}</span>
             <span className="toggle-value">
               {searchDirection === 'current-to-known'
-                ? `${selectedLanguage.name} → ${usingProficiencies ? 'Known Languages' : 'Other Languages'}`
-                : `${usingProficiencies ? 'Known Languages' : 'Other Languages'} → ${selectedLanguage.name}`}
+                ? `${languageDisplayName(selectedLanguage)} → ${usingProficiencies ? t('dictionary_page.known_languages') : t('dictionary_page.other_languages')}`
+                : `${usingProficiencies ? t('dictionary_page.known_languages') : t('dictionary_page.other_languages')} → ${languageDisplayName(selectedLanguage)}`}
             </span>
           </button>
         </div>
@@ -162,7 +168,9 @@ export default function Dictionary({ selectedLanguage, languages }: DictionaryPr
         {knownLanguages.length > 0 && (
           <div className="language-filters">
             <span className="filter-label">
-              {usingProficiencies ? 'Filter by known languages:' : 'Filter by language:'}
+              {usingProficiencies
+                ? t('dictionary_page.filter_by_known_languages')
+                : t('dictionary_page.filter_by_language')}
             </span>
             <div className="language-toggles">
               {knownLanguages.map((lang) => (
@@ -171,7 +179,7 @@ export default function Dictionary({ selectedLanguage, languages }: DictionaryPr
                   className={`language-toggle ${selectedKnownLanguages.has(lang.id) ? 'active' : ''}`}
                   onClick={() => toggleKnownLanguage(lang.id)}
                 >
-                  {lang.name}
+                  {languageDisplayName(lang)}
                 </button>
               ))}
             </div>
@@ -180,10 +188,11 @@ export default function Dictionary({ selectedLanguage, languages }: DictionaryPr
 
         {knownLanguages.length === 0 && (
           <div className="no-known-languages">
-            <p>There is no other language to translate to yet.</p>
+            <p>{t('dictionary_page.no_other_language')}</p>
             <p className="hint">
-              The dictionary translates between {selectedLanguage.name} and other languages on the
-              platform; more languages need to be added first.
+              {t('dictionary_page.no_other_language_hint', {
+                language: languageDisplayName(selectedLanguage),
+              })}
             </p>
           </div>
         )}
@@ -193,7 +202,7 @@ export default function Dictionary({ selectedLanguage, languages }: DictionaryPr
 
       {results.length > 0 && (
         <div className="results-section">
-          <h2 className="results-title">Results ({results.length})</h2>
+          <h2 className="results-title">{t('dictionary_page.results_title', { count: results.length })}</h2>
           <div className="results-list">
             {results.map((lexeme) => {
               const lemmaForm = findLemmaForm(lexeme);
@@ -218,7 +227,7 @@ export default function Dictionary({ selectedLanguage, languages }: DictionaryPr
                   </div>
                   {otherForms.length > 0 && (
                     <div className="word-forms-row">
-                      <span className="word-forms-label">Forms:</span>
+                      <span className="word-forms-label">{t('dictionary_page.forms_label')}</span>
                       {otherForms.map((f) => (
                         <span key={f.id} className="word-form-chip" title={f.notes ?? undefined}>
                           {f.form}
@@ -257,7 +266,7 @@ export default function Dictionary({ selectedLanguage, languages }: DictionaryPr
                     </div>
                   ) : (
                     <div className="no-translations">
-                      No translations available in selected languages
+                      {t('dictionary_page.no_translations')}
                     </div>
                   )}
                 </div>
@@ -269,7 +278,7 @@ export default function Dictionary({ selectedLanguage, languages }: DictionaryPr
 
       {!loading && searchQuery && results.length === 0 && !error && (
         <div className="no-results">
-          <p>No results found for "{searchQuery}"</p>
+          <p>{t('dictionary_page.no_results', { query: searchQuery })}</p>
         </div>
       )}
     </div>

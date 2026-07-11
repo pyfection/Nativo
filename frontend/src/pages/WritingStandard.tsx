@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 import { Language } from '../App';
+import { languageDisplayName } from '../utils/languageName';
 import { useUILanguage } from '../contexts/UILanguageContext';
 import documentService from '../services/documentService';
 import { DocumentWithTexts } from '../types/document';
@@ -34,6 +36,7 @@ export default function WritingStandard({
 }: WritingStandardProps) {
   const { id } = useParams<{ id: string }>();
   const { uiLanguage } = useUILanguage();
+  const { t } = useTranslation();
 
   const language = useMemo(
     () => languages.find((l) => l.id === id) ?? selectedLanguage,
@@ -63,7 +66,7 @@ export default function WritingStandard({
       })
       .catch((err) => {
         if (cancelled) return;
-        setError(err.response?.data?.detail || 'Failed to load the writing standard.');
+        setError(err.response?.data?.detail || t('standard_page.load_failed'));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -71,7 +74,7 @@ export default function WritingStandard({
     return () => {
       cancelled = true;
     };
-  }, [language?.writingStandardDocumentId]);
+  }, [language?.writingStandardDocumentId, t]);
 
   // Pick the best Text to display. Priority:
   //   1. Same language as the standard target (e.g. Bavarian standard in Bavarian)
@@ -103,7 +106,7 @@ export default function WritingStandard({
       <div className="writing-standard-page">
         <div className="loading-state">
           <div className="loading-spinner" />
-          <p>Loading the writing standard…</p>
+          <p>{t('standard_page.loading')}</p>
         </div>
       </div>
     );
@@ -113,7 +116,7 @@ export default function WritingStandard({
     return (
       <div className="writing-standard-page">
         <div className="error-state">
-          <p>Language not found.</p>
+          <p>{t('standard_page.language_not_found')}</p>
         </div>
       </div>
     );
@@ -124,20 +127,19 @@ export default function WritingStandard({
       <div className="writing-standard-page">
         <header className="writing-standard-header">
           <h1 className="writing-standard-title">
-            Writing standard · {language.name}
+            {t('standard_page.title')} · {languageDisplayName(language)}
           </h1>
         </header>
         <div className="writing-standard-empty">
           <p>
-            No writing standard has been published for <strong>{language.name}</strong>{' '}
-            yet.
+            {t('standard_page.no_standard_pre')} <strong>{languageDisplayName(language)}</strong>{' '}
+            {t('standard_page.no_standard_post')}
           </p>
           <p className="writing-standard-empty-hint">
-            An admin can promote any Document to be this language's official
-            standard from the Document detail page.
+            {t('standard_page.no_standard_hint')}
           </p>
           <Link to="/documents" className="btn btn-ghost">
-            Browse documents
+            {t('standard_page.browse_documents')}
           </Link>
         </div>
       </div>
@@ -150,7 +152,7 @@ export default function WritingStandard({
         <div className="error-state">
           <p>{error}</p>
           <Link to={`/languages`} className="btn btn-ghost">
-            Back to languages
+            {t('standard_page.back_to_languages')}
           </Link>
         </div>
       </div>
@@ -161,10 +163,10 @@ export default function WritingStandard({
     <div className="writing-standard-page">
       <header className="writing-standard-header">
         <p className="writing-standard-eyebrow">
-          Writing standard
+          {t('standard_page.title')}
         </p>
         <h1 className="writing-standard-title">
-          {language.name}
+          {languageDisplayName(language)}
           <span className="writing-standard-native"> · {language.nativeName}</span>
         </h1>
         {doc && activeText?.title && (
@@ -177,21 +179,25 @@ export default function WritingStandard({
           Document detail / linking sidebar. */}
       {doc && doc.texts.length > 1 && (
         <nav className="writing-standard-tabs">
-          {doc.texts.map((t) => {
-            const tLang = languages.find((l) => l.id === t.language_id);
+          {doc.texts.map((txt) => {
+            const tLang = languages.find((l) => l.id === txt.language_id);
             return (
               <button
-                key={t.id}
+                key={txt.id}
                 type="button"
                 className={`writing-standard-tab ${
-                  t.id === activeTextId ? 'active' : ''
+                  txt.id === activeTextId ? 'active' : ''
                 }`}
-                onClick={() => setActiveTextId(t.id)}
-                title={`Show this text${tLang ? ' (in ' + tLang.name + ')' : ''}`}
+                onClick={() => setActiveTextId(txt.id)}
+                title={
+                  tLang
+                    ? t('standard_page.show_text_in_lang', { language: languageDisplayName(tLang) })
+                    : t('standard_page.show_text')
+                }
               >
-                {t.title || (tLang ? tLang.name : 'Text')}
+                {txt.title || (tLang ? languageDisplayName(tLang) : t('standard_page.text_fallback'))}
                 {tLang && (
-                  <span className="writing-standard-tab-lang">{tLang.name}</span>
+                  <span className="writing-standard-tab-lang">{languageDisplayName(tLang)}</span>
                 )}
               </button>
             );
@@ -211,13 +217,13 @@ export default function WritingStandard({
         </article>
       ) : (
         <p className="writing-standard-empty-hint">
-          This standard document has no readable content yet.
+          {t('standard_page.no_content')}
         </p>
       )}
 
       <footer className="writing-standard-footer">
         <Link to={`/documents/${doc?.id}`} className="btn btn-ghost btn-sm">
-          Open in document editor
+          {t('standard_page.open_in_editor')}
         </Link>
       </footer>
     </div>

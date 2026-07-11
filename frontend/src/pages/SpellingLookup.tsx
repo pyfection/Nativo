@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 import { Language } from '../App';
 import wordService, { SpellingResolution } from '../services/wordService';
+import { languageDisplayName } from '../utils/languageName';
 import './SpellingLookup.css';
 
 interface SpellingLookupProps {
@@ -18,6 +20,7 @@ interface SpellingLookupProps {
  * it's unknown to the dictionary.
  */
 export default function SpellingLookup({ selectedLanguage }: SpellingLookupProps) {
+  const { t } = useTranslation();
   const [query, setQuery] = useState('');
   const [result, setResult] = useState<SpellingResolution | null>(null);
   const [loading, setLoading] = useState(false);
@@ -38,7 +41,7 @@ export default function SpellingLookup({ selectedLanguage }: SpellingLookupProps
       const status = err.response?.status;
       const detail = err.response?.data?.detail;
       const suffix = status ? ` (HTTP ${status})` : '';
-      setError(detail ? `${detail}${suffix}` : `Failed to look up spelling${suffix}`);
+      setError(detail ? `${detail}${suffix}` : t('spelling_page.error_lookup', { suffix }));
       setResult(null);
     } finally {
       setLoading(false);
@@ -52,10 +55,9 @@ export default function SpellingLookup({ selectedLanguage }: SpellingLookupProps
   return (
     <div className="spelling-lookup-page">
       <div className="spelling-lookup-header">
-        <h1>Spelling lookup</h1>
+        <h1>{t('spelling_page.title')}</h1>
         <p className="subtitle">
-          Type a word the way you'd write it and see how it's spelled in the {selectedLanguage.name}{' '}
-          standard.
+          {t('spelling_page.subtitle', { language: languageDisplayName(selectedLanguage) })}
         </p>
       </div>
 
@@ -63,7 +65,9 @@ export default function SpellingLookup({ selectedLanguage }: SpellingLookupProps
         <input
           type="text"
           className="spelling-lookup-input"
-          placeholder={`A word in ${selectedLanguage.name}…`}
+          placeholder={t('spelling_page.input_placeholder', {
+            language: languageDisplayName(selectedLanguage),
+          })}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyPress={handleKeyPress}
@@ -75,7 +79,7 @@ export default function SpellingLookup({ selectedLanguage }: SpellingLookupProps
           onClick={handleLookup}
           disabled={loading || !query.trim()}
         >
-          {loading ? 'Looking up…' : 'Look up'}
+          {loading ? t('spelling_page.looking_up') : t('spelling_page.look_up')}
         </button>
       </div>
 
@@ -87,13 +91,13 @@ export default function SpellingLookup({ selectedLanguage }: SpellingLookupProps
             <div className="spelling-lookup-standard">
               <span className="spelling-lookup-ok">✓</span>
               <span>
-                <strong>“{result.token}”</strong> is already the standard spelling.
+                <strong>“{result.token}”</strong> {t('spelling_page.already_standard_post')}
               </span>
             </div>
           ) : result.candidates.length > 0 ? (
             <>
               <p className="spelling-lookup-lead">
-                <strong>“{result.token}”</strong> is usually written:
+                <strong>“{result.token}”</strong> {t('spelling_page.usually_written_post')}
               </p>
               <ul className="spelling-lookup-candidates">
                 {result.candidates.map((c) => (
@@ -111,14 +115,14 @@ export default function SpellingLookup({ selectedLanguage }: SpellingLookupProps
               </ul>
               {result.candidates.length > 1 && (
                 <p className="spelling-lookup-ambiguous">
-                  More than one word is written this way — pick the one you mean.
+                  {t('spelling_page.ambiguous')}
                 </p>
               )}
             </>
           ) : (
             <div className="spelling-lookup-none">
-              No standard spelling found for <strong>“{result.token}”</strong>. It may not be in the
-              dictionary yet.
+              {t('spelling_page.not_found_pre')} <strong>“{result.token}”</strong>
+              {t('spelling_page.not_found_post')}
             </div>
           )}
         </div>

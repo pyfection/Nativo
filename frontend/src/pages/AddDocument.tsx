@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import documentService, { CreateDocumentData } from '../services/documentService';
 import { DOCUMENT_TYPE_OPTIONS } from '../utils/documentTypes';
 import { DocumentType } from '../types/text';
@@ -12,6 +13,7 @@ interface AddDocumentProps {
 
 export default function AddDocument({ selectedLanguage }: AddDocumentProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState<CreateDocumentData>({
@@ -41,7 +43,7 @@ export default function AddDocument({ selectedLanguage }: AddDocumentProps) {
       const message = Array.isArray(detail)
         ? detail.map((item: { msg?: string }) => item?.msg).filter(Boolean).join(', ')
         : detail;
-      setError(message || 'Failed to create document');
+      setError(message || t('add_doc.create_failed'));
     } finally {
       setLoading(false);
     }
@@ -59,15 +61,15 @@ export default function AddDocument({ selectedLanguage }: AddDocumentProps) {
   return (
     <div className="add-document-page">
       <div className="page-header">
-        <h1>Add New Document</h1>
-        <p>Preserve texts and written content in endangered languages</p>
+        <h1>{t('add_doc.title')}</h1>
+        <p>{t('add_doc.subtitle')}</p>
       </div>
 
       <form onSubmit={handleSubmit} className="document-form">
         {error && <div className="error-message">{error}</div>}
 
         <div className="form-group">
-          <label htmlFor="document_type">Document Type *</label>
+          <label htmlFor="document_type">{t('add_doc.type_label')}</label>
           <select
             id="document_type"
             name="document_type"
@@ -77,14 +79,14 @@ export default function AddDocument({ selectedLanguage }: AddDocumentProps) {
           >
             {DOCUMENT_TYPE_OPTIONS.map((type) => (
               <option key={type.value} value={type.value}>
-                {type.label}
+                {t(`add_doc.type_${type.value}`)}
               </option>
             ))}
           </select>
         </div>
 
         <div className="form-group">
-          <label htmlFor="title">Title *</label>
+          <label htmlFor="title">{t('add_doc.title_label')}</label>
           <input
             type="text"
             id="title"
@@ -92,12 +94,12 @@ export default function AddDocument({ selectedLanguage }: AddDocumentProps) {
             value={formData.title}
             onChange={handleChange}
             required
-            placeholder="Enter a title or short description"
+            placeholder={t('add_doc.title_placeholder')}
           />
         </div>
 
         <div className="form-group">
-          <label htmlFor="content">Content *</label>
+          <label htmlFor="content">{t('add_doc.content_label')}</label>
           <textarea
             id="content"
             name="content"
@@ -105,40 +107,40 @@ export default function AddDocument({ selectedLanguage }: AddDocumentProps) {
             onChange={handleChange}
             required
             rows={10}
-            placeholder="Enter the document content..."
+            placeholder={t('add_doc.content_placeholder')}
           />
         </div>
 
         <div className="form-group">
-          <label htmlFor="source">Source</label>
+          <label htmlFor="source">{t('add_doc.source_label')}</label>
           <input
             type="text"
             id="source"
             name="source"
             value={formData.source || ''}
             onChange={handleChange}
-            placeholder="Origin or citation of this document"
+            placeholder={t('add_doc.source_placeholder')}
           />
         </div>
 
         <div className="form-group">
-          <label htmlFor="notes">Notes</label>
+          <label htmlFor="notes">{t('add_doc.notes_label')}</label>
           <textarea
             id="notes"
             name="notes"
             value={formData.notes || ''}
             onChange={handleChange}
             rows={3}
-            placeholder="Internal notes or additional information"
+            placeholder={t('add_doc.notes_placeholder')}
           />
         </div>
 
         <div className="form-actions">
           <button type="button" onClick={() => navigate('/documents')} className="btn-secondary">
-            Cancel
+            {t('add_doc.cancel')}
           </button>
           <button type="submit" className="btn-primary" disabled={loading}>
-            {loading ? 'Creating...' : 'Create Document'}
+            {loading ? t('add_doc.creating') : t('add_doc.create_document')}
           </button>
         </div>
       </form>
