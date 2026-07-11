@@ -1,5 +1,43 @@
 # Roadmap
 
+## Prioritized — next up (agreed 2026-07-11)
+
+Ranked by value after the open-platform + learning-path work landed.
+
+1. **Suggester tier — fix the contribution dead-end.** `in progress`
+   Every guest CTA says "create an account to contribute", but a fresh
+   account can't contribute: joining grants viewer only and all writes
+   require per-language `can_edit`. Build the flow sketched in CLAUDE.md:
+   authenticated users submit new words as `LexemeStatus.PENDING_REVIEW`
+   instead of 403; `can_verify` holders get a review queue (approve →
+   published+verified, reject → archived with note); auto-grant `can_edit`
+   after N approved suggestions; permission notices become "suggest it".
+   Phase B: same for texts (needs a `status` column on Text + published-only
+   filtering on document reads). Edits to existing records stay deferred
+   (ChangeProposal queue, per CLAUDE.md).
+2. **Durable audio, then narrated texts.** Urgent half: uploads on Fly are
+   ephemeral without a volume — a redeploy destroys recordings. Move
+   `file_storage` to object storage (Tigris/S3) or mount a volume now.
+   Value half: per-text narration (`Audio.text_id` + record/upload per text
+   + play button in the guided reader).
+3. **Cheaper word-linking.** Editor linking time gates the learning path
+   (90% coverage rule). Auto-confirm exact unambiguous suggestion matches,
+   a bulk "confirm all exact" action, and link-coverage shown on the
+   documents list.
+4. **Learning retention: review mode + placement.** Use the stored 0–4
+   scores: a shaky-words practice deck on /learn, and "I already speak
+   some" placement that seeds top-N frequent lexemes as known.
+5. **Account survival basics.** Password reset (today a forgotten password
+   permanently loses a contributor) and email verification (unblocks
+   suggestion-approved notifications — the reward loop for item 1).
+
+Honorable mentions, unscheduled: mobile/PWA audit for the reader;
+author-facing "this draft introduces N new words" difficulty report; error
+monitoring before real users; Bavarian for the deep editor tools (en/es
+done, bar falls back to English by design).
+
+---
+
 Things we've intentionally deferred. Add new items at the bottom with a short note on *why later*.
 
 ## Deferred — design / content (Tier C from the UX rework)
@@ -12,7 +50,7 @@ Things we've intentionally deferred. Add new items at the bottom with a short no
 
 ## Deferred — features
 
-- **Audio upload.** Backend currently has a read-only `/api/v1/audio/` listing. Real upload needs: multipart endpoint, Fly volume or R2 storage, association to a word, frontend upload UI. Whole-feature work; do it once there's demand from a real speaker.
+- **Audio upload.** ~~Backend currently has a read-only `/api/v1/audio/` listing.~~ *Done for words: multipart upload endpoint + per-WordForm recorder UI exist. Remaining: durable storage and per-text narration — now prioritized item 2 above.*
 - **Contributor avatar strip on the home page.** Low payoff while contributor count = 1. Revisit when there are ≥ 5 active contributors.
 - **Contributor quote panel on home page.** Maintainer has a real Bavarian sample line ready:
   *"Mei oma hód oivai Boaric gret. I hób's nia gfrágt vós fia veata si kent hód."*
