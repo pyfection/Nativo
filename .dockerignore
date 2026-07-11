@@ -9,9 +9,13 @@
 __pycache__
 *.pyc
 
-# Frontend — not built into the backend image
-frontend
-node_modules
+# NOTE: this single .dockerignore applies to BOTH images — the backend and
+# frontend Dockerfiles share the repo root as build context. Do not exclude
+# `frontend` here: Dockerfile.frontend COPYs frontend/package.json from the
+# context and fails with ENOENT if it's ignored. The backend image is
+# unaffected by its presence (it only COPYs pyproject/uv.lock/backend).
+**/node_modules
+frontend/dist
 
 # Dev artifacts
 backend/uploads
