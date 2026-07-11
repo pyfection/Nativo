@@ -7,6 +7,7 @@ import { DocumentWithTexts } from '../types/document';
 import { Text } from '../types/text';
 import { Language } from '../App';
 import { useAuth } from '../contexts/AuthContext';
+import AudioRecorder from '../components/common/AudioRecorder';
 import { getDocumentTypeLabel } from '../utils/documentTypes';
 import { languageDisplayName } from '../utils/languageName';
 import './DocumentDetail.css';
@@ -307,6 +308,19 @@ export default function DocumentDetail({ selectedLanguage, languages }: Document
               <p key={index}>{paragraph}</p>
             ))}
           </div>
+          <section className="document-narration">
+            <h2>{t('doc_detail.narration_heading')}</h2>
+            <p className="document-narration-hint">
+              {canEdit
+                ? t('doc_detail.narration_hint_editor')
+                : t('doc_detail.narration_hint')}
+            </p>
+            <AudioRecorder
+              textId={activeText.id}
+              canEdit={canEdit}
+              onError={(msg) => alert(msg)}
+            />
+          </section>
         </article>
       </div>
     </div>

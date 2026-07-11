@@ -18,11 +18,16 @@ Ranked by value after the open-platform + learning-path work landed.
    form. Still deferred: edits to existing records (ChangeProposal queue,
    per CLAUDE.md) and counting approved *texts* toward auto-promotion
    (currently words only).
-2. **Durable audio, then narrated texts.** Urgent half: uploads on Fly are
-   ephemeral without a volume — a redeploy destroys recordings. Move
-   `file_storage` to object storage (Tigris/S3) or mount a volume now.
-   Value half: per-text narration (`Audio.text_id` + record/upload per text
-   + play button in the guided reader).
+2. **Durable audio, then narrated texts.** `done`
+   Durable half: `file_storage` gained an S3-compatible backend — set
+   `BUCKET_NAME` (on Fly: `fly storage create` for Tigris) and uploads go
+   to the bucket, served via presigned redirects at `/uploads/*`; local
+   disk stays the dev default; `backend/scripts/migrate_uploads_to_s3.py`
+   copies existing blobs across; deleting audio now removes the blob too.
+   *Ops step still required in prod: run `fly storage create` (or attach
+   the volume from fly.toml) — without either, uploads remain ephemeral.*
+   Value half: `Audio.text_id` narration — editors record/upload per text
+   on the document page, learners get a play bar in the guided reader.
 3. **Cheaper word-linking.** Editor linking time gates the learning path
    (90% coverage rule). Auto-confirm exact unambiguous suggestion matches,
    a bulk "confirm all exact" action, and link-coverage shown on the

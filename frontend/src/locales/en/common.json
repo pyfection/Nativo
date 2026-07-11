@@ -198,7 +198,8 @@
     "diff_challenging": "Challenging",
     "diff_challenging_hint": "Fewer new words, please",
     "diff_too_hard": "Too hard",
-    "diff_too_hard_hint": "I need to consolidate first"
+    "diff_too_hard_hint": "I need to consolidate first",
+    "narration_label": "Listen to this text:"
   },
   "proficiency": {
     "native": "Native",
@@ -385,7 +386,10 @@
     "meta_source": "Source",
     "meta_notes": "Notes",
     "meta_created": "Created",
-    "meta_last_updated": "Last Updated"
+    "meta_last_updated": "Last Updated",
+    "narration_heading": "Narration",
+    "narration_hint": "Recordings of this text read aloud by contributors.",
+    "narration_hint_editor": "Record this text read aloud — learners get a play button in the reader."
   },
   "dictionary_page": {
     "title": "Dictionary",

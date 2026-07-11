@@ -8,14 +8,17 @@ import {
   deleteAudio,
   fullAudioUrl,
   listAudioForForm,
+  listAudioForText,
   uploadAudio,
 } from '../../services/audioService';
 import './AudioRecorder.css';
 
 interface AudioRecorderProps {
-  /** WordForm to upload-and-link audio against. */
-  wordFormId: string;
-  /** True if the current user can record/delete audio on this form. */
+  /** WordForm to upload-and-link audio against (pronunciation mode). */
+  wordFormId?: string;
+  /** Text to attach narration to (narration mode). Provide exactly one target. */
+  textId?: string;
+  /** True if the current user can record/delete audio on this target. */
   canEdit: boolean;
   /** Called whenever the list of attached recordings changes. */
   onChange?: (audios: AudioListItem[]) => void;
@@ -28,17 +31,18 @@ interface AudioRecorderProps {
 type Status = 'idle' | 'recording' | 'uploading';
 
 /**
- * Per-WordForm voice recorder.
+ * Voice recorder for a WordForm (pronunciation) or a Text (narration).
  *
  * Uses the browser MediaRecorder API to capture audio (webm/opus by default)
- * and uploads in one round-trip to /api/v1/audio/upload with the
- * word_form_id pre-filled. Existing recordings render as inline players with
- * a per-row delete control.
+ * and uploads in one round-trip to /api/v1/audio/upload with the target id
+ * pre-filled. Existing recordings render as inline players with a per-row
+ * delete control.
  *
  * No file-picker fallback yet — that's a phase D nicety.
  */
 export default function AudioRecorder({
   wordFormId,
+  textId,
   canEdit,
   onChange,
   onError,
@@ -58,11 +62,16 @@ export default function AudioRecorder({
   const elapsedTimerRef = useRef<number | null>(null);
   const startedAtRef = useRef<number | null>(null);
 
-  // Initial load + reset on form change.
+  // Initial load + reset on target change.
   useEffect(() => {
     let cancelled = false;
     setAudios([]);
-    listAudioForForm(wordFormId)
+    const fetchList = textId
+      ? listAudioForText(textId)
+      : wordFormId
+        ? listAudioForForm(wordFormId)
+        : Promise.resolve<AudioListItem[]>([]);
+    fetchList
       .then((data) => {
         if (!cancelled) {
           setAudios(data);
@@ -70,13 +79,13 @@ export default function AudioRecorder({
         }
       })
       .catch(() => {
-        // Form may have no audio rows; treat as empty rather than error.
+        // Target may have no audio rows; treat as empty rather than error.
         if (!cancelled) setAudios([]);
       });
     return () => {
       cancelled = true;
     };
-  }, [wordFormId, onChange]);
+  }, [wordFormId, textId, onChange]);
 
   // Feature detect on mount.
   useEffect(() => {
@@ -143,12 +152,16 @@ export default function AudioRecorder({
         try {
           await uploadAudio(blob, {
             wordFormId,
+            textId,
             durationSeconds: duration,
-            isPrimary: audios.length === 0,
+            // is_primary is a word-form concept; irrelevant for narration.
+            isPrimary: wordFormId ? audios.length === 0 : false,
           });
           // Refresh from server so we get the canonical Audio rows (with
           // file_path) rather than constructing optimistically.
-          const refreshed = await listAudioForForm(wordFormId);
+          const refreshed = textId
+            ? await listAudioForText(textId)
+            : await listAudioForForm(wordFormId!);
           setAudios(refreshed);
           onChange?.(refreshed);
           onMessage?.(t('audio_recorder.recording_uploaded'));

@@ -192,7 +192,8 @@
     "diff_challenging": "A bisl cvar",
     "diff_challenging_hint": "Veniga naie veata, bitte",
     "diff_too_hard": "Ds'cvar",
-    "diff_too_hard_hint": "I brauh easd a leihdas dokument"
+    "diff_too_hard_hint": "I brauh easd a leihdas dokument",
+    "narration_label": "As dokument ohean:"
   },
   "proficiency": {
     "native": "Muadacbráh",

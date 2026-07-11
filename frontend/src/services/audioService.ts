@@ -19,6 +19,7 @@ export interface UploadedAudio {
   duration: number | null;
   mime_type: string | null;
   word_form_id?: string | null;
+  text_id?: string | null;
 }
 
 /**
@@ -43,10 +44,16 @@ export const listAudioForForm = async (wordFormId: string): Promise<AudioListIte
   return response.data;
 };
 
+export const listAudioForText = async (textId: string): Promise<AudioListItem[]> => {
+  const response = await api.get<AudioListItem[]>(`/api/v1/audio/by-text/${textId}`);
+  return response.data;
+};
+
 export const uploadAudio = async (
   blob: Blob,
   opts: {
     wordFormId?: string;
+    textId?: string;
     durationSeconds?: number | null;
     isPrimary?: boolean;
     filename?: string;
@@ -58,6 +65,7 @@ export const uploadAudio = async (
   const filename = opts.filename ?? `recording-${Date.now()}.webm`;
   form.append('file', blob, filename);
   if (opts.wordFormId) form.append('word_form_id', opts.wordFormId);
+  if (opts.textId) form.append('text_id', opts.textId);
   if (opts.durationSeconds != null && Number.isFinite(opts.durationSeconds)) {
     form.append('duration', String(Math.round(opts.durationSeconds)));
   }

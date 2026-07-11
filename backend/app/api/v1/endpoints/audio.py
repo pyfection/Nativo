@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, get_db
 from app.models.audio import Audio
+from app.models.text import Text
 from app.models.user import User
 from app.models.word import Lexeme, WordForm, word_form_audio
 from app.services.auth_service import require_language_edit_permission
@@ -101,6 +102,7 @@ class AudioResponse(BaseModel):
     duration: int | None
     mime_type: str | None
     word_form_id: UUID | None
+    text_id: UUID | None = None
 
 
 @router.post(
@@ -113,17 +115,34 @@ async def upload_audio(
     word_form_id: UUID | None = Form(
         None, description="If provided, the new audio is also linked to this WordForm."
     ),
+    text_id: UUID | None = Form(
+        None, description="If provided, the new audio is a narration of this Text."
+    ),
     duration: int | None = Form(None, description="Optional recorded duration in whole seconds."),
     is_primary: bool = Form(False, description="Mark as the canonical recording for the form."),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> AudioResponse:
-    """Accept a multipart upload, persist it, and optionally link to a WordForm.
+    """Accept a multipart upload, persist it, and optionally attach it.
 
-    Either creates a standalone Audio row (no `word_form_id`) for later linking
-    or — the common path — uploads + links in a single round-trip so the
-    frontend can record-and-attach with one button.
+    Attach targets: a WordForm (pronunciation) or a Text (narration) — at
+    most one. With neither, the row is standalone for later linking. Either
+    way upload + attach is a single round-trip so the frontend can
+    record-and-attach with one button.
     """
+    if word_form_id is not None and text_id is not None:
+        raise HTTPException(
+            status_code=400,
+            detail="Attach audio to a word form or a text, not both",
+        )
+
+    narrated_text: Text | None = None
+    if text_id is not None:
+        narrated_text = db.query(Text).filter(Text.id == text_id).first()
+        if narrated_text is None:
+            raise HTTPException(status_code=404, detail="Text not found")
+        require_language_edit_permission(db, current_user, narrated_text.language_id)
+
     raw = await file.read()
     try:
         url_path, size = store_audio(
@@ -139,6 +158,7 @@ async def upload_audio(
         file_size=size,
         mime_type=file.content_type,
         duration=duration,
+        text_id=text_id,
         uploaded_by_id=current_user.id,
     )
     db.add(audio)
@@ -167,6 +187,7 @@ async def upload_audio(
         duration=audio.duration,
         mime_type=audio.mime_type,
         word_form_id=word_form_id,
+        text_id=text_id,
     )
 
 
@@ -203,6 +224,43 @@ def list_form_audio(
             ),
             created_at=a.created_at.isoformat(),
             word_count=1,
+        )
+        for a in audios
+    ]
+
+
+@router.get("/by-text/{text_id}", response_model=list[AudioListItem])
+def list_text_audio(
+    text_id: UUID,
+    db: Session = Depends(get_db),
+) -> list[AudioListItem]:
+    """List narration recordings attached to a specific Text (newest first)."""
+    audios = (
+        db.query(Audio)
+        .filter(Audio.text_id == text_id)
+        .order_by(Audio.created_at.desc())
+        .all()
+    )
+    if not audios:
+        return []
+
+    uploader_ids = {a.uploaded_by_id for a in audios}
+    users_by_id: dict[UUID, User] = {
+        u.id: u for u in db.query(User).filter(User.id.in_(uploader_ids)).all()
+    }
+    return [
+        AudioListItem(
+            id=a.id,
+            file_path=a.file_path,
+            file_size=a.file_size,
+            duration=a.duration,
+            mime_type=a.mime_type,
+            uploaded_by_id=a.uploaded_by_id,
+            uploader_username=(
+                users_by_id[a.uploaded_by_id].username if a.uploaded_by_id in users_by_id else None
+            ),
+            created_at=a.created_at.isoformat(),
+            word_count=0,
         )
         for a in audios
     ]

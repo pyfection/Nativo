@@ -5,7 +5,7 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Language } from '../App';
 import Modal from '../components/common/Modal';
 import { useAuth } from '../contexts/AuthContext';
-import { fullAudioUrl, listAudioForForm } from '../services/audioService';
+import { fullAudioUrl, listAudioForForm, listAudioForText } from '../services/audioService';
 import documentService from '../services/documentService';
 import learnService, {
   DifficultyRating,
@@ -67,6 +67,7 @@ export default function GuidedReader({ selectedLanguage }: GuidedReaderProps) {
   const [showDifficulty, setShowDifficulty] = useState(false);
   const [finished, setFinished] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [narrationUrl, setNarrationUrl] = useState<string | null>(null);
 
   const contentRef = useRef<HTMLElement | null>(null);
   // Lexemes tapped during this session — excluded from the completion bonus.
@@ -132,6 +133,26 @@ export default function GuidedReader({ selectedLanguage }: GuidedReaderProps) {
       cancelled = true;
     };
   }, [isAuthenticated, selectedLanguage.id]);
+
+  // Narration: newest recording attached to this text, if any.
+  useEffect(() => {
+    const textId = text?.id;
+    if (!textId) return;
+    let cancelled = false;
+    setNarrationUrl(null);
+    listAudioForText(textId)
+      .then((rows) => {
+        if (!cancelled && rows.length > 0) {
+          setNarrationUrl(fullAudioUrl(rows[0].file_path));
+        }
+      })
+      .catch(() => {
+        // Narration is a bonus; reading works without it.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [text?.id]);
 
   const confirmedLinks = useMemo(
     () =>
@@ -275,6 +296,18 @@ export default function GuidedReader({ selectedLanguage }: GuidedReaderProps) {
           {isAuthenticated ? t('reader.tap_hint_member') : t('reader.tap_hint')}
         </p>
       </div>
+
+      {narrationUrl && (
+        <div className="reader-narration">
+          <span className="reader-narration-label">{t('reader.narration_label')}</span>
+          <audio
+            controls
+            preload="metadata"
+            src={narrationUrl}
+            className="reader-narration-player"
+          />
+        </div>
+      )}
 
       {newWords.length > 0 && isAuthenticated && (
         <div className="reader-new-words">

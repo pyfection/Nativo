@@ -198,7 +198,8 @@
     "diff_challenging": "Exigente",
     "diff_challenging_hint": "Menos palabras nuevas, por favor",
     "diff_too_hard": "Demasiado difícil",
-    "diff_too_hard_hint": "Necesito consolidar primero"
+    "diff_too_hard_hint": "Necesito consolidar primero",
+    "narration_label": "Escucha este texto:"
   },
   "proficiency": {
     "native": "Nativo",
@@ -394,7 +395,10 @@
     "meta_source": "Fuente",
     "meta_notes": "Notas",
     "meta_created": "Creado",
-    "meta_last_updated": "Última actualización"
+    "meta_last_updated": "Última actualización",
+    "narration_heading": "Narración",
+    "narration_hint": "Grabaciones de este texto leído en voz alta por contribuyentes.",
+    "narration_hint_editor": "Graba este texto leído en voz alta: quienes aprenden verán un botón de reproducción en el lector."
   },
   "dictionary_page": {
     "title": "Diccionario",
