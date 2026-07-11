@@ -353,3 +353,89 @@ def test_known_pct_reflects_user_knowledge(db: Session):
     second = next(e for e in path if e["title"] == "second")
     assert second["new_lexeme_count"] == 1
     assert second["known_pct"] == 50.0
+
+
+# ---------------------------------------------------------------------------
+# Review mode + placement
+# ---------------------------------------------------------------------------
+
+
+def _knowledge(db: Session, user: User, lexeme: Lexeme, score: int) -> UserLexemeKnowledge:
+    row = UserLexemeKnowledge(user_id=user.id, lexeme_id=lexeme.id, score=score)
+    db.add(row)
+    db.flush()
+    return row
+
+
+def test_review_deck_has_shaky_words_weakest_first(db: Session):
+    user = _user(db)
+    lang = _language(db)
+    known = _lexeme(db, lang, user, "known")
+    shaky = _lexeme(db, lang, user, "shaky")
+    weak = _lexeme(db, lang, user, "weak")
+    pending = _lexeme(db, lang, user, "pending")
+    pending.status = LexemeStatus.PENDING_REVIEW
+    _knowledge(db, user, known, 4)     # known -> excluded
+    _knowledge(db, user, shaky, 2)
+    _knowledge(db, user, weak, 0)
+    _knowledge(db, user, pending, 1)   # unpublished -> excluded
+    db.flush()
+
+    deck = learning_service.get_review_deck(db, user.id, lang.id)
+    assert [lexeme.lemma for _k, lexeme in deck] == ["weak", "shaky"]
+
+
+def test_review_verdicts_nudge_score_one_step(db: Session):
+    user = _user(db)
+    lang = _language(db)
+    lexeme = _lexeme(db, lang, user, "voat")
+    _knowledge(db, user, lexeme, 1)
+
+    row = learning_service.record_review_result(db, user.id, lexeme.id, knew=True)
+    assert row.score == 2
+    row = learning_service.record_review_result(db, user.id, lexeme.id, knew=False)
+    row = learning_service.record_review_result(db, user.id, lexeme.id, knew=False)
+    assert row.score == SCORE_MIN  # floors at 0
+    for _ in range(6):
+        row = learning_service.record_review_result(db, user.id, lexeme.id, knew=True)
+    assert row.score == SCORE_MAX  # caps at 4
+
+
+def test_placement_seeds_top_frequent_words_only(db: Session):
+    user = _user(db)
+    editor = _user(db)
+    lang = _language(db)
+    # Frequency via confirmed links: "oft" appears in 3 texts, "middl" in 2,
+    # "sáitn" in 1 — a 0.3 intermediate placement over 3 ranked lexemes
+    # seeds just the top one.
+    oft = _lexeme(db, lang, editor, "oft")
+    middl = _lexeme(db, lang, editor, "middl")
+    saitn = _lexeme(db, lang, editor, "sáitn")
+    _text_with_words(db, lang, editor, "T1", [oft, middl, saitn])
+    _text_with_words(db, lang, editor, "T2", [oft, middl])
+    _text_with_words(db, lang, editor, "T3", [oft])
+
+    seeded = learning_service.apply_placement(db, user.id, lang.id, "intermediate")
+    assert seeded == 1
+    row = db.get(UserLexemeKnowledge, (user.id, oft.id))
+    assert row is not None and row.score == 3
+    assert db.get(UserLexemeKnowledge, (user.id, middl.id)) is None
+
+    # Advanced widens the seed set (0.7 of 3 -> 2) without touching
+    # already-scored words; beginner is a no-op.
+    seeded = learning_service.apply_placement(db, user.id, lang.id, "advanced")
+    assert seeded == 1  # only "middl" is new
+    assert learning_service.apply_placement(db, user.id, lang.id, "beginner") == 0
+
+
+def test_placement_never_lowers_existing_scores(db: Session):
+    user = _user(db)
+    editor = _user(db)
+    lang = _language(db)
+    voat = _lexeme(db, lang, editor, "voat")
+    _text_with_words(db, lang, editor, "T1", [voat])
+    _knowledge(db, user, voat, 1)  # the user demonstrably struggles with it
+
+    seeded = learning_service.apply_placement(db, user.id, lang.id, "advanced")
+    assert seeded == 0
+    assert db.get(UserLexemeKnowledge, (user.id, voat.id)).score == 1

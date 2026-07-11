@@ -33,6 +33,41 @@ class TextCompletion(BaseModel):
     clicked_lexeme_ids: list[UUID] = []
 
 
+class ReviewTranslation(BaseModel):
+    """A translation shown on the back of a flashcard."""
+
+    lemma: str
+    language_id: UUID
+
+
+class ReviewCard(BaseModel):
+    """One shaky word in the practice deck."""
+
+    lexeme_id: UUID
+    lemma: str
+    score: int
+    ipa_pronunciation: str | None = None
+    # The lemma WordForm, so the client can fetch attached audio lazily.
+    lemma_form_id: UUID | None = None
+    translations: list[ReviewTranslation] = []
+
+
+class ReviewVerdict(BaseModel):
+    """Flashcard self-assessment."""
+
+    knew: bool
+
+
+class PlacementRequest(BaseModel):
+    """Self-assessed starting level for a language."""
+
+    level: Literal["beginner", "intermediate", "advanced"]
+
+
+class PlacementResult(BaseModel):
+    seeded: int
+
+
 class LexemeKnowledgeOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

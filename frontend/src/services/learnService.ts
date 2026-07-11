@@ -21,6 +21,22 @@ export interface LexemeKnowledge {
   score: number;
 }
 
+export interface ReviewTranslation {
+  lemma: string;
+  language_id: string;
+}
+
+export interface ReviewCard {
+  lexeme_id: string;
+  lemma: string;
+  score: number;
+  ipa_pronunciation: string | null;
+  lemma_form_id: string | null;
+  translations: ReviewTranslation[];
+}
+
+export type PlacementLevel = 'beginner' | 'intermediate' | 'advanced';
+
 /** Mirrors KNOWN_SCORE_THRESHOLD on the backend. */
 export const KNOWN_SCORE_THRESHOLD = 3;
 
@@ -41,6 +57,31 @@ const learnService = {
   async clickWord(lexemeId: string): Promise<LexemeKnowledge> {
     const response = await api.post<LexemeKnowledge>(`/api/v1/learn/words/${lexemeId}/click`);
     return response.data;
+  },
+
+  /** The user's shaky words in a language, weakest first. */
+  async getReviewDeck(languageId: string, limit = 20): Promise<ReviewCard[]> {
+    const response = await api.get<ReviewCard[]>(`/api/v1/learn/${languageId}/review`, {
+      params: { limit },
+    });
+    return response.data;
+  },
+
+  /** Flashcard verdict: knew it (+1) or didn't (-1). */
+  async reviewWord(lexemeId: string, knew: boolean): Promise<LexemeKnowledge> {
+    const response = await api.post<LexemeKnowledge>(`/api/v1/learn/words/${lexemeId}/review`, {
+      knew,
+    });
+    return response.data;
+  },
+
+  /** Seed frequent words as known from a self-assessed starting level. */
+  async applyPlacement(languageId: string, level: PlacementLevel): Promise<number> {
+    const response = await api.post<{ seeded: number }>(
+      `/api/v1/learn/${languageId}/placement`,
+      { level },
+    );
+    return response.data.seeded;
   },
 
   async completeText(

@@ -42,9 +42,16 @@ Ranked by value after the open-platform + learning-path work landed.
    turns a spelling into a homograph, earlier auto-confirmed links for that
    spelling are not demoted automatically (they carry an
    "Auto-confirmed: unique exact match" note, so they're findable).
-4. **Learning retention: review mode + placement.** Use the stored 0–4
-   scores: a shaky-words practice deck on /learn, and "I already speak
-   some" placement that seeds top-N frequent lexemes as known.
+4. **Learning retention: review mode + placement.** `done`
+   Review mode: /learn shows a practice card whenever the user has shaky
+   words (score < 3, published, weakest-first) — a flashcard round with
+   show-answer (translations, IPA, pronunciation audio), "I knew it" (+1)
+   / "I didn't know" (−1), and an end-of-round summary. Placement: fresh
+   accounts get an "Already speak some X?" card; "I understand some"
+   seeds the top 30% most corpus-frequent lexemes as known (score 3),
+   "I speak it fairly well" the top 70% — gap-filling only, existing
+   scores are never lowered, so re-running is safe. Frequency comes from
+   confirmed-link counts, published lexemes only.
 5. **Account survival basics.** Password reset (today a forgotten password
    permanently loses a contributor) and email verification (unblocks
    suggestion-approved notifications — the reward loop for item 1).

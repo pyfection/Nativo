@@ -30,7 +30,7 @@ from app.models.learning import (
 )
 from app.models.text import Text, TextStatus
 from app.models.text_word_link import TextWordLink, TextWordLinkStatus
-from app.models.word import Lexeme, WordForm
+from app.models.word import Lexeme, LexemeStatus, WordForm
 from app.services.document_service import compute_link_coverage
 
 # A text only qualifies for the learning path when at least this fraction of
@@ -118,6 +118,113 @@ def complete_text(
 
     db.flush()
     return progress
+
+
+def record_review_result(
+    db: Session, user_id: UUID, lexeme_id: UUID, knew: bool
+) -> UserLexemeKnowledge:
+    """A flashcard verdict from review mode: nudge the score one step.
+
+    "Knew it" climbs one (a shaky word needs several correct recalls to
+    count as known again); "didn't" drops one, same as a reading tap.
+    """
+    row = db.get(UserLexemeKnowledge, (user_id, lexeme_id))
+    if row is None:
+        # Deck entries always have a row, but be robust to direct API use.
+        row = UserLexemeKnowledge(
+            user_id=user_id,
+            lexeme_id=lexeme_id,
+            score=KNOWN_SCORE_THRESHOLD if knew else SCORE_MIN,
+        )
+        db.add(row)
+    elif knew:
+        row.score = min(SCORE_MAX, row.score + 1)
+    else:
+        row.score = max(SCORE_MIN, row.score - 1)
+    db.flush()
+    return row
+
+
+def get_review_deck(
+    db: Session, user_id: UUID, language_id: UUID, limit: int = 20
+) -> list[tuple[UserLexemeKnowledge, Lexeme]]:
+    """The user's shaky words in a language: seen but below the known
+    threshold. Weakest first, then least recently touched."""
+    return (
+        db.query(UserLexemeKnowledge, Lexeme)
+        .join(Lexeme, Lexeme.id == UserLexemeKnowledge.lexeme_id)
+        .filter(
+            UserLexemeKnowledge.user_id == user_id,
+            UserLexemeKnowledge.score < KNOWN_SCORE_THRESHOLD,
+            Lexeme.language_id == language_id,
+            Lexeme.status == LexemeStatus.PUBLISHED,
+        )
+        .order_by(UserLexemeKnowledge.score.asc(), UserLexemeKnowledge.updated_at.asc())
+        .limit(limit)
+        .all()
+    )
+
+
+# "I already speak some": what fraction of the frequency-ranked corpus each
+# self-assessment seeds as already known. Frequent words are the ones any
+# speaker of that level knows.
+PLACEMENT_FRACTIONS = {
+    "beginner": 0.0,
+    "intermediate": 0.3,
+    "advanced": 0.7,
+}
+
+
+def apply_placement(db: Session, user_id: UUID, language_id: UUID, level: str) -> int:
+    """Seed the top-N most frequent lexemes as known (score = threshold).
+
+    Only fills gaps: lexemes the user already has a score for are never
+    touched, so re-running placement can't erase reading history. Returns
+    the number of lexemes seeded.
+    """
+    fraction = PLACEMENT_FRACTIONS[level]
+    if fraction <= 0:
+        return 0
+
+    frequency = _corpus_frequency(db, language_id)
+    if not frequency:
+        return 0
+
+    published_ids = {
+        row[0]
+        for row in db.query(Lexeme.id).filter(
+            Lexeme.id.in_(frequency.keys()),
+            Lexeme.status == LexemeStatus.PUBLISHED,
+        )
+    }
+    ranked = [
+        lexeme_id
+        for lexeme_id, _count in sorted(frequency.items(), key=lambda kv: -kv[1])
+        if lexeme_id in published_ids
+    ]
+    take = round(len(ranked) * fraction)
+    if take == 0:
+        return 0
+
+    existing = {
+        row[0]
+        for row in db.query(UserLexemeKnowledge.lexeme_id).filter(
+            UserLexemeKnowledge.user_id == user_id,
+            UserLexemeKnowledge.lexeme_id.in_(ranked[:take]),
+        )
+    }
+    seeded = 0
+    for lexeme_id in ranked[:take]:
+        if lexeme_id in existing:
+            continue
+        db.add(
+            UserLexemeKnowledge(
+                user_id=user_id, lexeme_id=lexeme_id, score=KNOWN_SCORE_THRESHOLD
+            )
+        )
+        seeded += 1
+    db.flush()
+    return seeded
 
 
 def known_lexeme_ids(db: Session, user_id: UUID, language_id: UUID) -> set[UUID]:
