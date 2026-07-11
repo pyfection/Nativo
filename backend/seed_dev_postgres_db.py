@@ -135,7 +135,7 @@ BAVARIAN_WORDS: dict[str, dict[str, str]] = {
     "hoast": {"English": "(you) are called", "Spanish": "te llamas"},
     "hoas": {"English": "(I) am called", "Spanish": "me llamo"},
     "bisd": {"English": "(you) are", "Spanish": "eres"},
-    "heit": {"English": "today", "Spanish": "hoy"},
+    "haid": {"English": "today", "Spanish": "hoy"},
     "mia": {"English": "we", "Spanish": "nosotros"},
     "dsvoa": {"English": "two", "Spanish": "dos"},
     "hód": {"English": "has", "Spanish": "tiene"},
@@ -143,8 +143,12 @@ BAVARIAN_WORDS: dict[str, dict[str, str]] = {
     "hund": {"English": "dog", "Spanish": "perro"},
     "is": {"English": "is", "Spanish": "es"},
     "guad": {"English": "good", "Spanish": "bueno"},
-    "Bello": {},
+    "ea": {"English": "he", "Spanish": "él"},
+    "Belo": {},
 }
+
+# Lemmas that were respelled after earlier seed versions shipped.
+RENAMED_LEMMAS = {"heit": "haid", "Bello": "Belo"}
 
 # Graded lessons: (title, content, words-to-link in reading order). Content
 # and word list are separate because clitic articles attach with an
@@ -180,18 +184,18 @@ LESSONS = [
     ),
     (
         "Lektion 5",
-        "Heit gengan mia af d'óim. Af da óim esn mia dsvoa bredsn.",
+        "Haid génga mia af d'óim. Af da óim esn mia dsvoa bredsn.",
         # fmt: off
-        [("Heit", "heit"), "gengan", "mia", "af", "d", "óim", ("Af", "af"),
-         "da", "óim", "esn", "mia", "dsvoa", "bredsn"],
+        [("Haid", "haid"), ("génga", "gengan"), "mia", "af", "d", "óim",
+         ("Af", "af"), "da", "óim", "esn", "mia", "dsvoa", "bredsn"],
         # fmt: on
     ),
     (
         "Lektion 6",
-        "Da Maks hód an hund. Da hund hoast Bello. Da hund is guad.",
+        "Da Maks hód an hund. Da hund hoast Belo. Ea is a guada hund.",
         # fmt: off
         [("Da", "da"), "Maks", "hód", "an", "hund", ("Da", "da"), "hund",
-         "hoast", "Bello", ("Da", "da"), "hund", "is", "guad"],
+         "hoast", "Belo", ("Ea", "ea"), "is", "a", ("guada", "guad"), "hund"],
         # fmt: on
     ),
 ]
@@ -305,11 +309,34 @@ def seed_database():
             )
             return True
 
+        # Lemmas corrected after earlier seeds shipped: rename in place so
+        # topped-up dev databases don't keep stale duplicates.
+        for old_lemma, new_lemma in RENAMED_LEMMAS.items():
+            stale = (
+                db.query(Lexeme)
+                .filter(Lexeme.language_id == bavarian.id, Lexeme.lemma == old_lemma)
+                .first()
+            )
+            current = (
+                db.query(Lexeme)
+                .filter(Lexeme.language_id == bavarian.id, Lexeme.lemma == new_lemma)
+                .first()
+            )
+            if stale is not None and current is None:
+                stale.lemma = new_lemma
+                for f in db.query(WordForm).filter(WordForm.lexeme_id == stale.id).all():
+                    if f.form == old_lemma:
+                        f.form = new_lemma
+                print(f"  Renamed lexeme {old_lemma} -> {new_lemma}")
+        db.commit()
+
         before = db.query(Lexeme).count()
+        lexemes: dict[str, Lexeme] = {}
         forms: dict[str, WordForm] = {}
         added_links = 0
         for lemma, glosses in BAVARIAN_WORDS.items():
             lexeme, form = get_or_create_lexeme(bavarian.id, lemma)
+            lexemes[lemma] = lexeme
             forms[lemma] = form
             for lang_name, gloss in glosses.items():
                 counterpart, _ = get_or_create_lexeme(langs[lang_name].id, gloss)
@@ -353,18 +380,29 @@ def seed_database():
             db.flush()
             return text
 
-        added_texts = 0
+        def resolve_form(surface: str, lemma: str) -> WordForm:
+            """WordForm to link a surface token to.
 
-        # Free-reading story (not word-linked — regular Documents content)
-        if not text_exists("A gcihdl"):
-            create_text("A gcihdl", "Servus bainánd! Des is a gloans gcihdl af Boaric.")
-            added_texts += 1
+            A capitalized sentence-initial token still links to the lemma
+            form; a genuinely different string (an inflection like génga or
+            guada) gets its own non-lemma WordForm under the same lexeme.
+            """
+            normalized = surface[0].lower() + surface[1:] if lemma[0].islower() else surface
+            if normalized == forms[lemma].form:
+                return forms[lemma]
+            existing = (
+                db.query(WordForm)
+                .filter(WordForm.lexeme_id == lexemes[lemma].id, WordForm.form == normalized)
+                .first()
+            )
+            if existing is not None:
+                return existing
+            form = WordForm(lexeme_id=lexemes[lemma].id, form=normalized, is_lemma=False)
+            db.add(form)
+            db.flush()
+            return form
 
-        # Graded lessons: fully linked so they qualify for /learn
-        for title, content, words in LESSONS:
-            if text_exists(title):
-                continue
-            text = create_text(title, content)
+        def link_words(text: Text, content: str, words) -> None:
             offset = 0
             for entry in words:
                 surface, lemma = entry if isinstance(entry, tuple) else (entry, entry)
@@ -375,15 +413,45 @@ def seed_database():
                     TextWordLink(
                         id=uuid.uuid4(),
                         text_id=text.id,
-                        word_form_id=forms[lemma].id,
+                        word_form_id=resolve_form(surface, lemma).id,
                         start_char=start,
                         end_char=end,
                         status=TextWordLinkStatus.CONFIRMED,
                     )
                 )
+
+        added_texts = 0
+        updated_texts = 0
+
+        # Free-reading story (not word-linked — regular Documents content)
+        if not text_exists("A gcihdl"):
+            create_text("A gcihdl", "Servus bainánd! Des is a gloans gcihdl af Boaric.")
+            added_texts += 1
+
+        # Graded lessons: fully linked so they qualify for /learn. A lesson
+        # whose seeded content was corrected is updated in place (relinked).
+        for title, content, words in LESSONS:
+            existing_text = (
+                db.query(Text)
+                .filter(Text.language_id == bavarian.id, Text.title.ilike(title))
+                .first()
+            )
+            if existing_text is not None:
+                if existing_text.content == content:
+                    continue
+                existing_text.content = content
+                db.query(TextWordLink).filter(
+                    TextWordLink.text_id == existing_text.id
+                ).delete()
+                db.flush()
+                link_words(existing_text, content, words)
+                updated_texts += 1
+                continue
+            text = create_text(title, content)
+            link_words(text, content, words)
             added_texts += 1
         db.commit()
-        print(f"  Texts: {added_texts} added")
+        print(f"  Texts: {added_texts} added, {updated_texts} updated")
 
         print("Seeding complete.")
     finally:
