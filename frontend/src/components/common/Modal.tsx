@@ -1,4 +1,5 @@
 import { ReactNode, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import './Modal.css';
 
 interface ModalProps {
@@ -29,7 +30,10 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
 
   if (!isOpen) return null;
 
-  return (
+  // Portal to <body>: an ancestor with backdrop-filter/transform (e.g. the
+  // sticky app header) becomes the containing block for position:fixed and
+  // would pin the overlay to itself instead of the viewport.
+  return createPortal(
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
@@ -44,7 +48,8 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
           {children}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
