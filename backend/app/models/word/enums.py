@@ -3,7 +3,7 @@ Enumerations for lexicographic fields.
 
 Two kinds of enums live here:
 - Lexeme-level: properties of the dictionary entry (POS, gender, animacy,
-  register, status). One value per Lexeme.
+  register, origin, status). One value per Lexeme.
 - WordForm-level: properties of a specific inflected form (plurality, case,
   verb aspect). One value per WordForm.
 
@@ -66,6 +66,21 @@ class Register(str, enum.Enum):
     POETIC = "poetic"
     TECHNICAL = "technical"
     NEUTRAL = "neutral"
+
+
+class LexemeOrigin(str, enum.Enum):
+    """
+    Where a lexeme comes from. Orthogonal to `Register`: a loanword can be
+    formal or colloquial. NULL on the column means "not yet classified".
+
+    A word speakers actually use is recorded in their language even when it
+    is borrowed (e.g. Bavarian speakers using a German word for a modern
+    concept) — it is still a Lexeme of *this* language, just marked here.
+    """
+    NATIVE = "native"          # inherited / native vocabulary
+    LOANWORD = "loanword"      # adopted from another language (`borrowed_from_language_id`)
+    CALQUE = "calque"          # loan translation: native parts, foreign model
+    NEOLOGISM = "neologism"    # newly coined from native material
 
 
 class LexemeStatus(str, enum.Enum):
@@ -141,6 +156,7 @@ class SynonymNuance(str, enum.Enum):
     NEAR = "near"              # close but not interchangeable in every context
     REGISTER_VARIANT = "register_variant"  # same meaning, different register
     REGIONAL_VARIANT = "regional_variant"  # dialect/regional alternative
+    LOAN_VARIANT = "loan_variant"  # same meaning; one is a loanword, the other native
     HYPERNYM = "hypernym"      # the other lexeme is a broader category
     HYPONYM = "hyponym"        # the other lexeme is a narrower subtype
     OTHER = "other"

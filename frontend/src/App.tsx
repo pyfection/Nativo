@@ -344,7 +344,7 @@ function App() {
                     onLanguageChange={setSelectedLanguage}
                     languages={languages}
                   >
-                    <AddWord selectedLanguage={selectedLanguage!} />
+                    <AddWord selectedLanguage={selectedLanguage!} languages={languages} />
                   </AppLayout>
                 </ProtectedRoute>
               }

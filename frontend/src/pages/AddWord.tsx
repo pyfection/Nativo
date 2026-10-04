@@ -3,12 +3,18 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { Language } from '../App';
-import wordService, { CreateLexemeData } from '../services/wordService';
+import wordService, {
+  BORROWING_ORIGINS,
+  CreateLexemeData,
+  LEXEME_ORIGINS,
+  LexemeOrigin,
+} from '../services/wordService';
 import { languageDisplayName } from '../utils/languageName';
 import './AddWord.css';
 
 interface AddWordProps {
   selectedLanguage: Language;
+  languages: Language[];
 }
 
 interface FormState {
@@ -22,6 +28,8 @@ interface FormState {
   grammatical_case: string;
   verb_aspect: string;
   language_register: string;
+  origin: LexemeOrigin | '';
+  borrowed_from_language_id: string;
   source: string;
   notes: string;
 }
@@ -37,6 +45,8 @@ const EMPTY_FORM: FormState = {
   grammatical_case: '',
   verb_aspect: '',
   language_register: 'neutral',
+  origin: '',
+  borrowed_from_language_id: '',
   source: '',
   notes: '',
 };
@@ -143,7 +153,7 @@ const REGISTER_OPTIONS = [
   ['neutral', 'Neutral'],
 ];
 
-export default function AddWord({ selectedLanguage }: AddWordProps) {
+export default function AddWord({ selectedLanguage, languages }: AddWordProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { isAuthenticated, canEditLanguage } = useAuth();
@@ -160,6 +170,10 @@ export default function AddWord({ selectedLanguage }: AddWordProps) {
   useEffect(() => {
     if (!isAuthenticated) navigate('/login');
   }, [isAuthenticated, navigate]);
+
+  // Only loanwords / calques name a source language; the other origins hide it.
+  const isBorrowing = BORROWING_ORIGINS.includes(formData.origin as LexemeOrigin);
+  const sourceLanguages = languages.filter((l) => l.id !== selectedLanguage.id);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
@@ -216,6 +230,11 @@ export default function AddWord({ selectedLanguage }: AddWordProps) {
         ...(formData.gender && { gender: formData.gender }),
         ...(formData.animacy && { animacy: formData.animacy }),
         ...(formData.language_register && { language_register: formData.language_register }),
+        ...(formData.origin && { origin: formData.origin }),
+        ...(isBorrowing &&
+          formData.borrowed_from_language_id && {
+            borrowed_from_language_id: formData.borrowed_from_language_id,
+          }),
         ...(trim(formData.source) && { source: trim(formData.source) }),
         ...(trim(formData.notes) && { notes: trim(formData.notes) }),
         ...(tags.length > 0 && { tags }),
@@ -338,6 +357,38 @@ export default function AddWord({ selectedLanguage }: AddWordProps) {
               ))}
             </select>
           </div>
+        </div>
+
+        <div className="form-row">
+          <div className="form-group">
+            <label htmlFor="origin">{t('add_word.origin_label')}</label>
+            <select id="origin" name="origin" value={formData.origin} onChange={handleChange}>
+              <option value="">{t('add_word.select_placeholder')}</option>
+              {LEXEME_ORIGINS.map((v) => (
+                <option key={v} value={v}>{t(`add_word.origin_${v}`)}</option>
+              ))}
+            </select>
+            <small className="form-hint">{t('add_word.origin_hint')}</small>
+          </div>
+
+          {isBorrowing && (
+            <div className="form-group">
+              <label htmlFor="borrowed_from_language_id">
+                {t('add_word.borrowed_from_label')}
+              </label>
+              <select
+                id="borrowed_from_language_id"
+                name="borrowed_from_language_id"
+                value={formData.borrowed_from_language_id}
+                onChange={handleChange}
+              >
+                <option value="">{t('add_word.select_placeholder')}</option>
+                {sourceLanguages.map((l) => (
+                  <option key={l.id} value={l.id}>{languageDisplayName(l)}</option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
 
         <div className="form-row">

@@ -15,6 +15,7 @@ from app.models.word import (
     AntonymType,
     GrammaticalCase,
     GrammaticalGender,
+    LexemeOrigin,
     LexemeStatus,
     PartOfSpeech,
     Plurality,
@@ -143,6 +144,8 @@ class LexemeBase(BaseModel):
     gender: Optional[GrammaticalGender] = None
     animacy: Optional[Animacy] = None
     language_register: Optional[Register] = Register.NEUTRAL
+    origin: Optional[LexemeOrigin] = None
+    borrowed_from_language_id: Optional[UUID] = None
     source: Optional[str] = Field(None, max_length=500)
     notes: Optional[str] = None
 
@@ -166,6 +169,8 @@ class LexemeUpdate(BaseModel):
     gender: Optional[GrammaticalGender] = None
     animacy: Optional[Animacy] = None
     language_register: Optional[Register] = None
+    origin: Optional[LexemeOrigin] = None
+    borrowed_from_language_id: Optional[UUID] = None
     source: Optional[str] = Field(None, max_length=500)
     notes: Optional[str] = None
     status: Optional[LexemeStatus] = None
@@ -189,6 +194,7 @@ class LexemeListItem(BaseModel):
     lemma: str
     language_id: UUID
     part_of_speech: Optional[PartOfSpeech] = None
+    origin: Optional[LexemeOrigin] = None
     is_verified: bool
     status: LexemeStatus
     created_at: datetime
