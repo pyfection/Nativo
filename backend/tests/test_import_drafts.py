@@ -68,8 +68,8 @@ CORPUS = {
         "surfaces": ["Kenst"],
         "examples": [{"text": "Kenst a voat?", "english": "Know a word?", "verified": True}],
     },
-    "lesn": {
-        "token": "lesn",
+    "lésn": {
+        "token": "lésn",
         "surfaces": ["lésn"],
         "examples": [{"text": "As dokument lésn", "english": "Read the text", "verified": True}],
     },
@@ -82,7 +82,8 @@ def _entry(lemma, **extra):
 
 def test_validation_catches_typos_and_foreign_letters():
     assert import_drafts.validate([_entry("pasvoat")], CORPUS, BAVARIAN) == []
-    # Accent typo: 'lesn' folds to the corpus token but isn't spelled that way.
+    # Accents are contrastive: 'lésn' is attested, the unaccented 'lesn' is not.
+    assert import_drafts.validate([_entry("lésn")], CORPUS, BAVARIAN) == []
     assert import_drafts.validate([_entry("lesn")], CORPUS, BAVARIAN)
     # Not in the corpus at all.
     assert import_drafts.validate([_entry("pasvort")], CORPUS, BAVARIAN)

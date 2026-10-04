@@ -317,7 +317,7 @@
     ]
   },
   {
-    "token": "lesn",
+    "token": "lésn",
     "surfaces": [
       "lésn"
     ],
@@ -431,36 +431,6 @@
     ]
   },
   {
-    "token": "via",
-    "surfaces": [
-      "Via",
-      "via",
-      "vià"
-    ],
-    "count": 6,
-    "verified": true,
-    "examples": [
-      {
-        "key": "join_modal.intro_pre",
-        "text": "Via guad ko'st du",
-        "english": "Select your proficiency level in",
-        "verified": true
-      },
-      {
-        "key": "hero_v2.reassure",
-        "text": "Frei, ofa, und baut fo gmoanscoftn vià dera, vo'st du.",
-        "english": "Free, open, and built by communities like yours.",
-        "verified": false
-      },
-      {
-        "key": "learn.placement_subtitle",
-        "text": "Sog uns, via guad das'd as ko'st — mia dsein de heifigstn veata dán ois gvusd o.",
-        "english": "Tell us where you're starting from and we'll mark the most common words as known — your path skips what you don't need.",
-        "verified": false
-      }
-    ]
-  },
-  {
     "token": "dsruk",
     "surfaces": [
       "Dsruk",
@@ -518,7 +488,7 @@
     ]
   },
   {
-    "token": "emailadres",
+    "token": "emailádres",
     "surfaces": [
       "emailádres"
     ],
@@ -574,7 +544,36 @@
     ]
   },
   {
-    "token": "bcdedigt",
+    "token": "via",
+    "surfaces": [
+      "Via",
+      "via"
+    ],
+    "count": 5,
+    "verified": true,
+    "examples": [
+      {
+        "key": "join_modal.intro_pre",
+        "text": "Via guad ko'st du",
+        "english": "Select your proficiency level in",
+        "verified": true
+      },
+      {
+        "key": "learn.placement_subtitle",
+        "text": "Sog uns, via guad das'd as ko'st — mia dsein de heifigstn veata dán ois gvusd o.",
+        "english": "Tell us where you're starting from and we'll mark the most common words as known — your path skips what you don't need.",
+        "verified": false
+      },
+      {
+        "key": "reader.difficulty_title",
+        "text": "Via cvar voa des dokument?",
+        "english": "How difficult was this text?",
+        "verified": false
+      }
+    ]
+  },
+  {
+    "token": "bcdédigt",
     "surfaces": [
       "bcdédigt"
     ],
@@ -686,35 +685,6 @@
     ]
   },
   {
-    "token": "hosd",
-    "surfaces": [
-      "Hósd",
-      "hosd"
-    ],
-    "count": 4,
-    "verified": true,
-    "examples": [
-      {
-        "key": "auth.have_account_pre",
-        "text": "Hósd co a konto?",
-        "english": "Already have an account?",
-        "verified": true
-      },
-      {
-        "key": "learn.practice_intro_one",
-        "text": "Du hosd 1 voat, des'd no ned so guad kensd.",
-        "english": "You have 1 shaky word to review.",
-        "verified": false
-      },
-      {
-        "key": "learn.practice_intro",
-        "text": "Du hosd {{n}} veata, de'st no ned so guad kensd.",
-        "english": "You have {{n}} shaky words to review.",
-        "verified": false
-      }
-    ]
-  },
-  {
     "token": "leana",
     "surfaces": [
       "Leana",
@@ -744,7 +714,7 @@
     ]
   },
   {
-    "token": "lot",
+    "token": "lót",
     "surfaces": [
       "Lót",
       "lót"
@@ -801,7 +771,7 @@
     ]
   },
   {
-    "token": "nutsanama",
+    "token": "nutsanáma",
     "surfaces": [
       "Nutsanáma",
       "nutsanáma"
@@ -973,7 +943,7 @@
     ]
   },
   {
-    "token": "foaclogn",
+    "token": "foaclógn",
     "surfaces": [
       "foaclógn"
     ],
@@ -1143,6 +1113,35 @@
     ]
   },
   {
+    "token": "óle",
+    "surfaces": [
+      "Óle",
+      "óle"
+    ],
+    "count": 3,
+    "verified": true,
+    "examples": [
+      {
+        "key": "hero_v2.eyebrow",
+        "text": "Óle dsvoa voha vead a cbráh cdad",
+        "english": "A language falls silent every two weeks",
+        "verified": true
+      },
+      {
+        "key": "learn.empty_hint",
+        "text": "A dokument kimt in'n vég, ven óle veata mim veatabuah falinkd san.",
+        "english": "A text joins the path once its words are fully linked to the dictionary. Editors: finish linking a short text and it will appear here.",
+        "verified": true
+      },
+      {
+        "key": "languages_page.all_tab",
+        "text": "Óle cbráha ({{n}})",
+        "english": "All Languages ({{n}})",
+        "verified": true
+      }
+    ]
+  },
+  {
     "token": "aussuaha",
     "surfaces": [
       "aussuaha"
@@ -1187,7 +1186,7 @@
     ]
   },
   {
-    "token": "bostfah",
+    "token": "bostfáh",
     "surfaces": [
       "bostfáh"
     ],
@@ -1453,29 +1452,6 @@
     ]
   },
   {
-    "token": "fang",
-    "surfaces": [
-      "Fáng",
-      "fáng"
-    ],
-    "count": 2,
-    "verified": true,
-    "examples": [
-      {
-        "key": "learn.step_start",
-        "text": "Fáng o dsum lésn",
-        "english": "Start reading",
-        "verified": true
-      },
-      {
-        "key": "learn.placement_done_zero",
-        "text": "No nix dó — fáng afoch o mid'm lésn!",
-        "english": "Nothing to mark yet — just start reading!",
-        "verified": false
-      }
-    ]
-  },
-  {
     "token": "feate",
     "surfaces": [
       "Feate",
@@ -1522,7 +1498,7 @@
     ]
   },
   {
-    "token": "foaclog",
+    "token": "foaclóg",
     "surfaces": [
       "Foaclóg",
       "foaclóg"
@@ -1545,23 +1521,24 @@
     ]
   },
   {
-    "token": "gands",
+    "token": "fáng",
     "surfaces": [
-      "gánds"
+      "Fáng",
+      "fáng"
     ],
     "count": 2,
     "verified": true,
     "examples": [
       {
-        "key": "auth.reset_missing_token",
-        "text": "Da link is ned gánds — mách den link fo da email auf, oda hoi da an naia.",
-        "english": "This link is incomplete — open the link from the email, or request a new one.",
+        "key": "learn.step_start",
+        "text": "Fáng o dsum lésn",
+        "english": "Start reading",
         "verified": true
       },
       {
-        "key": "learn.placement_advanced",
-        "text": "I red's co gánds guad",
-        "english": "I speak it fairly well",
+        "key": "learn.placement_done_zero",
+        "text": "No nix dó — fáng afoch o mid'm lésn!",
+        "english": "Nothing to mark yet — just start reading!",
         "verified": false
       }
     ]
@@ -1612,7 +1589,7 @@
     ]
   },
   {
-    "token": "glesn",
+    "token": "glésn",
     "surfaces": [
       "Glésn",
       "glésn"
@@ -1635,7 +1612,7 @@
     ]
   },
   {
-    "token": "gmoacafd",
+    "token": "gmoacáfd",
     "surfaces": [
       "gmoacáfd"
     ],
@@ -1657,7 +1634,7 @@
     ]
   },
   {
-    "token": "grod",
+    "token": "gród",
     "surfaces": [
       "Gród",
       "gród"
@@ -1702,6 +1679,28 @@
     ]
   },
   {
+    "token": "gánds",
+    "surfaces": [
+      "gánds"
+    ],
+    "count": 2,
+    "verified": true,
+    "examples": [
+      {
+        "key": "auth.reset_missing_token",
+        "text": "Da link is ned gánds — mách den link fo da email auf, oda hoi da an naia.",
+        "english": "This link is incomplete — open the link from the email, or request a new one.",
+        "verified": true
+      },
+      {
+        "key": "learn.placement_advanced",
+        "text": "I red's co gánds guad",
+        "english": "I speak it fairly well",
+        "verified": false
+      }
+    ]
+  },
+  {
     "token": "hoast",
     "surfaces": [
       "hoast"
@@ -1720,6 +1719,28 @@
         "text": "Druk af a voat, ná siagst vós's hoast — so visn ma a, veihe veata ma no mid dia iabn.",
         "english": "Tap any word to see what it means — that also tells us which words to keep practising with you.",
         "verified": true
+      }
+    ]
+  },
+  {
+    "token": "hom",
+    "surfaces": [
+      "hom"
+    ],
+    "count": 2,
+    "verified": true,
+    "examples": [
+      {
+        "key": "review.load_failed",
+        "text": "De foacleg hom ned lón kena.",
+        "english": "Failed to load suggestions.",
+        "verified": true
+      },
+      {
+        "key": "languages_page.load_failed",
+        "text": "De cbráha hom ned lón kena",
+        "english": "Failed to load languages",
+        "verified": false
       }
     ]
   },
@@ -1790,28 +1811,6 @@
     ]
   },
   {
-    "token": "na",
-    "surfaces": [
-      "ná"
-    ],
-    "count": 2,
-    "verified": true,
-    "examples": [
-      {
-        "key": "reader.tap_hint",
-        "text": "Druk af a voat, ná siagst vós's hoast.",
-        "english": "Tap any word to see what it means.",
-        "verified": true
-      },
-      {
-        "key": "reader.tap_hint_member",
-        "text": "Druk af a voat, ná siagst vós's hoast — so visn ma a, veihe veata ma no mid dia iabn.",
-        "english": "Tap any word to see what it means — that also tells us which words to keep practising with you.",
-        "verified": true
-      }
-    ]
-  },
-  {
     "token": "nativo",
     "surfaces": [
       "Nativo"
@@ -1834,23 +1833,23 @@
     ]
   },
   {
-    "token": "obglofa",
+    "token": "ná",
     "surfaces": [
-      "óbglofa"
+      "ná"
     ],
     "count": 2,
     "verified": true,
     "examples": [
       {
-        "key": "auth.reset_failed",
-        "text": "Da link is ned guitig oda óbglofa.",
-        "english": "This reset link is invalid or has expired.",
+        "key": "reader.tap_hint",
+        "text": "Druk af a voat, ná siagst vós's hoast.",
+        "english": "Tap any word to see what it means.",
         "verified": true
       },
       {
-        "key": "auth.verify_failed",
-        "text": "Da link is ned guitig oda óbglofa.",
-        "english": "This verification link is invalid or has expired.",
+        "key": "reader.tap_hint_member",
+        "text": "Druk af a voat, ná siagst vós's hoast — so visn ma a, veihe veata ma no mid dia iabn.",
+        "english": "Tap any word to see what it means — that also tells us which words to keep practising with you.",
         "verified": true
       }
     ]
@@ -1968,7 +1967,7 @@
     ]
   },
   {
-    "token": "veg",
+    "token": "vég",
     "surfaces": [
       "vég"
     ],
@@ -1990,7 +1989,7 @@
     ]
   },
   {
-    "token": "vos's",
+    "token": "vós's",
     "surfaces": [
       "vós's"
     ],
@@ -2012,17 +2011,23 @@
     ]
   },
   {
-    "token": "aba",
+    "token": "óbglofa",
     "surfaces": [
-      "ába"
+      "óbglofa"
     ],
-    "count": 1,
+    "count": 2,
     "verified": true,
     "examples": [
       {
-        "key": "join_modal.intermediate_description",
-        "text": "Du kenst di co guad as, leanst ába no",
-        "english": "You have a good working knowledge but still learning",
+        "key": "auth.reset_failed",
+        "text": "Da link is ned guitig oda óbglofa.",
+        "english": "This reset link is invalid or has expired.",
+        "verified": true
+      },
+      {
+        "key": "auth.verify_failed",
+        "text": "Da link is ned guitig oda óbglofa.",
+        "english": "This verification link is invalid or has expired.",
         "verified": true
       }
     ]
@@ -2044,22 +2049,6 @@
     ]
   },
   {
-    "token": "abcrift",
-    "surfaces": [
-      "Ábcrift"
-    ],
-    "count": 1,
-    "verified": true,
-    "examples": [
-      {
-        "key": "doc_types.transcription",
-        "text": "Ábcrift",
-        "english": "Transcription",
-        "verified": true
-      }
-    ]
-  },
-  {
     "token": "administratoan",
     "surfaces": [
       "administratoan"
@@ -2076,55 +2065,7 @@
     ]
   },
   {
-    "token": "adres",
-    "surfaces": [
-      "ádres"
-    ],
-    "count": 1,
-    "verified": true,
-    "examples": [
-      {
-        "key": "auth.forgot_sent",
-        "text": "Ven de ádres a konto hód, is da link co untavegs. Cau in dei bostfáh.",
-        "english": "If that address has an account, a reset link is on its way. Check your inbox.",
-        "verified": true
-      }
-    ]
-  },
-  {
-    "token": "andan",
-    "surfaces": [
-      "ándan"
-    ],
-    "count": 1,
-    "verified": true,
-    "examples": [
-      {
-        "key": "join_modal.intro_post",
-        "text": "Des heift de ándan dsum visn, via guad das'd bisd.",
-        "english": "This helps others understand your expertise.",
-        "verified": true
-      }
-    ]
-  },
-  {
-    "token": "andas",
-    "surfaces": [
-      "Ándas"
-    ],
-    "count": 1,
-    "verified": true,
-    "examples": [
-      {
-        "key": "doc_types.other",
-        "text": "Ándas",
-        "english": "Other",
-        "verified": true
-      }
-    ]
-  },
-  {
-    "token": "ascbraha",
+    "token": "ascbráha",
     "surfaces": [
       "ascbráha"
     ],
@@ -2188,7 +2129,7 @@
     ]
   },
   {
-    "token": "baidredn",
+    "token": "baidrédn",
     "surfaces": [
       "Baidrédn"
     ],
@@ -2236,7 +2177,7 @@
     ]
   },
   {
-    "token": "bcdedign",
+    "token": "bcdédign",
     "surfaces": [
       "bcdédign"
     ],
@@ -2247,22 +2188,6 @@
         "key": "auth.verify_title",
         "text": "Email bcdédign",
         "english": "Email verification",
-        "verified": true
-      }
-    ]
-  },
-  {
-    "token": "beavatn",
-    "surfaces": [
-      "beávatn"
-    ],
-    "count": 1,
-    "verified": true,
-    "examples": [
-      {
-        "key": "join_modal.permissions_note",
-        "text": "Rehte dsum beávatn und briafn fo inhoit gém bai de administratoan.",
-        "english": "Permissions to edit and verify content are granted by administrators.",
         "verified": true
       }
     ]
@@ -2300,7 +2225,7 @@
     ]
   },
   {
-    "token": "bekant",
+    "token": "bekánt",
     "surfaces": [
       "bekánt"
     ],
@@ -2327,6 +2252,22 @@
         "key": "auth.confirm_password_label",
         "text": "Pasvoat bestetign",
         "english": "Confirm Password",
+        "verified": true
+      }
+    ]
+  },
+  {
+    "token": "beávatn",
+    "surfaces": [
+      "beávatn"
+    ],
+    "count": 1,
+    "verified": true,
+    "examples": [
+      {
+        "key": "join_modal.permissions_note",
+        "text": "Rehte dsum beávatn und briafn fo inhoit gém bai de administratoan.",
+        "english": "Permissions to edit and verify content are granted by administrators.",
         "verified": true
       }
     ]
@@ -2636,38 +2577,6 @@
     ]
   },
   {
-    "token": "fangst",
-    "surfaces": [
-      "fángst"
-    ],
-    "count": 1,
-    "verified": true,
-    "examples": [
-      {
-        "key": "join_modal.beginner_description",
-        "text": "Du fángst gród easd o mid dera cbráh",
-        "english": "You are just starting to learn this language",
-        "verified": true
-      }
-    ]
-  },
-  {
-    "token": "fast",
-    "surfaces": [
-      "fást"
-    ],
-    "count": 1,
-    "verified": true,
-    "examples": [
-      {
-        "key": "join_modal.fluent_description",
-        "text": "Du ko'st fliasnd redn, lésn und craim, fást one fela",
-        "english": "You can speak, read, and write fluently with minimal errors",
-        "verified": true
-      }
-    ]
-  },
-  {
     "token": "fasuah's",
     "surfaces": [
       "fasuah's"
@@ -2748,17 +2657,33 @@
     ]
   },
   {
-    "token": "gandse",
+    "token": "fángst",
     "surfaces": [
-      "gándse"
+      "fángst"
     ],
     "count": 1,
     "verified": true,
     "examples": [
       {
-        "key": "latest_text.read_more",
-        "text": "As gándse dokument lésn",
-        "english": "Read the whole text",
+        "key": "join_modal.beginner_description",
+        "text": "Du fángst gród easd o mid dera cbráh",
+        "english": "You are just starting to learn this language",
+        "verified": true
+      }
+    ]
+  },
+  {
+    "token": "fást",
+    "surfaces": [
+      "fást"
+    ],
+    "count": 1,
+    "verified": true,
+    "examples": [
+      {
+        "key": "join_modal.fluent_description",
+        "text": "Du ko'st fliasnd redn, lésn und craim, fást one fela",
+        "english": "You can speak, read, and write fluently with minimal errors",
         "verified": true
       }
     ]
@@ -2892,6 +2817,22 @@
     ]
   },
   {
+    "token": "gándse",
+    "surfaces": [
+      "gándse"
+    ],
+    "count": 1,
+    "verified": true,
+    "examples": [
+      {
+        "key": "latest_text.read_more",
+        "text": "As gándse dokument lésn",
+        "english": "Read the whole text",
+        "verified": true
+      }
+    ]
+  },
+  {
     "token": "haubtsaitn",
     "surfaces": [
       "haubtsaitn"
@@ -2967,6 +2908,22 @@
         "key": "auth.register_subtitle",
         "text": "Huif mid, bedrode cbráha fia de négstn genaradsiona dsum dahóitn",
         "english": "Help preserve endangered languages for future generations",
+        "verified": true
+      }
+    ]
+  },
+  {
+    "token": "hósd",
+    "surfaces": [
+      "Hósd"
+    ],
+    "count": 1,
+    "verified": true,
+    "examples": [
+      {
+        "key": "auth.have_account_pre",
+        "text": "Hósd co a konto?",
+        "english": "Already have an account?",
         "verified": true
       }
     ]
@@ -3068,22 +3025,6 @@
     ]
   },
   {
-    "token": "lang",
-    "surfaces": [
-      "láng"
-    ],
-    "count": 1,
-    "verified": true,
-    "examples": [
-      {
-        "key": "auth.password_min_length",
-        "text": "As pasvoat mua mindastns {{n}} dsaihn láng sei",
-        "english": "Password must be at least {{n}} characters long",
-        "verified": true
-      }
-    ]
-  },
-  {
     "token": "leanst",
     "surfaces": [
       "leanst"
@@ -3100,7 +3041,7 @@
     ]
   },
   {
-    "token": "leanveg",
+    "token": "leanvég",
     "surfaces": [
       "leanvég"
     ],
@@ -3116,23 +3057,23 @@
     ]
   },
   {
-    "token": "mach",
+    "token": "láng",
     "surfaces": [
-      "mách"
+      "láng"
     ],
     "count": 1,
     "verified": true,
     "examples": [
       {
-        "key": "auth.reset_missing_token",
-        "text": "Da link is ned gánds — mách den link fo da email auf, oda hoi da an naia.",
-        "english": "This link is incomplete — open the link from the email, or request a new one.",
+        "key": "auth.password_min_length",
+        "text": "As pasvoat mua mindastns {{n}} dsaihn láng sei",
+        "english": "Password must be at least {{n}} characters long",
         "verified": true
       }
     ]
   },
   {
-    "token": "midsumaha",
+    "token": "midsumáha",
     "surfaces": [
       "midsumáha"
     ],
@@ -3196,7 +3137,23 @@
     ]
   },
   {
-    "token": "negste",
+    "token": "mách",
+    "surfaces": [
+      "mách"
+    ],
+    "count": 1,
+    "verified": true,
+    "examples": [
+      {
+        "key": "auth.reset_missing_token",
+        "text": "Da link is ned gánds — mách den link fo da email auf, oda hoi da an naia.",
+        "english": "This link is incomplete — open the link from the email, or request a new one.",
+        "verified": true
+      }
+    ]
+  },
+  {
+    "token": "négste",
     "surfaces": [
       "négste"
     ],
@@ -3212,7 +3169,7 @@
     ]
   },
   {
-    "token": "negstn",
+    "token": "négstn",
     "surfaces": [
       "négstn"
     ],
@@ -3228,7 +3185,7 @@
     ]
   },
   {
-    "token": "nekstn",
+    "token": "nékstn",
     "surfaces": [
       "nékstn"
     ],
@@ -3239,22 +3196,6 @@
         "key": "learn.guest_banner",
         "text": "Du ko'st iads co óis lésn. Máh da a konto, das ma da de rihtign nékstn dokument aussuaha kena.",
         "english": "You can read everything right now. Create an account to track the words you know and get the right next text picked for you.",
-        "verified": true
-      }
-    ]
-  },
-  {
-    "token": "obbreha",
-    "surfaces": [
-      "Óbbréha"
-    ],
-    "count": 1,
-    "verified": true,
-    "examples": [
-      {
-        "key": "join_modal.cancel",
-        "text": "Óbbréha",
-        "english": "Cancel",
         "verified": true
       }
     ]
@@ -3404,7 +3345,7 @@
     ]
   },
   {
-    "token": "s'baidredn",
+    "token": "s'baidrédn",
     "surfaces": [
       "S'baidrédn"
     ],
@@ -3580,7 +3521,7 @@
     ]
   },
   {
-    "token": "voatsamlunga",
+    "token": "voatsámlunga",
     "surfaces": [
       "voatsámlunga"
     ],
@@ -3607,6 +3548,102 @@
         "key": "hero_v2.eyebrow",
         "text": "Óle dsvoa voha vead a cbráh cdad",
         "english": "A language falls silent every two weeks",
+        "verified": true
+      }
+    ]
+  },
+  {
+    "token": "ába",
+    "surfaces": [
+      "ába"
+    ],
+    "count": 1,
+    "verified": true,
+    "examples": [
+      {
+        "key": "join_modal.intermediate_description",
+        "text": "Du kenst di co guad as, leanst ába no",
+        "english": "You have a good working knowledge but still learning",
+        "verified": true
+      }
+    ]
+  },
+  {
+    "token": "ábcrift",
+    "surfaces": [
+      "Ábcrift"
+    ],
+    "count": 1,
+    "verified": true,
+    "examples": [
+      {
+        "key": "doc_types.transcription",
+        "text": "Ábcrift",
+        "english": "Transcription",
+        "verified": true
+      }
+    ]
+  },
+  {
+    "token": "ádres",
+    "surfaces": [
+      "ádres"
+    ],
+    "count": 1,
+    "verified": true,
+    "examples": [
+      {
+        "key": "auth.forgot_sent",
+        "text": "Ven de ádres a konto hód, is da link co untavegs. Cau in dei bostfáh.",
+        "english": "If that address has an account, a reset link is on its way. Check your inbox.",
+        "verified": true
+      }
+    ]
+  },
+  {
+    "token": "ándan",
+    "surfaces": [
+      "ándan"
+    ],
+    "count": 1,
+    "verified": true,
+    "examples": [
+      {
+        "key": "join_modal.intro_post",
+        "text": "Des heift de ándan dsum visn, via guad das'd bisd.",
+        "english": "This helps others understand your expertise.",
+        "verified": true
+      }
+    ]
+  },
+  {
+    "token": "ándas",
+    "surfaces": [
+      "Ándas"
+    ],
+    "count": 1,
+    "verified": true,
+    "examples": [
+      {
+        "key": "doc_types.other",
+        "text": "Ándas",
+        "english": "Other",
+        "verified": true
+      }
+    ]
+  },
+  {
+    "token": "óbbréha",
+    "surfaces": [
+      "Óbbréha"
+    ],
+    "count": 1,
+    "verified": true,
+    "examples": [
+      {
+        "key": "join_modal.cancel",
+        "text": "Óbbréha",
+        "english": "Cancel",
         "verified": true
       }
     ]
@@ -3753,6 +3790,34 @@
     ]
   },
   {
+    "token": "hosd",
+    "surfaces": [
+      "hosd"
+    ],
+    "count": 3,
+    "verified": false,
+    "examples": [
+      {
+        "key": "learn.practice_intro_one",
+        "text": "Du hosd 1 voat, des'd no ned so guad kensd.",
+        "english": "You have 1 shaky word to review.",
+        "verified": false
+      },
+      {
+        "key": "learn.practice_intro",
+        "text": "Du hosd {{n}} veata, de'st no ned so guad kensd.",
+        "english": "You have {{n}} shaky words to review.",
+        "verified": false
+      },
+      {
+        "key": "learn.practice_done",
+        "text": "Du hosd {{knew}} fo {{total}} gvusd.",
+        "english": "You knew {{knew}} of {{total}}.",
+        "verified": false
+      }
+    ]
+  },
+  {
     "token": "kensd",
     "surfaces": [
       "kensd"
@@ -3776,6 +3841,35 @@
         "key": "learn.practice_intro",
         "text": "Du hosd {{n}} veata, de'st no ned so guad kensd.",
         "english": "You have {{n}} shaky words to review.",
+        "verified": false
+      }
+    ]
+  },
+  {
+    "token": "nó",
+    "surfaces": [
+      "Nó",
+      "nó"
+    ],
+    "count": 3,
+    "verified": false,
+    "examples": [
+      {
+        "key": "hero_card.no_entry",
+        "text": "Koa eindrog fia \"{{query}}\" nó.",
+        "english": "No entry for \"{{query}}\" yet.",
+        "verified": false
+      },
+      {
+        "key": "hero_card.no_entry_body",
+        "text": "Des voat is nó ned dokumentiad in {{language}}. Du kantsd 's easte sai, dea's eidrógt.",
+        "english": "This word hasn't been documented in {{language}}. You could be the first to add it.",
+        "verified": false
+      },
+      {
+        "key": "hero_card.no_translation_in_target",
+        "text": "Nó koa {{target}}-ivasetsung",
+        "english": "No {{target}} translation yet",
         "verified": false
       }
     ]
@@ -3936,7 +4030,29 @@
     ]
   },
   {
-    "token": "muadacbrah",
+    "token": "hob",
+    "surfaces": [
+      "hob"
+    ],
+    "count": 2,
+    "verified": false,
+    "examples": [
+      {
+        "key": "learn.practice_knew",
+        "text": "Des hob i gvusd",
+        "english": "I knew it",
+        "verified": false
+      },
+      {
+        "key": "learn.practice_missed",
+        "text": "Des hob i ned gvusd",
+        "english": "I didn't know",
+        "verified": false
+      }
+    ]
+  },
+  {
+    "token": "muadacbráh",
     "surfaces": [
       "Muadacbráh"
     ],
@@ -3975,6 +4091,28 @@
         "key": "join_modal.beginner_label",
         "text": "Ofenga",
         "english": "Beginner",
+        "verified": false
+      }
+    ]
+  },
+  {
+    "token": "ois",
+    "surfaces": [
+      "ois"
+    ],
+    "count": 2,
+    "verified": false,
+    "examples": [
+      {
+        "key": "learn.placement_subtitle",
+        "text": "Sog uns, via guad das'd as ko'st — mia dsein de heifigstn veata dán ois gvusd o.",
+        "english": "Tell us where you're starting from and we'll mark the most common words as known — your path skips what you don't need.",
+        "verified": false
+      },
+      {
+        "key": "learn.placement_done",
+        "text": "{{n}} heifige veata gein iads ois gvusd.",
+        "english": "Marked {{n}} common words as known.",
         "verified": false
       }
     ]
@@ -4082,7 +4220,7 @@
     ]
   },
   {
-    "token": "baidrogt",
+    "token": "baidrógt",
     "surfaces": [
       "baidrógt"
     ],
@@ -4338,22 +4476,6 @@
     ]
   },
   {
-    "token": "dan",
-    "surfaces": [
-      "dán"
-    ],
-    "count": 1,
-    "verified": false,
-    "examples": [
-      {
-        "key": "learn.placement_subtitle",
-        "text": "Sog uns, via guad das'd as ko'st — mia dsein de heifigstn veata dán ois gvusd o.",
-        "english": "Tell us where you're starting from and we'll mark the most common words as known — your path skips what you don't need.",
-        "verified": false
-      }
-    ]
-  },
-  {
     "token": "de's",
     "surfaces": [
       "de's"
@@ -4402,7 +4524,7 @@
     ]
   },
   {
-    "token": "dreng",
+    "token": "dréng",
     "surfaces": [
       "dréng"
     ],
@@ -4434,7 +4556,7 @@
     ]
   },
   {
-    "token": "dsuamaha",
+    "token": "dsuamáha",
     "surfaces": [
       "dsuamáha"
     ],
@@ -4445,6 +4567,22 @@
         "key": "reader.close_word",
         "text": "Voat-detais dsuamáha",
         "english": "Close word details",
+        "verified": false
+      }
+    ]
+  },
+  {
+    "token": "dán",
+    "surfaces": [
+      "dán"
+    ],
+    "count": 1,
+    "verified": false,
+    "examples": [
+      {
+        "key": "learn.placement_subtitle",
+        "text": "Sog uns, via guad das'd as ko'st — mia dsein de heifigstn veata dán ois gvusd o.",
+        "english": "Tell us where you're starting from and we'll mark the most common words as known — your path skips what you don't need.",
         "verified": false
       }
     ]
@@ -4466,7 +4604,7 @@
     ]
   },
   {
-    "token": "eidrogt",
+    "token": "eidrógt",
     "surfaces": [
       "eidrógt"
     ],
@@ -4690,22 +4828,6 @@
     ]
   },
   {
-    "token": "gmaht",
-    "surfaces": [
-      "gmáht"
-    ],
-    "count": 1,
-    "verified": false,
-    "examples": [
-      {
-        "key": "auth.creating_account",
-        "text": "Konto vead gmáht…",
-        "english": "Creating account...",
-        "verified": false
-      }
-    ]
-  },
-  {
     "token": "gmoanscoftn",
     "surfaces": [
       "gmoanscoftn"
@@ -4717,6 +4839,22 @@
         "key": "hero_v2.reassure",
         "text": "Frei, ofa, und baut fo gmoanscoftn vià dera, vo'st du.",
         "english": "Free, open, and built by communities like yours.",
+        "verified": false
+      }
+    ]
+  },
+  {
+    "token": "gmáht",
+    "surfaces": [
+      "gmáht"
+    ],
+    "count": 1,
+    "verified": false,
+    "examples": [
+      {
+        "key": "auth.creating_account",
+        "text": "Konto vead gmáht…",
+        "english": "Creating account...",
         "verified": false
       }
     ]
@@ -4850,6 +4988,22 @@
     ]
   },
   {
+    "token": "hod",
+    "surfaces": [
+      "hod"
+    ],
+    "count": 1,
+    "verified": false,
+    "examples": [
+      {
+        "key": "review.action_failed",
+        "text": "Des hod ned funkdsioniad. Brobia's no amoi.",
+        "english": "That action failed. Please try again.",
+        "verified": false
+      }
+    ]
+  },
+  {
     "token": "hoid",
     "surfaces": [
       "hoid"
@@ -4882,7 +5036,7 @@
     ]
   },
   {
-    "token": "ieds",
+    "token": "iéds",
     "surfaces": [
       "iéds"
     ],
@@ -5010,38 +5164,6 @@
     ]
   },
   {
-    "token": "lenga",
-    "surfaces": [
-      "lénga"
-    ],
-    "count": 1,
-    "verified": false,
-    "examples": [
-      {
-        "key": "hero_v2.sub",
-        "text": "Nativo dokumentiad de bedrotn cbráha af da veit — eahna veata, eahna grimas, und de cdimas, de's réd'n. Iads voat, vos du dadsuagibst, hoid {{language}} a véng lénga lebendig.",
-        "english": "Nativo documents the world's endangered languages — their vocabulary, their writing, and the voices that speak them. Every word you add to {{language}} keeps it alive a little longer.",
-        "verified": false
-      }
-    ]
-  },
-  {
-    "token": "les",
-    "surfaces": [
-      "Lés"
-    ],
-    "count": 1,
-    "verified": false,
-    "examples": [
-      {
-        "key": "learn.subtitle",
-        "text": "Lés di ei - a iéds dokument baud af de veata af, de'st co kensd.",
-        "english": "Read your way in — each text builds on the words you already know.",
-        "verified": false
-      }
-    ]
-  },
-  {
     "token": "les'n",
     "surfaces": [
       "les'n"
@@ -5058,7 +5180,39 @@
     ]
   },
   {
-    "token": "los",
+    "token": "lénga",
+    "surfaces": [
+      "lénga"
+    ],
+    "count": 1,
+    "verified": false,
+    "examples": [
+      {
+        "key": "hero_v2.sub",
+        "text": "Nativo dokumentiad de bedrotn cbráha af da veit — eahna veata, eahna grimas, und de cdimas, de's réd'n. Iads voat, vos du dadsuagibst, hoid {{language}} a véng lénga lebendig.",
+        "english": "Nativo documents the world's endangered languages — their vocabulary, their writing, and the voices that speak them. Every word you add to {{language}} keeps it alive a little longer.",
+        "verified": false
+      }
+    ]
+  },
+  {
+    "token": "lés",
+    "surfaces": [
+      "Lés"
+    ],
+    "count": 1,
+    "verified": false,
+    "examples": [
+      {
+        "key": "learn.subtitle",
+        "text": "Lés di ei - a iéds dokument baud af de veata af, de'st co kensd.",
+        "english": "Read your way in — each text builds on the words you already know.",
+        "verified": false
+      }
+    ]
+  },
+  {
+    "token": "lós",
     "surfaces": [
       "lós"
     ],
@@ -5069,22 +5223,6 @@
         "key": "hero_card.hint",
         "text": "Suah'n im veatabuah, oda lós voata fobei dréng vaihrnt's nóhdengst.",
         "english": "Search the dictionary, or watch words drift by while you think.",
-        "verified": false
-      }
-    ]
-  },
-  {
-    "token": "maht",
-    "surfaces": [
-      "máht"
-    ],
-    "count": 1,
-    "verified": false,
-    "examples": [
-      {
-        "key": "review.subtitle",
-        "text": "Veata und dokumenta fo da gmoacáfd, de af dei uateil vartn. Genemign faefntlihd se; vea oft guade foacleg máht, vead automatic editor.",
-        "english": "Words and documents proposed by the community, waiting for your verdict. Approving publishes them; frequent good suggesters are automatically promoted to editors.",
         "verified": false
       }
     ]
@@ -5133,6 +5271,22 @@
         "key": "reader.diff_easy_hint",
         "text": "Gib ma neksts moi mea naie veata",
         "english": "Give me more new words next time",
+        "verified": false
+      }
+    ]
+  },
+  {
+    "token": "máht",
+    "surfaces": [
+      "máht"
+    ],
+    "count": 1,
+    "verified": false,
+    "examples": [
+      {
+        "key": "review.subtitle",
+        "text": "Veata und dokumenta fo da gmoacáfd, de af dei uateil vartn. Genemign faefntlihd se; vea oft guade foacleg máht, vead automatic editor.",
+        "english": "Words and documents proposed by the community, waiting for your verdict. Approving publishes them; frequent good suggesters are automatically promoted to editors.",
         "verified": false
       }
     ]
@@ -5218,22 +5372,6 @@
     ]
   },
   {
-    "token": "nohdengst",
-    "surfaces": [
-      "nóhdengst"
-    ],
-    "count": 1,
-    "verified": false,
-    "examples": [
-      {
-        "key": "hero_card.hint",
-        "text": "Suah'n im veatabuah, oda lós voata fobei dréng vaihrnt's nóhdengst.",
-        "english": "Search the dictionary, or watch words drift by while you think.",
-        "verified": false
-      }
-    ]
-  },
-  {
     "token": "notids",
     "surfaces": [
       "Notids"
@@ -5266,33 +5404,17 @@
     ]
   },
   {
-    "token": "obglent",
+    "token": "nóhdengst",
     "surfaces": [
-      "óbglent"
+      "nóhdengst"
     ],
     "count": 1,
     "verified": false,
     "examples": [
       {
-        "key": "review.reject_reason_prompt",
-        "text": "Varum vead des óbglent? (freivillig; bleibt in de notidsn)",
-        "english": "Why is this rejected? (optional, shown to nobody yet but kept in the notes)",
-        "verified": false
-      }
-    ]
-  },
-  {
-    "token": "oblena",
-    "surfaces": [
-      "Óblena"
-    ],
-    "count": 1,
-    "verified": false,
-    "examples": [
-      {
-        "key": "review.reject",
-        "text": "Óblena",
-        "english": "Reject",
+        "key": "hero_card.hint",
+        "text": "Suah'n im veatabuah, oda lós voata fobei dréng vaihrnt's nóhdengst.",
+        "english": "Search the dictionary, or watch words drift by while you think.",
         "verified": false
       }
     ]
@@ -5330,22 +5452,6 @@
     ]
   },
   {
-    "token": "red'n",
-    "surfaces": [
-      "réd'n"
-    ],
-    "count": 1,
-    "verified": false,
-    "examples": [
-      {
-        "key": "hero_v2.sub",
-        "text": "Nativo dokumentiad de bedrotn cbráha af da veit — eahna veata, eahna grimas, und de cdimas, de's réd'n. Iads voat, vos du dadsuagibst, hoid {{language}} a véng lénga lebendig.",
-        "english": "Nativo documents the world's endangered languages — their vocabulary, their writing, and the voices that speak them. Every word you add to {{language}} keeps it alive a little longer.",
-        "verified": false
-      }
-    ]
-  },
-  {
     "token": "red's",
     "surfaces": [
       "red's"
@@ -5362,7 +5468,23 @@
     ]
   },
   {
-    "token": "rets",
+    "token": "réd'n",
+    "surfaces": [
+      "réd'n"
+    ],
+    "count": 1,
+    "verified": false,
+    "examples": [
+      {
+        "key": "hero_v2.sub",
+        "text": "Nativo dokumentiad de bedrotn cbráha af da veit — eahna veata, eahna grimas, und de cdimas, de's réd'n. Iads voat, vos du dadsuagibst, hoid {{language}} a véng lénga lebendig.",
+        "english": "Nativo documents the world's endangered languages — their vocabulary, their writing, and the voices that speak them. Every word you add to {{language}} keeps it alive a little longer.",
+        "verified": false
+      }
+    ]
+  },
+  {
+    "token": "réts",
     "surfaces": [
       "Réts"
     ],
@@ -5570,22 +5692,6 @@
     ]
   },
   {
-    "token": "veng",
-    "surfaces": [
-      "véng"
-    ],
-    "count": 1,
-    "verified": false,
-    "examples": [
-      {
-        "key": "hero_v2.sub",
-        "text": "Nativo dokumentiad de bedrotn cbráha af da veit — eahna veata, eahna grimas, und de cdimas, de's réd'n. Iads voat, vos du dadsuagibst, hoid {{language}} a véng lénga lebendig.",
-        "english": "Nativo documents the world's endangered languages — their vocabulary, their writing, and the voices that speak them. Every word you add to {{language}} keeps it alive a little longer.",
-        "verified": false
-      }
-    ]
-  },
-  {
     "token": "veniga",
     "surfaces": [
       "Veniga"
@@ -5597,6 +5703,22 @@
         "key": "reader.diff_challenging_hint",
         "text": "Veniga naie veata, bitte",
         "english": "Fewer new words, please",
+        "verified": false
+      }
+    ]
+  },
+  {
+    "token": "vià",
+    "surfaces": [
+      "vià"
+    ],
+    "count": 1,
+    "verified": false,
+    "examples": [
+      {
+        "key": "hero_v2.reassure",
+        "text": "Frei, ofa, und baut fo gmoanscoftn vià dera, vo'st du.",
+        "english": "Free, open, and built by communities like yours.",
         "verified": false
       }
     ]
@@ -5677,6 +5799,54 @@
         "key": "hero_v2.sub",
         "text": "Nativo dokumentiad de bedrotn cbráha af da veit — eahna veata, eahna grimas, und de cdimas, de's réd'n. Iads voat, vos du dadsuagibst, hoid {{language}} a véng lénga lebendig.",
         "english": "Nativo documents the world's endangered languages — their vocabulary, their writing, and the voices that speak them. Every word you add to {{language}} keeps it alive a little longer.",
+        "verified": false
+      }
+    ]
+  },
+  {
+    "token": "véng",
+    "surfaces": [
+      "véng"
+    ],
+    "count": 1,
+    "verified": false,
+    "examples": [
+      {
+        "key": "hero_v2.sub",
+        "text": "Nativo dokumentiad de bedrotn cbráha af da veit — eahna veata, eahna grimas, und de cdimas, de's réd'n. Iads voat, vos du dadsuagibst, hoid {{language}} a véng lénga lebendig.",
+        "english": "Nativo documents the world's endangered languages — their vocabulary, their writing, and the voices that speak them. Every word you add to {{language}} keeps it alive a little longer.",
+        "verified": false
+      }
+    ]
+  },
+  {
+    "token": "óbglent",
+    "surfaces": [
+      "óbglent"
+    ],
+    "count": 1,
+    "verified": false,
+    "examples": [
+      {
+        "key": "review.reject_reason_prompt",
+        "text": "Varum vead des óbglent? (freivillig; bleibt in de notidsn)",
+        "english": "Why is this rejected? (optional, shown to nobody yet but kept in the notes)",
+        "verified": false
+      }
+    ]
+  },
+  {
+    "token": "óblena",
+    "surfaces": [
+      "Óblena"
+    ],
+    "count": 1,
+    "verified": false,
+    "examples": [
+      {
+        "key": "review.reject",
+        "text": "Óblena",
+        "english": "Reject",
         "verified": false
       }
     ]
