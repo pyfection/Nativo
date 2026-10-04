@@ -21,6 +21,12 @@ export interface WordForm {
   updated_at: string;
 }
 
+/** Where a lexeme comes from; null/undefined = not yet classified. */
+export type LexemeOrigin = 'native' | 'loanword' | 'calque' | 'neologism';
+export const LEXEME_ORIGINS: LexemeOrigin[] = ['native', 'loanword', 'calque', 'neologism'];
+/** Origins that may carry a `borrowed_from_language_id`. */
+export const BORROWING_ORIGINS: LexemeOrigin[] = ['loanword', 'calque'];
+
 export interface Lexeme {
   id: string;
   language_id: string;
@@ -29,6 +35,8 @@ export interface Lexeme {
   gender?: string;
   animacy?: string;
   language_register?: string;
+  origin?: LexemeOrigin | null;
+  borrowed_from_language_id?: string | null;
   source?: string;
   notes?: string;
   created_by_id: string;
@@ -60,6 +68,7 @@ export interface LexemeListItem {
   lemma: string;
   language_id: string;
   part_of_speech?: string;
+  origin?: LexemeOrigin | null;
   is_verified: boolean;
   status: string;
   created_at: string;
@@ -86,6 +95,8 @@ export interface CreateLexemeData {
   gender?: string;
   animacy?: string;
   language_register?: string;
+  origin?: LexemeOrigin;
+  borrowed_from_language_id?: string;
   source?: string;
   notes?: string;
   tags?: string[];
@@ -97,6 +108,8 @@ export interface UpdateLexemeData {
   gender?: string;
   animacy?: string;
   language_register?: string;
+  origin?: LexemeOrigin | null;
+  borrowed_from_language_id?: string | null;
   source?: string;
   notes?: string;
   status?: string;

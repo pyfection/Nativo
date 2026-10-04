@@ -22,6 +22,7 @@ from app.models.language import Language
 from app.models.tag import Tag
 from app.models.word import (
     Lexeme,
+    LexemeOrigin,
     LexemeStatus,
     WordForm,
     lexeme_antonyms,
@@ -83,6 +84,31 @@ def _apply_rhyme_keys(word_form: WordForm) -> None:
 # ---------------------------------------------------------------------------
 
 
+_BORROWING_ORIGINS = {LexemeOrigin.LOANWORD, LexemeOrigin.CALQUE}
+
+
+def _validate_origin(
+    db: Session,
+    language_id: UUID,
+    origin: LexemeOrigin | None,
+    borrowed_from_language_id: UUID | None,
+) -> None:
+    """A source language only makes sense for a loanword/calque from another language."""
+    if borrowed_from_language_id is None:
+        return
+    if origin not in _BORROWING_ORIGINS:
+        raise HTTPException(
+            status_code=400,
+            detail="borrowed_from_language_id requires origin 'loanword' or 'calque'",
+        )
+    if borrowed_from_language_id == language_id:
+        raise HTTPException(
+            status_code=400, detail="A lexeme can't be borrowed from its own language"
+        )
+    if db.get(Language, borrowed_from_language_id) is None:
+        raise HTTPException(status_code=404, detail="Source language not found")
+
+
 def create_lexeme(
     db: Session,
     data: LexemeCreate,
@@ -99,6 +125,7 @@ def create_lexeme(
     )
     if status is not None:
         payload["status"] = status
+    _validate_origin(db, data.language_id, data.origin, data.borrowed_from_language_id)
 
     lexeme = Lexeme(**payload, created_by_id=creator_id)
     db.add(lexeme)
@@ -133,6 +160,14 @@ def create_lexeme(
 def update_lexeme(db: Session, lexeme: Lexeme, data: LexemeUpdate) -> Lexeme:
     update_data = data.model_dump(exclude_unset=True)
     tag_names = update_data.pop("tags", None)
+
+    if "origin" in update_data or "borrowed_from_language_id" in update_data:
+        _validate_origin(
+            db,
+            lexeme.language_id,
+            update_data.get("origin", lexeme.origin),
+            update_data.get("borrowed_from_language_id", lexeme.borrowed_from_language_id),
+        )
 
     for field, value in update_data.items():
         setattr(lexeme, field, value)

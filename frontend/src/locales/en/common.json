@@ -522,7 +522,11 @@
     "add_failed": "Failed to add",
     "picker_placeholder": "Type to search…",
     "picker_searching": "Searching…",
-    "picker_no_matches": "No matches."
+    "picker_no_matches": "No matches.",
+    "origin_from": "{{origin}} from {{language}}",
+    "edit_origin": "Edit origin",
+    "origin_saved": "Origin updated",
+    "origin_save_failed": "Failed to update origin"
   },
   "audio_recorder": {
     "recording_uploaded": "Recording uploaded.",
@@ -668,7 +672,14 @@
     "register_neutral": "Neutral",
     "suggest_title": "Suggest a Word",
     "suggest_note": "You are suggesting this word. A reviewer will check it before it appears in the dictionary.",
-    "suggest_word": "Submit suggestion"
+    "suggest_word": "Submit suggestion",
+    "origin_label": "Origin",
+    "origin_hint": "Words speakers actually use belong in the dictionary even when borrowed (e.g. a German word for a modern concept). Mark them as a loanword instead of leaving them out.",
+    "origin_native": "Native",
+    "origin_loanword": "Loanword",
+    "origin_calque": "Calque (loan translation)",
+    "origin_neologism": "Neologism",
+    "borrowed_from_label": "Borrowed from"
   },
   "add_doc": {
     "title": "Add New Document",

@@ -531,7 +531,11 @@
     "add_failed": "No se pudo añadir",
     "picker_placeholder": "Escribe para buscar…",
     "picker_searching": "Buscando…",
-    "picker_no_matches": "Sin coincidencias."
+    "picker_no_matches": "Sin coincidencias.",
+    "origin_from": "{{origin}} ({{language}})",
+    "edit_origin": "Editar origen",
+    "origin_saved": "Origen actualizado",
+    "origin_save_failed": "No se pudo actualizar el origen"
   },
   "audio_recorder": {
     "recording_uploaded": "Grabación subida.",
@@ -677,7 +681,14 @@
     "register_neutral": "Neutro",
     "suggest_title": "Sugerir una palabra",
     "suggest_note": "Estás sugiriendo esta palabra. Un revisor la comprobará antes de que aparezca en el diccionario.",
-    "suggest_word": "Enviar sugerencia"
+    "suggest_word": "Enviar sugerencia",
+    "origin_label": "Origen",
+    "origin_hint": "Las palabras que los hablantes usan realmente pertenecen al diccionario aunque sean préstamos (p. ej. una palabra alemana para un concepto moderno). Márcalas como préstamo en lugar de omitirlas.",
+    "origin_native": "Nativa",
+    "origin_loanword": "Préstamo",
+    "origin_calque": "Calco",
+    "origin_neologism": "Neologismo",
+    "borrowed_from_label": "Tomada de"
   },
   "add_doc": {
     "title": "Añadir nuevo documento",

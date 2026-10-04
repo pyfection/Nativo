@@ -8,7 +8,10 @@ import SpellingVariants from '../components/common/SpellingVariants';
 import { useAuth } from '../contexts/AuthContext';
 import wordService, {
   AntonymLink,
+  BORROWING_ORIGINS,
   CreateWordFormData,
+  LEXEME_ORIGINS,
+  LexemeOrigin,
   LexemeWithForms,
   SynonymLink,
   TranslationLink,
@@ -59,6 +62,9 @@ export default function WordDetail({ languages }: WordDetailProps) {
   const [actionError, setActionError] = useState<string | null>(null);
 
   const language = lexeme && languages.find((l) => l.id === lexeme.language_id);
+  const borrowedFrom =
+    lexeme?.borrowed_from_language_id &&
+    languages.find((l) => l.id === lexeme.borrowed_from_language_id);
   const canEdit = lexeme ? canEditLanguage(lexeme.language_id) : false;
 
   // Load the lexeme + all its relations.
@@ -143,6 +149,16 @@ export default function WordDetail({ languages }: WordDetailProps) {
           {lexeme.gender && (
             <span className="word-detail-tag">{lexeme.gender}</span>
           )}
+          {lexeme.origin && (
+            <span className="word-detail-tag word-detail-origin" title={t('add_word.origin_hint')}>
+              {borrowedFrom
+                ? t('word_detail.origin_from', {
+                    origin: t(`add_word.origin_${lexeme.origin}`),
+                    language: languageDisplayName(borrowedFrom),
+                  })
+                : t(`add_word.origin_${lexeme.origin}`)}
+            </span>
+          )}
           <span className={`status-badge status-${lexeme.status}`}>
             {lexeme.status.replace('_', ' ')}
           </span>
@@ -172,6 +188,17 @@ export default function WordDetail({ languages }: WordDetailProps) {
           </p>
         )}
         {lexeme.notes && <p className="word-detail-notes">{lexeme.notes}</p>}
+        {canEdit && (
+          <OriginEditor
+            lexeme={lexeme}
+            languages={languages}
+            onSaved={() => {
+              setActionMessage(t('word_detail.origin_saved'));
+              refresh();
+            }}
+            onError={setActionError}
+          />
+        )}
       </header>
 
       <FormsSection
@@ -853,6 +880,105 @@ function RelationPicker({ searchLanguageIds, excludeIds, onPick, onCancel }: Rel
       <button type="button" className="btn btn-ghost btn-sm" onClick={onCancel}>
         {t('word_detail.cancel')}
       </button>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Origin editor — native / loanword / calque / neologism (+ source language)
+// ---------------------------------------------------------------------------
+
+interface OriginEditorProps {
+  lexeme: LexemeWithForms;
+  languages: Language[];
+  onSaved: () => void;
+  onError: (msg: string) => void;
+}
+
+function OriginEditor({ lexeme, languages, onSaved, onError }: OriginEditorProps) {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [origin, setOrigin] = useState<LexemeOrigin | ''>(lexeme.origin ?? '');
+  const [sourceId, setSourceId] = useState(lexeme.borrowed_from_language_id ?? '');
+
+  const isBorrowing = BORROWING_ORIGINS.includes(origin as LexemeOrigin);
+
+  const startEditing = () => {
+    setOrigin(lexeme.origin ?? '');
+    setSourceId(lexeme.borrowed_from_language_id ?? '');
+    setOpen(true);
+  };
+
+  const handleSave = async () => {
+    setBusy(true);
+    try {
+      await wordService.update(lexeme.id, {
+        origin: origin || null,
+        // Only loanwords / calques keep a source language; clear it otherwise.
+        borrowed_from_language_id: isBorrowing && sourceId ? sourceId : null,
+      });
+      setOpen(false);
+      onSaved();
+    } catch (err: any) {
+      onError(err.response?.data?.detail || t('word_detail.origin_save_failed'));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        className="btn btn-ghost btn-xs origin-edit-toggle"
+        onClick={startEditing}
+        title={t('add_word.origin_hint')}
+      >
+        {t('word_detail.edit_origin')}
+      </button>
+    );
+  }
+
+  return (
+    <div className="form-editor origin-editor">
+      <div className="form-editor-row">
+        <label>
+          {t('add_word.origin_label')}
+          <select value={origin} onChange={(e) => setOrigin(e.target.value as LexemeOrigin | '')}>
+            <option value="">—</option>
+            {LEXEME_ORIGINS.map((o) => (
+              <option key={o} value={o}>{t(`add_word.origin_${o}`)}</option>
+            ))}
+          </select>
+        </label>
+        {isBorrowing && (
+          <label>
+            {t('add_word.borrowed_from_label')}
+            <select value={sourceId} onChange={(e) => setSourceId(e.target.value)}>
+              <option value="">—</option>
+              {languages
+                .filter((l) => l.id !== lexeme.language_id)
+                .map((l) => (
+                  <option key={l.id} value={l.id}>{languageDisplayName(l)}</option>
+                ))}
+            </select>
+          </label>
+        )}
+      </div>
+      <div className="form-editor-actions">
+        <button type="button" className="btn btn-accent" onClick={handleSave} disabled={busy}>
+          {t('word_detail.save')}
+        </button>
+        <button
+          type="button"
+          className="btn btn-ghost"
+          onClick={() => setOpen(false)}
+          disabled={busy}
+        >
+          {t('word_detail.cancel')}
+        </button>
+      </div>
     </div>
   );
 }
