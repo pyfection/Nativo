@@ -32,6 +32,20 @@ export interface User {
   language_proficiencies?: LanguageProficiency[];
 }
 
+/** A personal API token for the MCP server or scripts (secret never listed). */
+export interface ApiToken {
+  id: string;
+  name: string;
+  token_prefix: string;
+  created_at: string;
+  last_used_at: string | null;
+}
+
+/** Returned once, at creation — the only time the secret is visible. */
+export interface CreatedApiToken extends ApiToken {
+  token: string;
+}
+
 export interface TokenResponse {
   access_token: string;
   token_type: string;
@@ -96,6 +110,20 @@ export const authService = {
     return response.data;
   },
 
+  async listApiTokens(): Promise<ApiToken[]> {
+    const response = await api.get<ApiToken[]>('/api/v1/auth/tokens');
+    return response.data;
+  },
+
+  async createApiToken(name: string): Promise<CreatedApiToken> {
+    const response = await api.post<CreatedApiToken>('/api/v1/auth/tokens', { name });
+    return response.data;
+  },
+
+  async revokeApiToken(id: string): Promise<void> {
+    await api.delete(`/api/v1/auth/tokens/${id}`);
+  },
+
   isAdmin(user: User | null): boolean {
     if (!user) return false;
     return user.is_superuser || user.role === 'admin';
@@ -104,7 +132,7 @@ export const authService = {
   canEditLanguage(user: User | null, languageId: string): boolean {
     if (!user) return false;
     if (this.isAdmin(user)) return true;
-    
+
     const proficiency = user.language_proficiencies?.find(
       (lp) => lp.language_id === languageId
     );
@@ -114,7 +142,7 @@ export const authService = {
   canVerifyLanguage(user: User | null, languageId: string): boolean {
     if (!user) return false;
     if (this.isAdmin(user)) return true;
-    
+
     const proficiency = user.language_proficiencies?.find(
       (lp) => lp.language_id === languageId
     );
@@ -123,4 +151,3 @@ export const authService = {
 };
 
 export default authService;
-

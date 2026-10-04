@@ -5,11 +5,11 @@ A Lexeme is the dictionary entry; WordForms are its surface forms. The
 public URL prefix stays at `/words` so older clients keep working — the
 underlying resource is the Lexeme.
 """
+
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from sqlalchemy import or_
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from app.api.deps import get_current_active_user
 from app.database import get_db
@@ -22,6 +22,7 @@ from app.schemas.word import (
     LexemeCreate,
     LexemeListItem,
     LexemeRejection,
+    LexemeReviewCorrections,
     LexemeSuggestion,
     LexemeUpdate,
     LexemeWithForms,
@@ -103,40 +104,21 @@ async def search_lexemes(
     plus recorded non-standard `SpellingVariant`s — so a query like "eich" also
     surfaces the standard "aih" it's mapped to.
     """
-    query = db.query(Lexeme).distinct()
-    if include_unpublished:
-        query = query.filter(
-            Lexeme.status.in_(
-                [LexemeStatus.PUBLISHED, LexemeStatus.PENDING_REVIEW, LexemeStatus.DRAFT]
-            )
-        )
-    else:
-        query = query.filter(Lexeme.status == LexemeStatus.PUBLISHED)
-
-    if q:
-        like = f"%{q}%"
-        query = (
-            query.outerjoin(WordForm, WordForm.lexeme_id == Lexeme.id)
-            .outerjoin(SpellingVariant, SpellingVariant.word_form_id == WordForm.id)
-            .filter(
-                or_(
-                    Lexeme.lemma.ilike(like),
-                    WordForm.form.ilike(like),
-                    WordForm.romanization.ilike(like),
-                    SpellingVariant.variant.ilike(like),
-                )
-            )
-        )
-
+    ids = None
     if language_ids:
         try:
             ids = [UUID(s.strip()) for s in language_ids.split(",") if s.strip()]
-            if ids:
-                query = query.filter(Lexeme.language_id.in_(ids))
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid language ID format")
 
-    return query.offset(skip).limit(limit).all()
+    return lexeme_service.search_lexemes(
+        db,
+        q,
+        language_ids=ids,
+        include_unpublished=include_unpublished,
+        skip=skip,
+        limit=limit,
+    )
 
 
 @router.get("/suggestions", response_model=list[LexemeSuggestion])
@@ -149,6 +131,7 @@ async def list_suggestions(
     require_language_verify_permission(db, current_user, language_id)
     rows = (
         db.query(Lexeme, User.username)
+        .options(selectinload(Lexeme.forms))
         .outerjoin(User, User.id == Lexeme.created_by_id)
         .filter(
             Lexeme.language_id == language_id,
@@ -157,12 +140,18 @@ async def list_suggestions(
         .order_by(Lexeme.created_at.asc())
         .all()
     )
-    out = []
-    for lexeme, username in rows:
-        item = LexemeSuggestion.model_validate(lexeme)
-        item.creator_username = username
-        out.append(item)
-    return out
+    translations = lexeme_service.translations_for(db, [lexeme.id for lexeme, _ in rows])
+    # Read columns explicitly: validating the ORM object would also touch its
+    # `translations` relationship, lazy-loading it once per row.
+    fields = set(LexemeSuggestion.model_fields) - {"translations", "creator_username"}
+    return [
+        LexemeSuggestion(
+            **{field: getattr(lexeme, field) for field in fields},
+            creator_username=username,
+            translations=translations[lexeme.id],
+        )
+        for lexeme, username in rows
+    ]
 
 
 @router.get("/{lexeme_id}", response_model=LexemeWithForms)
@@ -180,6 +169,8 @@ async def create_lexeme(
     db: Session = Depends(get_db),
 ):
     if can_user_edit_language(db, current_user.id, data.language_id):
+        # Confidence only means something on a suggestion awaiting review.
+        data = data.model_copy(update={"draft_confidence": None})
         return lexeme_service.create_lexeme(db, data, creator_id=current_user.id)
     # Suggester tier: any signed-in user may propose a word; it lands in the
     # review queue instead of being rejected with a 403.
@@ -216,14 +207,15 @@ async def delete_lexeme(
 @router.post("/{lexeme_id}/verify", response_model=LexemeSchema)
 async def verify_lexeme(
     lexeme_id: UUID,
+    corrections: LexemeReviewCorrections | None = None,
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
+    """Approve a word: it (and any glosses drafted with it) is published and
+    verified. Optional `corrections` are applied first, atomically."""
     lexeme = _get_lexeme_or_404(db, lexeme_id)
     require_language_verify_permission(db, current_user, lexeme.language_id)
-    lexeme.is_verified = True
-    lexeme.verified_by_id = current_user.id
-    lexeme.status = LexemeStatus.PUBLISHED
+    lexeme_service.approve_lexeme(db, lexeme, current_user.id, corrections)
     # Trust-based promotion: enough approved suggestions -> direct edit rights.
     maybe_promote_suggester(db, lexeme.created_by_id, lexeme.language_id)
     db.commit()
@@ -246,10 +238,7 @@ async def reject_lexeme(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Only pending suggestions can be rejected",
         )
-    lexeme.status = LexemeStatus.ARCHIVED
-    if payload and payload.reason:
-        prefix = f"{lexeme.notes}\n" if lexeme.notes else ""
-        lexeme.notes = f"{prefix}Rejected: {payload.reason}"
+    lexeme_service.reject_lexeme(db, lexeme, payload.reason if payload else None)
     db.commit()
     db.refresh(lexeme)
     return lexeme
@@ -344,9 +333,7 @@ async def add_synonym(
     return lexeme_service.add_synonym(db, lexeme_id, data)
 
 
-@router.delete(
-    "/{lexeme_id}/synonyms/{other_id}", status_code=status.HTTP_204_NO_CONTENT
-)
+@router.delete("/{lexeme_id}/synonyms/{other_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def remove_synonym(
     lexeme_id: UUID,
     other_id: UUID,
@@ -380,9 +367,7 @@ async def add_antonym(
     return lexeme_service.add_antonym(db, lexeme_id, data)
 
 
-@router.delete(
-    "/{lexeme_id}/antonyms/{other_id}", status_code=status.HTTP_204_NO_CONTENT
-)
+@router.delete("/{lexeme_id}/antonyms/{other_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def remove_antonym(
     lexeme_id: UUID,
     other_id: UUID,
@@ -416,9 +401,7 @@ async def add_translation(
     return lexeme_service.add_translation(db, lexeme_id, data, creator_id=current_user.id)
 
 
-@router.put(
-    "/{lexeme_id}/translations/{other_id}", response_model=TranslationLink
-)
+@router.put("/{lexeme_id}/translations/{other_id}", response_model=TranslationLink)
 async def update_translation(
     lexeme_id: UUID,
     other_id: UUID,
@@ -431,9 +414,7 @@ async def update_translation(
     return lexeme_service.update_translation_notes(db, lexeme_id, other_id, data.notes)
 
 
-@router.delete(
-    "/{lexeme_id}/translations/{other_id}", status_code=status.HTTP_204_NO_CONTENT
-)
+@router.delete("/{lexeme_id}/translations/{other_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def remove_translation(
     lexeme_id: UUID,
     other_id: UUID,

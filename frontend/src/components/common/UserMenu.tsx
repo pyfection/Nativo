@@ -86,6 +86,12 @@ export default function UserMenu() {
                 {t('user_menu.admin_panel')}
               </button>
             )}
+            <Link to="/account/tokens" onClick={() => setIsOpen(false)} className="user-menu-item">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M5.5 5a3.5 3.5 0 1 1 3.28 3.49L8 9.28V10.5a.5.5 0 0 1-.5.5H6.5v1a.5.5 0 0 1-.5.5H5v1a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-1.8a.5.5 0 0 1 .15-.35l3.36-3.37A3.5 3.5 0 0 1 5.5 5zm3.5-1.5a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+              </svg>
+              {t('user_menu.api_tokens')}
+            </Link>
             <button onClick={handleLogout} className="user-menu-item logout">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                 <path d="M5 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H5zm6 13H5V2h6v12z"/>
@@ -99,4 +105,3 @@ export default function UserMenu() {
     </div>
   );
 }
-

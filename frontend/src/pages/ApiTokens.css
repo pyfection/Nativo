@@ -1,0 +1,148 @@
+.api-tokens-page {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 4rem;
+}
+
+.api-tokens-header h1 {
+  margin-bottom: 0.25rem;
+}
+
+.api-tokens-subtitle,
+.api-tokens-hint,
+.api-tokens-empty {
+  opacity: 0.75;
+  margin: 0 0 0.75rem;
+}
+
+.api-tokens-section {
+  margin-top: 1.75rem;
+}
+
+.api-tokens-section-title {
+  font-size: 1.05rem;
+  opacity: 0.85;
+  margin: 0 0 0.6rem;
+}
+
+.api-tokens-code-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.api-tokens-code {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0.55rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
+.api-tokens-copy,
+.api-tokens-create,
+.api-tokens-revoke {
+  padding: 0.4rem 0.9rem;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.05);
+  color: inherit;
+  cursor: pointer;
+  font-weight: 600;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.api-tokens-copy:hover,
+.api-tokens-create:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.api-tokens-create {
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.api-tokens-create:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.api-tokens-form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.api-tokens-form input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0.5rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  color: inherit;
+  font-family: inherit;
+}
+
+.api-tokens-created {
+  margin-top: 1rem;
+  padding: 0.85rem 1.1rem 0.1rem;
+  border: 1px solid rgba(90, 200, 140, 0.5);
+  border-radius: 10px;
+  background: rgba(90, 200, 140, 0.08);
+}
+
+.api-tokens-created p {
+  margin: 0 0 0.6rem;
+}
+
+.api-tokens-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.api-tokens-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  padding: 0.85rem 1.1rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+}
+
+.api-tokens-item-main {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  flex: 1 1 auto;
+}
+
+.api-tokens-item-name {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.api-tokens-item-prefix,
+.api-tokens-item-meta {
+  font-size: 0.8rem;
+  opacity: 0.65;
+}
+
+.api-tokens-revoke {
+  background: rgba(230, 110, 110, 0.12);
+  border-color: rgba(230, 110, 110, 0.45);
+  color: #f0a8a8;
+}
+
+.api-tokens-revoke:hover {
+  background: rgba(230, 110, 110, 0.25);
+}

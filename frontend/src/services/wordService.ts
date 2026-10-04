@@ -43,16 +43,37 @@ export interface LexemeWithForms extends Lexeme {
   forms: WordForm[];
 }
 
+export type DraftConfidence = 'high' | 'medium' | 'low';
+
+export interface SuggestionTranslation {
+  id: string;
+  lemma: string;
+  language_id: string;
+  language_name?: string | null;
+}
+
 export interface LexemeSuggestion {
   id: string;
   language_id: string;
   lemma: string;
   part_of_speech?: string | null;
   notes?: string | null;
+  source?: string | null;
+  draft_confidence?: DraftConfidence | null;
   status: string;
   created_at: string;
   creator_username?: string | null;
   forms: WordForm[];
+  translations: SuggestionTranslation[];
+}
+
+/** Fixes a reviewer applies while approving (backend LexemeReviewCorrections). */
+export interface ReviewCorrections {
+  lemma?: string;
+  part_of_speech?: string | null;
+  notes?: string | null;
+  forms?: { id: string; form?: string; notes?: string | null; delete?: boolean }[];
+  glosses?: { language_id: string; lemmas: string[] }[];
 }
 
 export interface LexemeListItem {
@@ -259,8 +280,9 @@ export const wordService = {
     await api.delete(`/api/v1/words/${id}`);
   },
 
-  async verify(id: string): Promise<Lexeme> {
-    const response = await api.post<Lexeme>(`/api/v1/words/${id}/verify`);
+  /** Approve a word (publishing its drafted glosses), optionally fixing it first. */
+  async verify(id: string, corrections?: ReviewCorrections): Promise<Lexeme> {
+    const response = await api.post<Lexeme>(`/api/v1/words/${id}/verify`, corrections);
     return response.data;
   },
 

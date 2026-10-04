@@ -26,6 +26,7 @@ import ContributorsList from './pages/ContributorsList';
 import GuidedReader from './pages/GuidedReader';
 import Learn from './pages/Learn';
 import Review from './pages/Review';
+import ApiTokens from './pages/ApiTokens';
 import languageService, { LanguageResponse } from './services/languageService';
 import { API_URL } from './services/api';
 import { getThemeStyles } from './styles/theme';
@@ -376,7 +377,23 @@ function App() {
                     onLanguageChange={setSelectedLanguage}
                     languages={languages}
                   >
-                    <Review selectedLanguage={selectedLanguage!} />
+                    <Review selectedLanguage={selectedLanguage!} languages={languages} />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Personal API tokens — for the MCP server and scripts */}
+            <Route
+              path="/account/tokens"
+              element={
+                <ProtectedRoute>
+                  <AppLayout
+                    selectedLanguage={selectedLanguage!}
+                    onLanguageChange={setSelectedLanguage}
+                    languages={languages}
+                  >
+                    <ApiTokens />
                   </AppLayout>
                 </ProtectedRoute>
               }
