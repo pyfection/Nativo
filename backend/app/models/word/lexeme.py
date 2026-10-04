@@ -32,6 +32,7 @@ from app.models.word.associations import (
 from app.models.word.enums import (
     Animacy,
     GrammaticalGender,
+    LexemeOrigin,
     LexemeStatus,
     PartOfSpeech,
     Register,
@@ -71,6 +72,24 @@ class Lexeme(Base):
         SQLEnum(Register, name="register"), nullable=True, default=Register.NEUTRAL
     )
 
+    # Origin — native vs. borrowed. A loanword speakers actually use (e.g. a
+    # German word for a modern concept in Bavarian) is still a Lexeme of this
+    # language; these columns just record where it came from. The adapted
+    # pronunciation lives on the WordForms (IPA + audio), the source-language
+    # spelling can be a SpellingVariant, and a native alternative is linked as
+    # a synonym with nuance LOAN_VARIANT.
+    origin = Column(
+        SQLEnum(LexemeOrigin, name="lexemeorigin", values_callable=lambda e: [m.value for m in e]),
+        nullable=True,
+        index=True,
+    )
+    borrowed_from_language_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("languages.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+
     # Concept-level documents (one each)
     etymology_document_id = Column(
         UUID(as_uuid=True), ForeignKey("documents.id", ondelete="SET NULL"), nullable=True
@@ -99,7 +118,8 @@ class Lexeme(Base):
     updated_at = Column(DateTime, default=_now, onupdate=_now, nullable=False)
 
     # Relationships
-    language = relationship("Language", back_populates="lexemes")
+    language = relationship("Language", foreign_keys=[language_id], back_populates="lexemes")
+    borrowed_from_language = relationship("Language", foreign_keys=[borrowed_from_language_id])
     created_by = relationship(
         "User", foreign_keys=[created_by_id], back_populates="lexemes_created"
     )

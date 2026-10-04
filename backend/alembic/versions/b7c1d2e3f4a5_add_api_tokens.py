@@ -4,7 +4,7 @@ Personal API tokens for the MCP server and scripts. Only a SHA-256 hash of
 the token is stored.
 
 Revision ID: b7c1d2e3f4a5
-Revises: ad45833faccb
+Revises: b7c3e9a1d2f4
 Create Date: 2026-09-29 12:00:00.000000
 
 """
@@ -17,7 +17,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision: str = "b7c1d2e3f4a5"
-down_revision: str | None = "ad45833faccb"
+down_revision: str | None = "b7c3e9a1d2f4"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 

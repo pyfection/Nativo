@@ -517,3 +517,18 @@
     animation: none;
   }
 }
+
+/* ---------- Origin (native / loanword / …) ---------- */
+.word-detail-origin {
+  font-style: italic;
+}
+
+.origin-editor {
+  margin-top: 12px;
+  max-width: 640px;
+}
+
+.origin-edit-toggle {
+  align-self: flex-start;
+  width: auto;
+}

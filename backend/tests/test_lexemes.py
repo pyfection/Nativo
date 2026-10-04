@@ -18,10 +18,17 @@ sqlalchemy = pytest.importorskip("sqlalchemy")
 from app.database import Base  # noqa: E402
 from app.models.language import Language  # noqa: E402
 from app.models.user import User, UserRole  # noqa: E402
-from app.models.word import Lexeme, LexemeStatus, WordForm  # noqa: E402
+from app.models.word import (  # noqa: E402
+    Lexeme,
+    LexemeOrigin,
+    LexemeStatus,
+    SynonymNuance,
+    WordForm,
+)
 from app.schemas.word import (  # noqa: E402
     AntonymCreate,
     LexemeCreate,
+    LexemeUpdate,
     SynonymCreate,
     TranslationCreate,
     WordFormCreate,
@@ -306,3 +313,140 @@ def test_promoting_a_form_demotes_the_previous_lemma(db_session: Session):
 
     refreshed_lexeme = db_session.query(Lexeme).filter(Lexeme.id == lexeme.id).first()
     assert refreshed_lexeme.lemma == "went"
+
+
+# ---------------------------------------------------------------------------
+# Origin / loanwords
+# ---------------------------------------------------------------------------
+
+
+def _create_loan(db, user, lang, lemma, *, origin, borrowed_from_language_id=None):
+    return lexeme_service.create_lexeme(
+        db,
+        LexemeCreate(
+            language_id=lang.id,
+            lemma=lemma,
+            origin=origin,
+            borrowed_from_language_id=borrowed_from_language_id,
+            lemma_form=WordFormCreateNested(form=lemma, is_lemma=True),
+        ),
+        creator_id=user.id,
+    )
+
+
+def test_loanword_records_its_source_language(db_session: Session):
+    user = _seed_user(db_session)
+    bavarian = _seed_language(db_session, "Bavarian", "bar")
+    german = _seed_language(db_session, "German", "deu")
+
+    handy = _create_loan(
+        db_session, user, bavarian, "Händi",
+        origin=LexemeOrigin.LOANWORD, borrowed_from_language_id=german.id,
+    )
+
+    assert handy.language_id == bavarian.id
+    assert handy.origin == LexemeOrigin.LOANWORD
+    assert handy.borrowed_from_language.name == "German"
+    # The second FK must not leak into the language's own lexeme list.
+    db_session.refresh(german)
+    assert german.lexemes == []
+
+
+def test_origin_defaults_to_unclassified(db_session: Session):
+    user = _seed_user(db_session)
+    lang = _seed_language(db_session)
+    lexeme = _create(db_session, user, lang, "Haus")
+    assert lexeme.origin is None
+    assert lexeme.borrowed_from_language_id is None
+
+
+@pytest.mark.parametrize("origin", [None, LexemeOrigin.NATIVE, LexemeOrigin.NEOLOGISM])
+def test_source_language_requires_a_borrowing_origin(db_session: Session, origin):
+    from fastapi import HTTPException
+
+    user = _seed_user(db_session)
+    bavarian = _seed_language(db_session, "Bavarian", "bar")
+    german = _seed_language(db_session, "German", "deu")
+
+    with pytest.raises(HTTPException) as exc:
+        _create_loan(
+            db_session, user, bavarian, "Haus",
+            origin=origin, borrowed_from_language_id=german.id,
+        )
+    assert exc.value.status_code == 400
+
+
+def test_lexeme_cant_be_borrowed_from_its_own_language(db_session: Session):
+    from fastapi import HTTPException
+
+    user = _seed_user(db_session)
+    bavarian = _seed_language(db_session, "Bavarian", "bar")
+
+    with pytest.raises(HTTPException) as exc:
+        _create_loan(
+            db_session, user, bavarian, "Haus",
+            origin=LexemeOrigin.LOANWORD, borrowed_from_language_id=bavarian.id,
+        )
+    assert exc.value.status_code == 400
+
+
+def test_unknown_source_language_is_404(db_session: Session):
+    from fastapi import HTTPException
+
+    user = _seed_user(db_session)
+    bavarian = _seed_language(db_session, "Bavarian", "bar")
+
+    with pytest.raises(HTTPException) as exc:
+        _create_loan(
+            db_session, user, bavarian, "Händi",
+            origin=LexemeOrigin.LOANWORD, borrowed_from_language_id=uuid.uuid4(),
+        )
+    assert exc.value.status_code == 404
+
+
+def test_update_validates_against_the_stored_origin(db_session: Session):
+    from fastapi import HTTPException
+
+    user = _seed_user(db_session)
+    bavarian = _seed_language(db_session, "Bavarian", "bar")
+    german = _seed_language(db_session, "German", "deu")
+    handy = _create_loan(
+        db_session, user, bavarian, "Händi",
+        origin=LexemeOrigin.LOANWORD, borrowed_from_language_id=german.id,
+    )
+
+    # Reclassifying as native while the source language is still set is rejected…
+    with pytest.raises(HTTPException):
+        lexeme_service.update_lexeme(
+            db_session, handy, LexemeUpdate(origin=LexemeOrigin.NATIVE)
+        )
+
+    # …but clearing both together works.
+    updated = lexeme_service.update_lexeme(
+        db_session,
+        handy,
+        LexemeUpdate(origin=LexemeOrigin.NATIVE, borrowed_from_language_id=None),
+    )
+    assert updated.origin == LexemeOrigin.NATIVE
+    assert updated.borrowed_from_language_id is None
+
+
+def test_loanword_links_to_native_alternative(db_session: Session):
+    user = _seed_user(db_session)
+    bavarian = _seed_language(db_session, "Bavarian", "bar")
+    german = _seed_language(db_session, "German", "deu")
+    loan = _create_loan(
+        db_session, user, bavarian, "Tomate",
+        origin=LexemeOrigin.LOANWORD, borrowed_from_language_id=german.id,
+    )
+    native = _create_loan(db_session, user, bavarian, "Paradeiser", origin=LexemeOrigin.NATIVE)
+
+    lexeme_service.add_synonym(
+        db_session,
+        loan.id,
+        SynonymCreate(other_lexeme_id=native.id, nuance=SynonymNuance.LOAN_VARIANT),
+    )
+
+    [link] = lexeme_service.list_synonyms(db_session, native.id)
+    assert link.id == loan.id
+    assert link.nuance == SynonymNuance.LOAN_VARIANT
