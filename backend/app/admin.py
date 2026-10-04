@@ -118,8 +118,9 @@ class LanguageAdmin(ModelView):
 
 class LexemeAdmin(ModelView):
     """Admin view for Lexeme model (dictionary entries)."""
-    exclude_fields_from_create = ["created_at", "updated_at"]
-    exclude_fields_from_edit = ["created_at", "updated_at"]
+    # recommendation is decided by vote (ChangeProposal), never set directly.
+    exclude_fields_from_create = ["created_at", "updated_at", "recommendation", "recommendation_note"]
+    exclude_fields_from_edit = ["created_at", "updated_at", "recommendation", "recommendation_note"]
 
     searchable_fields = ["lemma"]
     sortable_fields = ["lemma", "part_of_speech", "is_verified", "status", "created_at"]

@@ -6,6 +6,7 @@ import { Language } from '../App';
 import WordReviewCard from '../components/review/WordReviewCard';
 import { useAuth } from '../contexts/AuthContext';
 import documentService, { TextSuggestion } from '../services/documentService';
+import proposalService, { ChangeProposal } from '../services/proposalService';
 import wordService, { LexemeSuggestion, ReviewCorrections } from '../services/wordService';
 import { languageDisplayName } from '../utils/languageName';
 import './Review.css';
@@ -37,6 +38,7 @@ export default function Review({ selectedLanguage, languages }: ReviewProps) {
   const { canVerifyLanguage } = useAuth();
   const [words, setWords] = useState<LexemeSuggestion[]>([]);
   const [texts, setTexts] = useState<TextSuggestion[]>([]);
+  const [proposals, setProposals] = useState<ChangeProposal[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -66,12 +68,14 @@ export default function Review({ selectedLanguage, languages }: ReviewProps) {
     try {
       setLoading(true);
       setError('');
-      const [wordData, textData] = await Promise.all([
+      const [wordData, textData, proposalData] = await Promise.all([
         wordService.listSuggestions(selectedLanguage.id),
         documentService.listSuggestions(selectedLanguage.id),
+        proposalService.listOpen(selectedLanguage.id).catch(() => []),
       ]);
       setWords(wordData);
       setTexts(textData);
+      setProposals(proposalData);
     } catch (err: any) {
       setError(err.response?.data?.detail || t('review.load_failed'));
     } finally {
@@ -231,7 +235,8 @@ export default function Review({ selectedLanguage, languages }: ReviewProps) {
     </div>
   );
 
-  const empty = !loading && words.length === 0 && texts.length === 0;
+  const empty =
+    !loading && words.length === 0 && texts.length === 0 && proposals.length === 0;
 
   return (
     <div className="review-page">
@@ -244,6 +249,38 @@ export default function Review({ selectedLanguage, languages }: ReviewProps) {
       {loading && <div className="loading-state">{t('review.loading')}</div>}
 
       {empty && <div className="review-empty">{t('review.empty')}</div>}
+
+      {proposals.length > 0 && (
+        <section className="review-section">
+          <h2 className="review-section-title">{t('review.proposals_heading')}</h2>
+          <ul className="review-list">
+            {proposals.map((p) => (
+              <li key={p.id} className="review-item">
+                <div className="review-item-main">
+                  <Link to={`/words/${p.lexeme_id}#proposals`} className="review-item-lemma">
+                    {p.lexeme_lemma}
+                  </Link>
+                  <span className="review-item-pos">
+                    {t('word_detail.proposal_title', {
+                      recommendation: t(`word_detail.recommendation_${p.payload.recommendation}`),
+                    })}
+                  </span>
+                </div>
+                <div className="review-item-meta">
+                  <span>
+                    {t('word_detail.tally_approvals', { count: p.approvals, threshold: p.threshold })}
+                    {' · '}
+                    {t('word_detail.tally_objections', { count: p.rejections })}
+                  </span>
+                  {p.created_by_username && (
+                    <span>{t('review.suggested_by', { username: p.created_by_username })}</span>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {words.length > 0 && (
         <section className="review-section">
