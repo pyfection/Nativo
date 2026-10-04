@@ -42,6 +42,7 @@ The Word model is a **package** (`backend/app/models/word/`) containing `word.py
 - **Rhyme keys**: `WordForm.rhyme_key` and `near_rhyme_key` are derived from `ipa_pronunciation` by `app.utils.rhyme.compute_rhyme_key`. They're plain indexed strings — querying "what rhymes with X" is a single equality lookup, not a stored M2M. Recompute on `ipa_pronunciation` change.
 - **Auth**: JWT + role-based (`PUBLIC` / `RESEARCHER` / `NATIVE_SPEAKER` / `ADMIN`). See [AUTH_GUIDE](backend/AUTH_GUIDE.md).
 - **Admin UI**: Starlette-Admin at `/admin`, gated to `is_superuser=True` or `role=ADMIN`. See [ADMIN_GUIDE](backend/ADMIN_GUIDE.md).
+- **MCP server** (`app/mcp_server.py`, `mcp` SDK **2.x**, where `FastMCP` is now `MCPServer`): the same tool set runs over streamable HTTP at `/mcp` (mounted on the FastAPI app, stateless) and over stdio (`uv run nativo-mcp`, which uses `DATABASE_URL`). Tools call the REST **endpoint functions** directly, so permission checks and the suggester flow can't drift from REST. Reads are anonymous. Writes authenticate with a personal API token (`nat_…`, `ApiToken` model, only its SHA-256 is stored), created at `/account/tokens` in the UI (`POST /api/v1/auth/tokens`). Over HTTP the token comes from the `Authorization: Bearer` header; over stdio it comes from `NATIVO_API_TOKEN`, which HTTP requests never read. `get_current_user` accepts API tokens anywhere a JWT works. Only a login session can mint tokens.
 
 ## Deferred / open architectural decisions
 
@@ -66,6 +67,7 @@ uv run pytest backend/tests                          # run tests
 uv run ruff check . && uv run ruff format .          # lint + format
 uv run alembic -c backend/alembic.ini upgrade head   # migrate
 uv run alembic -c backend/alembic.ini revision --autogenerate -m "..."
+uv run nativo-mcp                                    # MCP server over stdio (needs DATABASE_URL, SECRET_KEY; NATIVO_API_TOKEN for writes)
 ```
 
 ### Frontend

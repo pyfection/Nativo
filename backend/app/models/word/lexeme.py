@@ -110,6 +110,9 @@ class Lexeme(Base):
     )
     source = Column(String(500), nullable=True)
     notes = Column(Text, nullable=True)
+    # How sure the drafter of a suggestion is ("high" / "medium" / "low"),
+    # so reviewers can batch-approve the safe ones. Cleared on approval.
+    draft_confidence = Column(String(10), nullable=True)
 
     created_at = Column(DateTime, default=_now, nullable=False)
     updated_at = Column(DateTime, default=_now, onupdate=_now, nullable=False)

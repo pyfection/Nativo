@@ -4,8 +4,9 @@ Pydantic schemas for the lexicographic layer.
 Two top-level entities: Lexeme (concept) and WordForm (surface form).
 Location / Tag / Image schemas also live here for historical reasons.
 """
+
 from datetime import datetime
-from typing import List, Optional
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -22,11 +23,13 @@ from app.models.word import (
     Register,
     SynonymNuance,
     VerbAspect,
-    WordTextType,
 )
 
 # Re-export for callers that imported the old WordStatus alias
 WordStatus = LexemeStatus
+
+# How sure the drafter of a suggestion is; reviewers batch-approve "high".
+DraftConfidence = Literal["high", "medium", "low"]
 
 
 # ============================================================================
@@ -36,43 +39,45 @@ WordStatus = LexemeStatus
 
 class WordFormBase(BaseModel):
     form: str = Field(..., min_length=1, max_length=255)
-    romanization: Optional[str] = Field(None, max_length=255)
-    ipa_pronunciation: Optional[str] = Field(None, max_length=255)
+    romanization: str | None = Field(None, max_length=255)
+    ipa_pronunciation: str | None = Field(None, max_length=255)
     is_lemma: bool = False
-    plurality: Optional[Plurality] = None
-    grammatical_case: Optional[GrammaticalCase] = None
-    verb_aspect: Optional[VerbAspect] = None
-    notes: Optional[str] = Field(None, max_length=500)
+    plurality: Plurality | None = None
+    grammatical_case: GrammaticalCase | None = None
+    verb_aspect: VerbAspect | None = None
+    notes: str | None = Field(None, max_length=500)
 
 
 class WordFormCreate(WordFormBase):
     """Create a WordForm against an existing Lexeme."""
+
     lexeme_id: UUID
-    confirmed_at_location_ids: Optional[List[UUID]] = None
+    confirmed_at_location_ids: list[UUID] | None = None
 
 
 class WordFormCreateNested(WordFormBase):
     """Create a WordForm inline as part of a Lexeme create."""
-    confirmed_at_location_ids: Optional[List[UUID]] = None
+
+    confirmed_at_location_ids: list[UUID] | None = None
 
 
 class WordFormUpdate(BaseModel):
-    form: Optional[str] = Field(None, min_length=1, max_length=255)
-    romanization: Optional[str] = Field(None, max_length=255)
-    ipa_pronunciation: Optional[str] = Field(None, max_length=255)
-    is_lemma: Optional[bool] = None
-    plurality: Optional[Plurality] = None
-    grammatical_case: Optional[GrammaticalCase] = None
-    verb_aspect: Optional[VerbAspect] = None
-    notes: Optional[str] = Field(None, max_length=500)
-    confirmed_at_location_ids: Optional[List[UUID]] = None
+    form: str | None = Field(None, min_length=1, max_length=255)
+    romanization: str | None = Field(None, max_length=255)
+    ipa_pronunciation: str | None = Field(None, max_length=255)
+    is_lemma: bool | None = None
+    plurality: Plurality | None = None
+    grammatical_case: GrammaticalCase | None = None
+    verb_aspect: VerbAspect | None = None
+    notes: str | None = Field(None, max_length=500)
+    confirmed_at_location_ids: list[UUID] | None = None
 
 
 class WordForm(WordFormBase):
     id: UUID
     lexeme_id: UUID
-    rhyme_key: Optional[str] = None
-    near_rhyme_key: Optional[str] = None
+    rhyme_key: str | None = None
+    near_rhyme_key: str | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -86,7 +91,7 @@ class WordForm(WordFormBase):
 
 class SpellingVariantBase(BaseModel):
     variant: str = Field(..., min_length=1, max_length=255)
-    note: Optional[str] = Field(None, max_length=500)
+    note: str | None = Field(None, max_length=500)
 
 
 class SpellingVariantCreate(SpellingVariantBase):
@@ -110,7 +115,7 @@ class SpellingCandidate(BaseModel):
     lexeme_id: UUID
     standard_form: str
     lemma: str
-    note: Optional[str] = None  # provenance of the matched variant
+    note: str | None = None  # provenance of the matched variant
 
 
 class SpellingResolution(BaseModel):
@@ -119,7 +124,7 @@ class SpellingResolution(BaseModel):
     token: str
     normalized: str
     already_standard: bool
-    candidates: List[SpellingCandidate]
+    candidates: list[SpellingCandidate]
 
 
 class SpellingCorrection(BaseModel):
@@ -129,7 +134,7 @@ class SpellingCorrection(BaseModel):
     end_char: int
     original: str
     ambiguous: bool  # True when more than one standard form matches
-    candidates: List[SpellingCandidate]
+    candidates: list[SpellingCandidate]
 
 
 # ============================================================================
@@ -140,14 +145,14 @@ class SpellingCorrection(BaseModel):
 class LexemeBase(BaseModel):
     language_id: UUID
     lemma: str = Field(..., min_length=1, max_length=255)
-    part_of_speech: Optional[PartOfSpeech] = None
-    gender: Optional[GrammaticalGender] = None
-    animacy: Optional[Animacy] = None
-    language_register: Optional[Register] = Register.NEUTRAL
-    origin: Optional[LexemeOrigin] = None
-    borrowed_from_language_id: Optional[UUID] = None
-    source: Optional[str] = Field(None, max_length=500)
-    notes: Optional[str] = None
+    part_of_speech: PartOfSpeech | None = None
+    gender: GrammaticalGender | None = None
+    animacy: Animacy | None = None
+    language_register: Register | None = Register.NEUTRAL
+    origin: LexemeOrigin | None = None
+    borrowed_from_language_id: UUID | None = None
+    source: str | None = Field(None, max_length=500)
+    notes: str | None = None
 
 
 class LexemeCreate(LexemeBase):
@@ -158,31 +163,35 @@ class LexemeCreate(LexemeBase):
     (is_lemma=True) for the new Lexeme. `additional_forms` lets a caller
     register inflected variants in the same request.
     """
+
     lemma_form: WordFormCreateNested
-    additional_forms: Optional[List[WordFormCreateNested]] = None
-    tags: Optional[List[str]] = None
+    additional_forms: list[WordFormCreateNested] | None = None
+    tags: list[str] | None = None
+    # Only kept when the entry lands as a suggestion (creator can't edit).
+    draft_confidence: DraftConfidence | None = None
 
 
 class LexemeUpdate(BaseModel):
-    lemma: Optional[str] = Field(None, min_length=1, max_length=255)
-    part_of_speech: Optional[PartOfSpeech] = None
-    gender: Optional[GrammaticalGender] = None
-    animacy: Optional[Animacy] = None
-    language_register: Optional[Register] = None
-    origin: Optional[LexemeOrigin] = None
-    borrowed_from_language_id: Optional[UUID] = None
-    source: Optional[str] = Field(None, max_length=500)
-    notes: Optional[str] = None
-    status: Optional[LexemeStatus] = None
-    tags: Optional[List[str]] = None
+    lemma: str | None = Field(None, min_length=1, max_length=255)
+    part_of_speech: PartOfSpeech | None = None
+    gender: GrammaticalGender | None = None
+    animacy: Animacy | None = None
+    language_register: Register | None = None
+    origin: LexemeOrigin | None = None
+    borrowed_from_language_id: UUID | None = None
+    source: str | None = Field(None, max_length=500)
+    notes: str | None = None
+    status: LexemeStatus | None = None
+    tags: list[str] | None = None
 
 
 class Lexeme(LexemeBase):
     id: UUID
     created_by_id: UUID
-    verified_by_id: Optional[UUID] = None
+    verified_by_id: UUID | None = None
     is_verified: bool
     status: LexemeStatus
+    draft_confidence: DraftConfidence | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -193,8 +202,8 @@ class LexemeListItem(BaseModel):
     id: UUID
     lemma: str
     language_id: UUID
-    part_of_speech: Optional[PartOfSpeech] = None
-    origin: Optional[LexemeOrigin] = None
+    part_of_speech: PartOfSpeech | None = None
+    origin: LexemeOrigin | None = None
     is_verified: bool
     status: LexemeStatus
     created_at: datetime
@@ -208,12 +217,15 @@ class LexemeSuggestion(BaseModel):
     id: UUID
     language_id: UUID
     lemma: str
-    part_of_speech: Optional[PartOfSpeech] = None
-    notes: Optional[str] = None
+    part_of_speech: PartOfSpeech | None = None
+    notes: str | None = None
+    source: str | None = None
+    draft_confidence: DraftConfidence | None = None
     status: LexemeStatus
     created_at: datetime
-    creator_username: Optional[str] = None
-    forms: List[WordForm] = []
+    creator_username: str | None = None
+    forms: list[WordForm] = []
+    translations: list["TranslationLink"] = []
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -221,11 +233,42 @@ class LexemeSuggestion(BaseModel):
 class LexemeRejection(BaseModel):
     """Payload for rejecting a suggestion."""
 
-    reason: Optional[str] = Field(None, max_length=500)
+    reason: str | None = Field(None, max_length=500)
+
+
+class FormCorrection(BaseModel):
+    """A reviewer's fix to one form of a suggestion. `delete` drops it."""
+
+    id: UUID
+    form: str | None = Field(None, min_length=1, max_length=255)
+    ipa_pronunciation: str | None = Field(None, max_length=255)
+    notes: str | None = Field(None, max_length=500)
+    delete: bool = False
+
+
+class GlossCorrection(BaseModel):
+    """The full set of glosses a suggestion should have in one language."""
+
+    language_id: UUID
+    lemmas: list[str]
+
+
+class LexemeReviewCorrections(BaseModel):
+    """
+    Optional fixes applied atomically while approving a suggestion, so a
+    nearly-right draft never has to be rejected and retyped.
+    """
+
+    lemma: str | None = Field(None, min_length=1, max_length=255)
+    part_of_speech: PartOfSpeech | None = None
+    gender: GrammaticalGender | None = None
+    notes: str | None = None
+    forms: list[FormCorrection] = []
+    glosses: list[GlossCorrection] = []
 
 
 class LexemeWithForms(Lexeme):
-    forms: List[WordForm] = []
+    forms: list[WordForm] = []
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -237,53 +280,54 @@ class LexemeWithForms(Lexeme):
 
 class SynonymCreate(BaseModel):
     other_lexeme_id: UUID
-    nuance: Optional[SynonymNuance] = None
-    notes: Optional[str] = Field(None, max_length=500)
+    nuance: SynonymNuance | None = None
+    notes: str | None = Field(None, max_length=500)
 
 
 class AntonymCreate(BaseModel):
     other_lexeme_id: UUID
-    antonym_type: Optional[AntonymType] = None
-    notes: Optional[str] = Field(None, max_length=500)
+    antonym_type: AntonymType | None = None
+    notes: str | None = Field(None, max_length=500)
 
 
 class RelatedLexemeCreate(BaseModel):
     related_lexeme_id: UUID
-    relationship_type: Optional[str] = Field(None, max_length=100)
+    relationship_type: str | None = Field(None, max_length=100)
 
 
 class TranslationCreate(BaseModel):
     other_lexeme_id: UUID
-    notes: Optional[str] = Field(None, max_length=500)
+    notes: str | None = Field(None, max_length=500)
 
 
 class TranslationUpdate(BaseModel):
-    notes: Optional[str] = Field(None, max_length=500)
+    notes: str | None = Field(None, max_length=500)
 
 
 class LexemeReference(BaseModel):
     """Compact lexeme reference used in relation responses."""
+
     id: UUID
     lemma: str
     language_id: UUID
-    language_name: Optional[str] = None
-    part_of_speech: Optional[PartOfSpeech] = None
+    language_name: str | None = None
+    part_of_speech: PartOfSpeech | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
 
 class SynonymLink(LexemeReference):
-    nuance: Optional[SynonymNuance] = None
-    notes: Optional[str] = None
+    nuance: SynonymNuance | None = None
+    notes: str | None = None
 
 
 class AntonymLink(LexemeReference):
-    antonym_type: Optional[AntonymType] = None
-    notes: Optional[str] = None
+    antonym_type: AntonymType | None = None
+    notes: str | None = None
 
 
 class TranslationLink(LexemeReference):
-    notes: Optional[str] = None
+    notes: str | None = None
 
 
 # ============================================================================
@@ -296,7 +340,7 @@ class RhymeMatch(BaseModel):
     lexeme_id: UUID
     form: str
     lemma: str
-    ipa_pronunciation: Optional[str] = None
+    ipa_pronunciation: str | None = None
     language_id: UUID
 
     model_config = ConfigDict(from_attributes=True)
@@ -308,13 +352,13 @@ class RhymeMatch(BaseModel):
 
 
 class LexemeFilter(BaseModel):
-    language_id: Optional[UUID] = None
-    part_of_speech: Optional[PartOfSpeech] = None
-    status: Optional[LexemeStatus] = None
-    is_verified: Optional[bool] = None
-    search_term: Optional[str] = None
-    created_by_id: Optional[UUID] = None
-    tag_ids: Optional[List[UUID]] = None
+    language_id: UUID | None = None
+    part_of_speech: PartOfSpeech | None = None
+    status: LexemeStatus | None = None
+    is_verified: bool | None = None
+    search_term: str | None = None
+    created_by_id: UUID | None = None
+    tag_ids: list[UUID] | None = None
     skip: int = Field(0, ge=0)
     limit: int = Field(100, ge=1, le=1000)
 
@@ -342,8 +386,8 @@ class LexemeStatistics(BaseModel):
 class LocationBase(BaseModel):
     latitude: float = Field(..., ge=-90, le=90)
     longitude: float = Field(..., ge=-180, le=180)
-    name: Optional[str] = Field(None, max_length=255)
-    description: Optional[str] = Field(None, max_length=500)
+    name: str | None = Field(None, max_length=255)
+    description: str | None = Field(None, max_length=500)
 
 
 class LocationCreate(LocationBase):
@@ -351,10 +395,10 @@ class LocationCreate(LocationBase):
 
 
 class LocationUpdate(BaseModel):
-    latitude: Optional[float] = Field(None, ge=-90, le=90)
-    longitude: Optional[float] = Field(None, ge=-180, le=180)
-    name: Optional[str] = Field(None, max_length=255)
-    description: Optional[str] = Field(None, max_length=500)
+    latitude: float | None = Field(None, ge=-90, le=90)
+    longitude: float | None = Field(None, ge=-180, le=180)
+    name: str | None = Field(None, max_length=255)
+    description: str | None = Field(None, max_length=500)
 
 
 class LocationInDB(LocationBase):
@@ -370,7 +414,7 @@ class Location(LocationInDB):
 
 class TagBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
-    description: Optional[str] = Field(None, max_length=500)
+    description: str | None = Field(None, max_length=500)
 
 
 class TagCreate(TagBase):
@@ -378,8 +422,8 @@ class TagCreate(TagBase):
 
 
 class TagUpdate(BaseModel):
-    name: Optional[str] = Field(None, min_length=1, max_length=100)
-    description: Optional[str] = Field(None, max_length=500)
+    name: str | None = Field(None, min_length=1, max_length=100)
+    description: str | None = Field(None, max_length=500)
 
 
 class TagInDB(TagBase):
@@ -395,8 +439,8 @@ class Tag(TagInDB):
 
 class ImageBase(BaseModel):
     file_path: str = Field(..., max_length=500)
-    alt_text: Optional[str] = Field(None, max_length=500)
-    caption: Optional[str] = None
+    alt_text: str | None = Field(None, max_length=500)
+    caption: str | None = None
 
 
 class ImageCreate(ImageBase):
@@ -404,8 +448,8 @@ class ImageCreate(ImageBase):
 
 
 class ImageUpdate(BaseModel):
-    alt_text: Optional[str] = Field(None, max_length=500)
-    caption: Optional[str] = None
+    alt_text: str | None = Field(None, max_length=500)
+    caption: str | None = None
 
 
 class ImageInDB(ImageBase):
@@ -428,3 +472,6 @@ WordUpdate = LexemeUpdate
 WordListItem = LexemeListItem
 WordFilter = LexemeFilter
 WordStatistics = LexemeStatistics
+
+
+LexemeSuggestion.model_rebuild()

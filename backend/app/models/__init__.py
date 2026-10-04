@@ -4,32 +4,33 @@ Database models for the Nativo language-preservation platform.
 All models use UUID primary keys.
 """
 
-from app.models.user import User, UserRole
-from app.models.language import Language
-from app.models.user_language import UserLanguage, ProficiencyLevel
+from app.models.api_token import ApiToken
 from app.models.audio import Audio
 from app.models.document import Document
-from app.models.text import Text, DocumentType
-from app.models.text_word_link import TextWordLink, TextWordLinkStatus
-from app.models.location import Location
 from app.models.image import Image
+from app.models.language import Language
 from app.models.learning import DifficultyRating, UserLexemeKnowledge, UserTextProgress
+from app.models.location import Location
 from app.models.tag import Tag
+from app.models.text import DocumentType, Text
+from app.models.text_word_link import TextWordLink, TextWordLinkStatus
+from app.models.user import User, UserRole
+from app.models.user_language import ProficiencyLevel, UserLanguage
 from app.models.word import (
-    Lexeme,
-    SpellingVariant,
-    WordForm,
     # Enums
     Animacy,
     AntonymType,
     GrammaticalCase,
     GrammaticalGender,
+    Lexeme,
     LexemeStatus,
     PartOfSpeech,
     Plurality,
     Register,
+    SpellingVariant,
     SynonymNuance,
     VerbAspect,
+    WordForm,
     WordStatus,
     WordTextType,
     # Associations
@@ -48,6 +49,7 @@ from app.models.word import (
 __all__ = [
     # Core models
     "User",
+    "ApiToken",
     "Language",
     "UserLanguage",
     "Audio",

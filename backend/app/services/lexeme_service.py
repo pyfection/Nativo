@@ -8,10 +8,11 @@ Responsibilities:
   canonicalise the pair as `(min_id, max_id)` so the CHECK constraint passes
   and the row exists exactly once.
 """
+
 from __future__ import annotations
 
+from collections.abc import Iterable
 from datetime import UTC, datetime
-from typing import Iterable, Optional
 from uuid import UUID
 
 from fastapi import HTTPException
@@ -24,6 +25,7 @@ from app.models.word import (
     Lexeme,
     LexemeOrigin,
     LexemeStatus,
+    SpellingVariant,
     WordForm,
     lexeme_antonyms,
     lexeme_synonyms,
@@ -33,6 +35,7 @@ from app.schemas.word import (
     AntonymCreate,
     AntonymLink,
     LexemeCreate,
+    LexemeReviewCorrections,
     LexemeUpdate,
     SynonymCreate,
     SynonymLink,
@@ -268,24 +271,18 @@ def update_word_form(db: Session, word_form: WordForm, data: WordFormUpdate) -> 
 
 
 def _demote_existing_lemma(db: Session, lexeme_id: UUID, *, exclude_id: UUID | None = None) -> None:
-    query = db.query(WordForm).filter(
-        WordForm.lexeme_id == lexeme_id, WordForm.is_lemma.is_(True)
-    )
+    query = db.query(WordForm).filter(WordForm.lexeme_id == lexeme_id, WordForm.is_lemma.is_(True))
     if exclude_id is not None:
         query = query.filter(WordForm.id != exclude_id)
     for existing in query.all():
         existing.is_lemma = False
 
 
-def _set_word_form_locations(
-    db: Session, word_form_id: UUID, location_ids: list[UUID]
-) -> None:
+def _set_word_form_locations(db: Session, word_form_id: UUID, location_ids: list[UUID]) -> None:
     from app.models.word import word_form_locations
 
     db.execute(
-        delete(word_form_locations).where(
-            word_form_locations.c.word_form_id == word_form_id
-        )
+        delete(word_form_locations).where(word_form_locations.c.word_form_id == word_form_id)
     )
     now = _now()
     for loc_id in location_ids:
@@ -316,9 +313,7 @@ def add_synonym(db: Session, lexeme_id: UUID, data: SynonymCreate) -> SynonymLin
     if not own or not other:
         raise HTTPException(status_code=404, detail="Lexeme not found")
     if own.language_id != other.language_id:
-        raise HTTPException(
-            status_code=400, detail="Synonyms must share the same language"
-        )
+        raise HTTPException(status_code=400, detail="Synonyms must share the same language")
 
     low, high = _ordered_pair(lexeme_id, data.other_lexeme_id)
     existing = db.execute(
@@ -396,9 +391,7 @@ def add_antonym(db: Session, lexeme_id: UUID, data: AntonymCreate) -> AntonymLin
     if not own or not other:
         raise HTTPException(status_code=404, detail="Lexeme not found")
     if own.language_id != other.language_id:
-        raise HTTPException(
-            status_code=400, detail="Antonyms must share the same language"
-        )
+        raise HTTPException(status_code=400, detail="Antonyms must share the same language")
 
     low, high = _ordered_pair(lexeme_id, data.other_lexeme_id)
     existing = db.execute(
@@ -464,9 +457,7 @@ def list_antonyms(db: Session, lexeme_id: UUID) -> list[AntonymLink]:
     ).fetchall()
 
     other_ids = [r.antonym_id if r.lexeme_id == lexeme_id else r.lexeme_id for r in rows]
-    return _build_links(
-        db, other_ids, rows, AntonymLink, antonym_type_key="antonym_type"
-    )
+    return _build_links(db, other_ids, rows, AntonymLink, antonym_type_key="antonym_type")
 
 
 def add_translation(
@@ -480,9 +471,7 @@ def add_translation(
     if not own or not other:
         raise HTTPException(status_code=404, detail="Lexeme not found")
     if own.language_id == other.language_id:
-        raise HTTPException(
-            status_code=400, detail="Translation must be in a different language"
-        )
+        raise HTTPException(status_code=400, detail="Translation must be in a different language")
 
     low, high = _ordered_pair(lexeme_id, data.other_lexeme_id)
     existing = db.execute(
@@ -532,7 +521,7 @@ def remove_translation(db: Session, lexeme_id: UUID, other_id: UUID) -> None:
 
 
 def update_translation_notes(
-    db: Session, lexeme_id: UUID, other_id: UUID, notes: Optional[str]
+    db: Session, lexeme_id: UUID, other_id: UUID, notes: str | None
 ) -> TranslationLink:
     low, high = _ordered_pair(lexeme_id, other_id)
     result = db.execute(
@@ -573,10 +562,43 @@ def list_translations(db: Session, lexeme_id: UUID) -> list[TranslationLink]:
         )
     ).fetchall()
 
-    other_ids = [
-        r.translation_id if r.lexeme_id == lexeme_id else r.lexeme_id for r in rows
-    ]
+    other_ids = [r.translation_id if r.lexeme_id == lexeme_id else r.lexeme_id for r in rows]
     return _build_links(db, other_ids, rows, TranslationLink)
+
+
+def translations_for(db: Session, lexeme_ids: list[UUID]) -> dict[UUID, list[TranslationLink]]:
+    """`list_translations` for many lexemes at once, in three queries
+    regardless of how many — the review queue shows a gloss per row."""
+    out: dict[UUID, list[TranslationLink]] = {lexeme_id: [] for lexeme_id in lexeme_ids}
+    if not lexeme_ids:
+        return out
+    rows = db.execute(
+        select(
+            lexeme_translations.c.lexeme_id,
+            lexeme_translations.c.translation_id,
+            lexeme_translations.c.notes,
+        ).where(
+            or_(
+                lexeme_translations.c.lexeme_id.in_(lexeme_ids),
+                lexeme_translations.c.translation_id.in_(lexeme_ids),
+            )
+        )
+    ).fetchall()
+    pairs = []
+    for r in rows:
+        if r.lexeme_id in out:
+            pairs.append((r.lexeme_id, r.translation_id, r))
+        if r.translation_id in out:
+            pairs.append((r.translation_id, r.lexeme_id, r))
+    links = _build_links(
+        db, [other for _, other, _ in pairs], [r for _, _, r in pairs], TranslationLink
+    )
+    # _build_links drops rows whose lexeme vanished; realign by id.
+    by_other = {link.id: link for link in links}
+    for owner, other, _ in pairs:
+        if other in by_other:
+            out[owner].append(by_other[other])
+    return out
 
 
 def _build_links(
@@ -590,9 +612,7 @@ def _build_links(
 ) -> list:
     if not other_ids:
         return []
-    lexemes = {
-        lx.id: lx for lx in db.query(Lexeme).filter(Lexeme.id.in_(other_ids)).all()
-    }
+    lexemes = {lx.id: lx for lx in db.query(Lexeme).filter(Lexeme.id.in_(other_ids)).all()}
     languages = {
         lang.id: lang
         for lang in db.query(Language)
@@ -661,3 +681,242 @@ def find_rhymes(
         .limit(limit)
         .all()
     )
+
+
+# ---------------------------------------------------------------------------
+# Search
+# ---------------------------------------------------------------------------
+
+
+def search_lexemes(
+    db: Session,
+    q: str,
+    *,
+    language_ids: list[UUID] | None = None,
+    include_unpublished: bool = False,
+    skip: int = 0,
+    limit: int = 50,
+) -> list[Lexeme]:
+    """
+    Full-ish text search over lemma + any WordForm's `form` / `romanization`,
+    plus recorded non-standard `SpellingVariant`s — so a query like "eich" also
+    surfaces the standard "aih" it's mapped to.
+    """
+    query = db.query(Lexeme).distinct()
+    if include_unpublished:
+        query = query.filter(
+            Lexeme.status.in_(
+                [LexemeStatus.PUBLISHED, LexemeStatus.PENDING_REVIEW, LexemeStatus.DRAFT]
+            )
+        )
+    else:
+        query = query.filter(Lexeme.status == LexemeStatus.PUBLISHED)
+
+    if q:
+        like = f"%{q}%"
+        query = (
+            query.outerjoin(WordForm, WordForm.lexeme_id == Lexeme.id)
+            .outerjoin(SpellingVariant, SpellingVariant.word_form_id == WordForm.id)
+            .filter(
+                or_(
+                    Lexeme.lemma.ilike(like),
+                    WordForm.form.ilike(like),
+                    WordForm.romanization.ilike(like),
+                    SpellingVariant.variant.ilike(like),
+                )
+            )
+        )
+
+    if language_ids:
+        query = query.filter(Lexeme.language_id.in_(language_ids))
+
+    return query.offset(skip).limit(limit).all()
+
+
+# ---------------------------------------------------------------------------
+# Review: approve (optionally with corrections) / reject
+#
+# A drafter (e.g. the LLM bot account) may create a suggestion together with
+# *drafted glosses*: pending lexemes in another language, by the same author,
+# linked as translations. Those glosses follow their word — approving the word
+# publishes them, rejecting it archives them — so a reviewer judges one entry,
+# not two queues.
+# ---------------------------------------------------------------------------
+
+
+def _translation_partners(db: Session, lexeme_id: UUID) -> list[Lexeme]:
+    rows = db.execute(
+        select(lexeme_translations.c.lexeme_id, lexeme_translations.c.translation_id).where(
+            or_(
+                lexeme_translations.c.lexeme_id == lexeme_id,
+                lexeme_translations.c.translation_id == lexeme_id,
+            )
+        )
+    ).fetchall()
+    ids = [r.translation_id if r.lexeme_id == lexeme_id else r.lexeme_id for r in rows]
+    if not ids:
+        return []
+    return db.query(Lexeme).filter(Lexeme.id.in_(ids)).all()
+
+
+def _is_drafted_gloss(partner: Lexeme, lexeme: Lexeme) -> bool:
+    return (
+        partner.status == LexemeStatus.PENDING_REVIEW
+        and partner.created_by_id == lexeme.created_by_id
+    )
+
+
+def _unlink_translation(db: Session, a: UUID, b: UUID) -> None:
+    low, high = _ordered_pair(a, b)
+    db.execute(
+        delete(lexeme_translations).where(
+            and_(
+                lexeme_translations.c.lexeme_id == low,
+                lexeme_translations.c.translation_id == high,
+            )
+        )
+    )
+
+
+def _still_used(db: Session, gloss: Lexeme, *, besides: UUID) -> bool:
+    """Whether a gloss translates any live word other than `besides`
+    (links to archived words don't count)."""
+    return any(
+        p.id != besides and p.status != LexemeStatus.ARCHIVED
+        for p in _translation_partners(db, gloss.id)
+    )
+
+
+def _archive_if_orphaned_draft(db: Session, partner: Lexeme, lexeme: Lexeme) -> None:
+    if _is_drafted_gloss(partner, lexeme) and not _still_used(db, partner, besides=lexeme.id):
+        partner.status = LexemeStatus.ARCHIVED
+        partner.draft_confidence = None
+
+
+def find_gloss_target(db: Session, language_id: UUID, lemma: str) -> Lexeme | None:
+    """An existing, non-archived entry to reuse as a gloss — published ones
+    first — so glossing never duplicates a word the dictionary already has."""
+    candidates = (
+        db.query(Lexeme)
+        .filter(
+            Lexeme.language_id == language_id,
+            Lexeme.lemma == lemma,
+            Lexeme.status != LexemeStatus.ARCHIVED,
+        )
+        .all()
+    )
+    candidates.sort(key=lambda lx: lx.status != LexemeStatus.PUBLISHED)
+    return candidates[0] if candidates else None
+
+
+def _set_glosses(
+    db: Session, lexeme: Lexeme, language_id: UUID, lemmas: list[str], reviewer_id: UUID
+) -> None:
+    wanted = list(dict.fromkeys(g.strip() for g in lemmas if g.strip()))
+    current = [p for p in _translation_partners(db, lexeme.id) if p.language_id == language_id]
+
+    for partner in current:
+        if partner.lemma not in wanted:
+            _unlink_translation(db, lexeme.id, partner.id)
+            db.flush()
+            _archive_if_orphaned_draft(db, partner, lexeme)
+
+    have = {p.lemma for p in current}
+    for gloss in wanted:
+        if gloss in have:
+            continue
+        target = find_gloss_target(db, language_id, gloss)
+        if target is None:
+            # The reviewer typed it, so it is reviewed content: publish it.
+            target = Lexeme(
+                language_id=language_id,
+                lemma=gloss,
+                created_by_id=reviewer_id,
+                verified_by_id=reviewer_id,
+                is_verified=True,
+                status=LexemeStatus.PUBLISHED,
+            )
+            db.add(target)
+            db.flush()
+            db.add(WordForm(lexeme_id=target.id, form=gloss, is_lemma=True))
+        low, high = _ordered_pair(lexeme.id, target.id)
+        db.execute(
+            insert(lexeme_translations).values(
+                lexeme_id=low, translation_id=high, created_at=_now(), created_by_id=reviewer_id
+            )
+        )
+    db.flush()
+
+
+def _apply_corrections(
+    db: Session, lexeme: Lexeme, fixes: LexemeReviewCorrections, reviewer_id: UUID
+) -> None:
+    forms = {wf.id: wf for wf in lexeme.forms}
+    for fix in fixes.forms:
+        word_form = forms.get(fix.id)
+        if word_form is None:
+            raise HTTPException(status_code=400, detail="Form does not belong to this word")
+        if fix.delete:
+            if word_form.is_lemma:
+                raise HTTPException(status_code=400, detail="Can't delete the lemma form")
+            db.delete(word_form)
+            continue
+        changes = fix.model_dump(exclude_unset=True, exclude={"id", "delete"})
+        for field, value in changes.items():
+            setattr(word_form, field, value)
+        if "ipa_pronunciation" in changes:
+            _apply_rhyme_keys(word_form)
+        if word_form.is_lemma and word_form.form != lexeme.lemma:
+            lexeme.lemma = word_form.form
+
+    top = fixes.model_dump(
+        exclude_unset=True, include={"lemma", "part_of_speech", "gender", "notes"}
+    )
+    for field, value in top.items():
+        setattr(lexeme, field, value)
+    if "lemma" in top:
+        for word_form in lexeme.forms:
+            if word_form.is_lemma:
+                word_form.form = lexeme.lemma
+    db.flush()
+
+    for gloss in fixes.glosses:
+        _set_glosses(db, lexeme, gloss.language_id, gloss.lemmas, reviewer_id)
+
+
+def approve_lexeme(
+    db: Session,
+    lexeme: Lexeme,
+    reviewer_id: UUID,
+    corrections: LexemeReviewCorrections | None = None,
+) -> Lexeme:
+    """Publish and verify a lexeme (applying any reviewer corrections first),
+    along with the glosses drafted for it. Does not commit."""
+    if corrections is not None:
+        _apply_corrections(db, lexeme, corrections, reviewer_id)
+
+    for partner in _translation_partners(db, lexeme.id):
+        if _is_drafted_gloss(partner, lexeme):
+            partner.status = LexemeStatus.PUBLISHED
+            partner.is_verified = True
+            partner.verified_by_id = reviewer_id
+            partner.draft_confidence = None
+
+    lexeme.is_verified = True
+    lexeme.verified_by_id = reviewer_id
+    lexeme.status = LexemeStatus.PUBLISHED
+    lexeme.draft_confidence = None
+    return lexeme
+
+
+def reject_lexeme(db: Session, lexeme: Lexeme, reason: str | None = None) -> Lexeme:
+    """Archive a suggestion, and the drafted glosses nothing else uses.
+    Does not commit."""
+    lexeme.status = LexemeStatus.ARCHIVED
+    lexeme.draft_confidence = None
+    if reason:
+        prefix = f"{lexeme.notes}\n" if lexeme.notes else ""
+        lexeme.notes = f"{prefix}Rejected: {reason}"
+    for partner in _translation_partners(db, lexeme.id):
+        _archive_if_orphaned_draft(db, partner, lexeme)
+    return lexeme
