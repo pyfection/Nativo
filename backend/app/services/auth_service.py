@@ -1,7 +1,10 @@
 """
 Authentication service for JWT token management and user operations.
 """
-from datetime import datetime, timedelta
+
+import hashlib
+import secrets
+from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 from fastapi import HTTPException, status
@@ -11,6 +14,7 @@ from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
 from app.config import settings
+from app.models.api_token import ApiToken
 from app.models.user import User, UserRole
 from app.models.user_language import UserLanguage
 
@@ -34,9 +38,7 @@ def make_password_reset_token(user: User) -> str:
 
 def verify_password_reset_token(db: Session, token: str) -> User | None:
     try:
-        payload = _serializer("password-reset").loads(
-            token, max_age=PASSWORD_RESET_MAX_AGE
-        )
+        payload = _serializer("password-reset").loads(token, max_age=PASSWORD_RESET_MAX_AGE)
         user_id = UUID(payload["uid"])
     except (BadSignature, SignatureExpired, KeyError, ValueError):
         return None
@@ -50,9 +52,7 @@ def verify_password_reset_token(db: Session, token: str) -> User | None:
 
 def make_email_verify_token(user: User) -> str:
     """Verification token bound to the address it was sent to."""
-    return _serializer("email-verify").dumps(
-        {"uid": str(user.id), "email": user.email}
-    )
+    return _serializer("email-verify").dumps({"uid": str(user.id), "email": user.email})
 
 
 def verify_email_token(db: Session, token: str) -> User | None:
@@ -69,24 +69,55 @@ def verify_email_token(db: Session, token: str) -> User | None:
     return user
 
 
+# Personal API tokens (MCP server, scripts). The prefix lets
+# `get_current_user` tell them apart from JWTs without trying to decode.
+API_TOKEN_PREFIX = "nat_"
+
+
+def _hash_api_token(token: str) -> str:
+    return hashlib.sha256(token.encode()).hexdigest()
+
+
+def create_api_token(db: Session, user: User, name: str) -> tuple[ApiToken, str]:
+    """Mint a token for `user`. Returns the row and the plaintext — the
+    plaintext is never stored, so this is the only time it exists."""
+    plaintext = API_TOKEN_PREFIX + secrets.token_urlsafe(32)
+    row = ApiToken(
+        user_id=user.id,
+        name=name,
+        token_prefix=plaintext[:12],
+        token_hash=_hash_api_token(plaintext),
+    )
+    db.add(row)
+    db.commit()
+    db.refresh(row)
+    return row, plaintext
+
+
+def authenticate_api_token(db: Session, token: str) -> User | None:
+    """Resolve a plaintext API token to its user, stamping last use."""
+    row = db.query(ApiToken).filter(ApiToken.token_hash == _hash_api_token(token)).first()
+    if row is None:
+        return None
+    row.last_used_at = datetime.now(UTC)
+    db.commit()
+    return row.user
+
+
 def create_access_token(user_id: UUID, role: UserRole) -> str:
     """
     Create a JWT access token for a user.
-    
+
     Args:
         user_id: User's UUID
         role: User's role
-        
+
     Returns:
         Encoded JWT token
     """
     expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
 
-    to_encode = {
-        "sub": str(user_id),
-        "role": role.value,
-        "exp": expire
-    }
+    to_encode = {"sub": str(user_id), "role": role.value, "exp": expire}
 
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     return encoded_jwt
@@ -95,13 +126,13 @@ def create_access_token(user_id: UUID, role: UserRole) -> str:
 def decode_token(token: str) -> dict:
     """
     Decode and validate a JWT token.
-    
+
     Args:
         token: JWT token string
-        
+
     Returns:
         Decoded token payload
-        
+
     Raises:
         HTTPException: If token is invalid or expired
     """
@@ -119,11 +150,11 @@ def decode_token(token: str) -> dict:
 def check_resource_owner(user: User, resource_owner_id: UUID) -> bool:
     """
     Check if a user owns a resource or is an admin.
-    
+
     Args:
         user: Current user
         resource_owner_id: ID of the resource owner
-        
+
     Returns:
         True if user owns the resource or is an admin
     """
@@ -133,18 +164,17 @@ def check_resource_owner(user: User, resource_owner_id: UUID) -> bool:
 def require_resource_owner(user: User, resource_owner_id: UUID) -> None:
     """
     Require that a user owns a resource or is an admin.
-    
+
     Args:
         user: Current user
         resource_owner_id: ID of the resource owner
-        
+
     Raises:
         HTTPException: If user doesn't own the resource and is not an admin
     """
     if not check_resource_owner(user, resource_owner_id):
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You can only modify your own resources"
+            status_code=status.HTTP_403_FORBIDDEN, detail="You can only modify your own resources"
         )
 
 
@@ -152,12 +182,12 @@ def can_user_edit_language(db: Session, user_id: UUID, language_id: UUID) -> boo
     """
     Check if a user has permission to edit content for a specific language.
     Admins always have permission.
-    
+
     Args:
         db: Database session
         user_id: User's UUID
         language_id: Language's UUID
-        
+
     Returns:
         True if user can edit content in this language
     """
@@ -171,12 +201,11 @@ def can_user_edit_language(db: Session, user_id: UUID, language_id: UUID) -> boo
         return True
 
     # Check user-language relationship
-    user_language = db.query(UserLanguage).filter(
-        and_(
-            UserLanguage.user_id == user_id,
-            UserLanguage.language_id == language_id
-        )
-    ).first()
+    user_language = (
+        db.query(UserLanguage)
+        .filter(and_(UserLanguage.user_id == user_id, UserLanguage.language_id == language_id))
+        .first()
+    )
 
     return user_language is not None and user_language.can_edit
 
@@ -185,12 +214,12 @@ def can_user_verify_language(db: Session, user_id: UUID, language_id: UUID) -> b
     """
     Check if a user has permission to verify content for a specific language.
     Admins always have permission.
-    
+
     Args:
         db: Database session
         user_id: User's UUID
         language_id: Language's UUID
-        
+
     Returns:
         True if user can verify content in this language
     """
@@ -204,12 +233,11 @@ def can_user_verify_language(db: Session, user_id: UUID, language_id: UUID) -> b
         return True
 
     # Check user-language relationship
-    user_language = db.query(UserLanguage).filter(
-        and_(
-            UserLanguage.user_id == user_id,
-            UserLanguage.language_id == language_id
-        )
-    ).first()
+    user_language = (
+        db.query(UserLanguage)
+        .filter(and_(UserLanguage.user_id == user_id, UserLanguage.language_id == language_id))
+        .first()
+    )
 
     return user_language is not None and user_language.can_verify
 
@@ -217,39 +245,40 @@ def can_user_verify_language(db: Session, user_id: UUID, language_id: UUID) -> b
 def require_language_edit_permission(db: Session, user: User, language_id: UUID) -> None:
     """
     Require that a user has permission to edit content for a language.
-    
+
     Args:
         db: Database session
         user: Current user
         language_id: Language's UUID
-        
+
     Raises:
         HTTPException: If user lacks permission
     """
     if not can_user_edit_language(db, user.id, language_id):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You don't have permission to edit content for this language"
+            detail="You don't have permission to edit content for this language",
         )
 
 
 def require_language_verify_permission(db: Session, user: User, language_id: UUID) -> None:
     """
     Require that a user has permission to verify content for a language.
-    
+
     Args:
         db: Database session
         user: Current user
         language_id: Language's UUID
-        
+
     Raises:
         HTTPException: If user lacks permission
     """
     if not can_user_verify_language(db, user.id, language_id):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You don't have permission to verify content for this language"
+            detail="You don't have permission to verify content for this language",
         )
+
 
 # ---------------------------------------------------------------------------
 # Suggester tier: trust-based auto-promotion
@@ -272,6 +301,9 @@ def maybe_promote_suggester(db: Session, user_id: UUID, language_id: UUID) -> bo
 
     if can_user_edit_language(db, user_id, language_id):
         return False
+    user = db.query(User).filter(User.id == user_id).first()
+    if user is None or user.is_bot:
+        return False  # automated drafts must always go through review
 
     # The caller (verify endpoint) has just set the lexeme to PUBLISHED in
     # the session; the app session is autoflush=False, so flush explicitly or
@@ -292,12 +324,16 @@ def maybe_promote_suggester(db: Session, user_id: UUID, language_id: UUID) -> bo
     if approved < AUTO_PROMOTE_AFTER_APPROVALS:
         return False
 
-    user_language = db.query(UserLanguage).filter(
-        and_(
-            UserLanguage.user_id == user_id,
-            UserLanguage.language_id == language_id,
+    user_language = (
+        db.query(UserLanguage)
+        .filter(
+            and_(
+                UserLanguage.user_id == user_id,
+                UserLanguage.language_id == language_id,
+            )
         )
-    ).first()
+        .first()
+    )
     if user_language is None:
         return False
     user_language.can_edit = True

@@ -22,7 +22,11 @@ dependencies = [
     "psycopg2-binary>=2.9.9",
     "slowapi>=0.1.9",
     "boto3>=1.43.46",
+    "mcp>=2.2",
 ]
+
+[project.scripts]
+nativo-mcp = "app.mcp_server:main"
 
 [project.optional-dependencies]
 dev = [

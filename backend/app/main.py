@@ -2,6 +2,8 @@
 Main FastAPI application for Nativo endangered language preservation platform.
 """
 
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -13,13 +15,27 @@ from app.admin import create_admin
 from app.api.v1.router import router as api_v1_router
 from app.config import settings
 from app.limiter import limiter
+from app.mcp_server import http_app as mcp_http_app
+from app.mcp_server import mcp
 from app.utils.file_storage import UPLOADS_ROOT, presigned_url, s3_bucket
+
+# MCP server (streamable HTTP) — its routes are added below; the session
+# manager needs to run for the app's lifetime.
+mcp_app = mcp_http_app()
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    async with mcp.session_manager.run():
+        yield
+
 
 # Create FastAPI application
 app = FastAPI(
     title=settings.APP_NAME,
     description="A platform for preserving endangered languages through digital archival",
     version="0.1.0",
+    lifespan=lifespan,
 )
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
@@ -48,6 +64,9 @@ app.add_middleware(
 
 # Include API router
 app.include_router(api_v1_router, prefix="/api/v1")
+
+# MCP endpoint at /mcp — see app/mcp_server.py.
+app.router.routes.extend(mcp_app.routes)
 
 # Serve user-uploaded files (audio recordings, future image attachments)
 # from /uploads/* so Audio rows can store a directly-fetchable URL path.
@@ -78,6 +97,7 @@ async def root():
         "message": "Welcome to Nativo API",
         "docs": "/docs",
         "admin": "/admin",
+        "mcp": "/mcp",
         "version": "0.1.0",
     }
 

@@ -114,6 +114,7 @@
     "sign_in": "Sign In",
     "register": "Register",
     "admin_panel": "Admin Panel",
+    "api_tokens": "API tokens",
     "sign_out": "Sign Out"
   },
   "nav": {
@@ -546,7 +547,11 @@
     "add_failed": "Failed to add",
     "picker_placeholder": "Type to search…",
     "picker_searching": "Searching…",
-    "picker_no_matches": "No matches."
+    "picker_no_matches": "No matches.",
+    "origin_from": "{{origin}} from {{language}}",
+    "edit_origin": "Edit origin",
+    "origin_saved": "Origin updated",
+    "origin_save_failed": "Failed to update origin"
   },
   "audio_recorder": {
     "recording_uploaded": "Recording uploaded.",
@@ -692,7 +697,14 @@
     "register_neutral": "Neutral",
     "suggest_title": "Suggest a Word",
     "suggest_note": "You are suggesting this word. A reviewer will check it before it appears in the dictionary.",
-    "suggest_word": "Submit suggestion"
+    "suggest_word": "Submit suggestion",
+    "origin_label": "Origin",
+    "origin_hint": "Words speakers actually use belong in the dictionary even when borrowed (e.g. a German word for a modern concept). Mark them as a loanword instead of leaving them out.",
+    "origin_native": "Native",
+    "origin_loanword": "Loanword",
+    "origin_calque": "Calque (loan translation)",
+    "origin_neologism": "Neologism",
+    "borrowed_from_label": "Borrowed from"
   },
   "add_doc": {
     "title": "Add New Document",
@@ -1001,6 +1013,53 @@
     "reject_reason_prompt": "Why is this rejected? (optional, shown to nobody yet but kept in the notes)",
     "no_permission": "Reviewing suggestions requires verify permission for this language.",
     "words_heading": "Words",
-    "texts_heading": "Documents"
+    "texts_heading": "Documents",
+    "edit": "Edit",
+    "save_approve": "Save & approve",
+    "cancel": "Cancel",
+    "keyboard_hint": "Keys: j/k move · a approve · e edit · r reject. In the editor: Enter or Ctrl+Enter saves and approves, Esc cancels.",
+    "group_high": "Likely right",
+    "group_medium": "Worth a look",
+    "group_low": "Check carefully",
+    "group_none": "Other suggestions",
+    "confidence_high": "high confidence",
+    "confidence_medium": "medium confidence",
+    "confidence_low": "low confidence",
+    "approve_all": "Approve all {{count}}",
+    "approve_all_confirm": "Approve all {{count}} high-confidence words? Each one is published together with its glosses.",
+    "approving_progress": "Approving {{done}} of {{total}}…",
+    "field_lemma": "Word",
+    "field_pos": "Part of speech",
+    "field_glosses": "{{language}} glosses (comma-separated)",
+    "field_forms": "Other forms",
+    "field_notes": "Notes",
+    "form_note_placeholder": "note, e.g. plural",
+    "remove_form": "remove"
+  },
+  "api_tokens": {
+    "title": "API tokens",
+    "subtitle": "Connect AI assistants such as Claude to Nativo through its MCP server. A token lets a tool act as you, with exactly your permissions: it can search the dictionary, check spellings, and add words and texts in the languages you edit. Anywhere else, its additions become suggestions for review.",
+    "connect_heading": "Connect",
+    "connect_hint": "MCP server URL. Send your token as a bearer token in the Authorization header.",
+    "claude_code_hint": "For Claude Code, run:",
+    "create_heading": "New token",
+    "name_label": "Token name",
+    "name_placeholder": "What is it for? e.g. \"Claude on my laptop\"",
+    "create": "Create token",
+    "creating": "Creating…",
+    "create_failed": "Could not create the token. Please try again.",
+    "created_notice": "Copy this token now. You won't be able to see it again.",
+    "copy": "Copy",
+    "copied": "Copied",
+    "list_heading": "Your tokens",
+    "loading": "Loading tokens…",
+    "load_failed": "Could not load your tokens.",
+    "empty": "No tokens yet.",
+    "created_on": "created {{date}}",
+    "last_used": "last used {{date}}",
+    "never_used": "never used",
+    "revoke": "Revoke",
+    "revoke_confirm": "Revoke \"{{name}}\"? Anything using it will stop working immediately.",
+    "revoke_failed": "Could not revoke the token. Please try again."
   }
 }
