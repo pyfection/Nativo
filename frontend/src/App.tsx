@@ -16,6 +16,7 @@ import WordDetail from './pages/WordDetail';
 import WritingStandard from './pages/WritingStandard';
 import Dictionary from './pages/Dictionary';
 import SpellingLookup from './pages/SpellingLookup';
+import Transcribe from './pages/Transcribe';
 import DocumentList from './pages/DocumentList';
 import DocumentDetail from './pages/DocumentDetail';
 import AddDocument from './pages/AddDocument';
@@ -426,6 +427,20 @@ function App() {
                   languages={languages}
                 >
                   <SpellingLookup selectedLanguage={selectedLanguage!} />
+                </AppLayout>
+              }
+            />
+
+            {/* Speech / IPA → standard spelling — IPA is public, audio needs sign-in */}
+            <Route
+              path="/transcribe"
+              element={
+                <AppLayout
+                  selectedLanguage={selectedLanguage!}
+                  onLanguageChange={setSelectedLanguage}
+                  languages={languages}
+                >
+                  <Transcribe selectedLanguage={selectedLanguage!} />
                 </AppLayout>
               }
             />

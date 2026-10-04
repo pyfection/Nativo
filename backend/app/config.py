@@ -23,6 +23,9 @@ class Settings(BaseSettings):
     # Where account emails (password reset, verification) link back to.
     FRONTEND_URL: str = "http://localhost:5173"
 
+    # Zero-shot speech → IPA model for /transcribe/audio (needs `--extra asr`).
+    PHONEME_MODEL: str = "facebook/wav2vec2-xlsr-53-espeak-cv-ft"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

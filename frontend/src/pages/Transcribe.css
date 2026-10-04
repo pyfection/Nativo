@@ -1,0 +1,145 @@
+.transcribe-page {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+.transcribe-header h1 {
+  margin: 0 0 4px;
+}
+
+.transcribe-header .subtitle {
+  color: var(--sage);
+  margin: 0 0 20px;
+}
+
+.transcribe-panel {
+  margin-bottom: 18px;
+  padding: 16px 18px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.transcribe-panel h2 {
+  margin: 0 0 12px;
+  font-size: 1rem;
+  color: var(--cream);
+}
+
+.transcribe-audio-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.transcribe-button {
+  display: inline-block;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--accent, #6f9f8a);
+  color: var(--ink, #10231c);
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.transcribe-button.secondary {
+  background: transparent;
+  color: var(--cream);
+}
+
+.transcribe-button.recording {
+  background: #c0564b;
+  color: #fff;
+}
+
+.transcribe-button:disabled,
+.transcribe-button.disabled {
+  opacity: 0.5;
+  cursor: default;
+  pointer-events: none;
+}
+
+.transcribe-hint {
+  margin: 10px 0 0;
+  color: var(--sage);
+  font-size: 0.9rem;
+}
+
+.transcribe-ipa {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--cream);
+  font-family: 'Charis SIL', 'Doulos SIL', 'Noto Sans', sans-serif;
+  font-size: 1.1rem;
+  resize: vertical;
+}
+
+.transcribe-tokens {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.transcribe-token {
+  padding: 6px 10px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--cream);
+  font-size: 1.05rem;
+}
+
+.transcribe-token.ambiguous {
+  border-color: var(--accent, #6f9f8a);
+}
+
+.transcribe-token.low {
+  border-color: #c9a24b;
+}
+
+.transcribe-token.unknown {
+  border-style: dashed;
+  border-color: #c0564b;
+  font-style: italic;
+}
+
+.transcribe-legend {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 12px 0 0;
+  color: var(--sage);
+  font-size: 0.85rem;
+}
+
+.transcribe-legend .transcribe-token {
+  padding: 1px 6px;
+  font-size: 0.8rem;
+  margin-left: 8px;
+}
+
+.transcribe-final {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.transcribe-final p {
+  flex: 1;
+  margin: 0;
+  font-size: 1.15rem;
+  color: var(--cream);
+}

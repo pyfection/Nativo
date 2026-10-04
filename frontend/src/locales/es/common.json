@@ -125,7 +125,8 @@
     "audio": "Audio",
     "contributors": "Colaboradores",
     "languages": "Lenguas",
-    "learn": "Aprender"
+    "learn": "Aprender",
+    "transcribe": "Voz a texto"
   },
   "audio_page": {
     "title": "Audio en {{language}}",
@@ -413,6 +414,29 @@
     "ambiguous": "Más de una palabra se escribe así: elige la que quieres decir.",
     "not_found_pre": "No se encontró una grafía estándar para",
     "not_found_post": ". Puede que aún no esté en el diccionario."
+  },
+  "transcribe_page": {
+    "title": "De voz a texto",
+    "subtitle": "Di algo en {{language}} — o escribe su AFI — y obtén la ortografía estándar.",
+    "audio_heading": "Desde audio",
+    "record": "Grabar",
+    "stop": "Detener",
+    "upload": "Subir un archivo",
+    "sign_in": "Inicia sesión",
+    "sign_in_post": "para transcribir audio. Escribir AFI funciona sin cuenta.",
+    "audio_hint": "Prototipo inicial: el reconocedor de voz aún no está entrenado para esta lengua; revisa y corrige el AFI de abajo y vuelve a transcribir.",
+    "ipa_heading": "AFI",
+    "transcribe": "Transcribir",
+    "working": "Procesando…",
+    "error_transcribe": "La transcripción falló. Inténtalo de nuevo.",
+    "result_heading": "Ortografía estándar",
+    "empty_lexicon": "Ninguna palabra de esta lengua tiene AFI todavía, así que todo se escribe por reglas. Añade AFI a las entradas del diccionario para mejorar los resultados.",
+    "confidence": "coincidencia del {{pct}}%",
+    "unknown": "no está en el diccionario — escrito por reglas",
+    "legend_unknown": "no está en el diccionario",
+    "legend_low": "coincidencia dudosa",
+    "copy": "Copiar",
+    "copied": "Copiado"
   },
   "doc_detail": {
     "loading": "Cargando documento...",

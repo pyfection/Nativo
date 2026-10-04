@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session
 from app.models.text import Text
 from app.models.text_word_link import TextWordLink, TextWordLinkStatus
 from app.models.word import Lexeme, LexemeStatus, SpellingVariant, WordForm
-from app.utils.text_normalize import fold_for_match as _strip_diacritics
+from app.utils.text_normalize import fold_for_match
 from app.utils.text_normalize import iter_tokens as _iter_tokens
 
 # Confidence tiers. A token matching exactly ONE word form in the language is
@@ -37,11 +37,11 @@ AUTO_CONFIRM_NOTE = "Auto-confirmed: unique exact match"
 def _build_word_form_index(word_forms: Iterable[WordForm]) -> dict[str, list[WordForm]]:
     index: dict[str, list[WordForm]] = defaultdict(list)
     for wf in word_forms:
-        normalized = _strip_diacritics(wf.form)
+        normalized = fold_for_match(wf.form)
         if normalized:
             index[normalized].append(wf)
         if wf.romanization:
-            normalized_rom = _strip_diacritics(wf.romanization)
+            normalized_rom = fold_for_match(wf.romanization)
             if normalized_rom and normalized_rom != normalized:
                 index[normalized_rom].append(wf)
     return index
@@ -117,7 +117,7 @@ def suggest_links_for_text(
         if (start, end) in existing_spans:
             continue
 
-        normalized = _strip_diacritics(token)
+        normalized = fold_for_match(token)
         matches = form_index.get(normalized)
 
         status = TextWordLinkStatus.SUGGESTED

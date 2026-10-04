@@ -83,6 +83,18 @@ const NAV_ITEMS: NavItem[] = [
     ),
   },
   {
+    path: '/transcribe',
+    labelKey: 'nav.transcribe',
+    // Microphone — "say it, see it written"
+    icon: (
+      <svg {...ICON_PROPS}>
+        <rect x="9" y="2" width="6" height="12" rx="3" />
+        <path d="M5 11C5 14.9 8.1 18 12 18C15.9 18 19 14.9 19 11" />
+        <path d="M12 18V22" />
+      </svg>
+    ),
+  },
+  {
     path: '/documents',
     labelKey: 'nav.documents',
     // Sheet of paper with text lines

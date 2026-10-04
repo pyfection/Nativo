@@ -40,6 +40,21 @@ dev = [
     "moto>=5.2.2",
 ]
 
+# Speech → IPA (POST /transcribe/audio). Heavy, so optional: uv sync --extra asr
+asr = [
+    "torch>=2.6",
+    "transformers>=4.45",
+    "numpy>=2.0",
+]
+
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

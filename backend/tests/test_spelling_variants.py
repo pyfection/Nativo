@@ -139,7 +139,7 @@ def test_add_variant_derives_normalized_key(db_session: Session):
     )
 
     assert variant.variant == "Éich"
-    assert variant.normalized == "eich"  # case- and diacritic-folded
+    assert variant.normalized == "éich"  # case-folded, accents kept
     assert variant.note == "older"
 
 
@@ -197,17 +197,31 @@ def test_resolve_token_returns_standard_candidate(db_session: Session):
     assert result.candidates[0].standard_form == "aih"
 
 
-def test_resolve_token_folds_case_and_diacritics(db_session: Session):
+def test_resolve_token_folds_case(db_session: Session):
     user = _seed_user(db_session)
     language = _seed_language(db_session)
     form = _seed_form(db_session, language, user, "aih")
     spelling_service.add_variant(db_session, form, SpellingVariantCreate(variant="eich"))
     db_session.commit()
 
-    result = spelling_service.resolve_token(db_session, language.id, "ÉICH")
+    result = spelling_service.resolve_token(db_session, language.id, "EICH")
 
     assert len(result.candidates) == 1
     assert result.candidates[0].standard_form == "aih"
+
+
+def test_accents_are_contrastive(db_session: Session):
+    # ia and iá are different words in the Bavarian standard.
+    user = _seed_user(db_session)
+    language = _seed_language(db_session)
+    _seed_form(db_session, language, user, "iá")
+    db_session.commit()
+
+    assert spelling_service.resolve_token(db_session, language.id, "ia").already_standard is False
+    assert spelling_service.resolve_token(db_session, language.id, "IÁ").already_standard is True
+    # Decomposed input (a + combining acute) still matches the precomposed form.
+    decomposed = "ia\u0301"
+    assert spelling_service.resolve_token(db_session, language.id, decomposed).already_standard
 
 
 def test_resolve_token_already_standard(db_session: Session):
