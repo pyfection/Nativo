@@ -343,6 +343,7 @@ def add_synonym(db: Session, lexeme_id: UUID, data: SynonymCreate) -> SynonymLin
         lemma=other.lemma,
         language_id=other.language_id,
         part_of_speech=other.part_of_speech,
+        recommendation=other.recommendation,
         nuance=data.nuance,
         notes=data.notes,
     )
@@ -421,6 +422,7 @@ def add_antonym(db: Session, lexeme_id: UUID, data: AntonymCreate) -> AntonymLin
         lemma=other.lemma,
         language_id=other.language_id,
         part_of_speech=other.part_of_speech,
+        recommendation=other.recommendation,
         antonym_type=data.antonym_type,
         notes=data.notes,
     )
@@ -501,6 +503,7 @@ def add_translation(
         lemma=other.lemma,
         language_id=other.language_id,
         part_of_speech=other.part_of_speech,
+        recommendation=other.recommendation,
         notes=data.notes,
     )
 
@@ -544,6 +547,7 @@ def update_translation_notes(
         lemma=other.lemma,
         language_id=other.language_id,
         part_of_speech=other.part_of_speech,
+        recommendation=other.recommendation,
         notes=notes,
     )
 
@@ -631,6 +635,7 @@ def _build_links(
             language_id=lx.language_id,
             language_name=languages[lx.language_id].name if lx.language_id in languages else None,
             part_of_speech=lx.part_of_speech,
+            recommendation=lx.recommendation,
             notes=row.notes if "notes" in row._fields else None,
         )
         if nuance_key:

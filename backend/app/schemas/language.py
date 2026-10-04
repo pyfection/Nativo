@@ -19,6 +19,7 @@ class LanguageBase(BaseModel):
     description: str | None = None
     is_endangered: bool = True
     managed: bool = False
+    proposal_approval_threshold: int = Field(2, ge=1, le=20)
 
     # Theme colors for UI customization
     primary_color: str | None = Field(
@@ -52,6 +53,7 @@ class LanguageUpdate(BaseModel):
     description: str | None = None
     is_endangered: bool | None = None
     managed: bool | None = None
+    proposal_approval_threshold: int | None = Field(None, ge=1, le=20)
 
     # Theme colors
     primary_color: str | None = Field(

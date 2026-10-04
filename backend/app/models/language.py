@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String, Text
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -20,6 +20,10 @@ class Language(Base):
     description = Column(Text, nullable=True)
     is_endangered = Column(Boolean, default=True)
     managed = Column(Boolean, default=False)  # True if language is managed by Nativo
+    # Approvals a ChangeProposal (e.g. "mark this word preferred") needs from
+    # this language's editors/verifiers before it is applied — and the number
+    # of objections that rejects it.
+    proposal_approval_threshold = Column(Integer, default=2, server_default="2", nullable=False)
 
     # Theme colors for UI customization
     primary_color = Column(String(7), nullable=True)  # e.g., '#8B4513'

@@ -532,3 +532,244 @@
   align-self: flex-start;
   width: auto;
 }
+
+/* ---------- Recommendation (preferred / discouraged) + proposals ---------- */
+.recommendation-preferred {
+  background: rgba(240, 192, 64, 0.16);
+  color: #f0c040;
+  border-color: rgba(240, 192, 64, 0.45);
+}
+
+.recommendation-discouraged {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--cream-dim);
+  text-decoration: line-through;
+  text-decoration-color: rgba(255, 255, 255, 0.3);
+}
+
+.recommendation-vote-open {
+  color: var(--accent);
+  border-color: var(--accent);
+  text-decoration: none;
+}
+
+.word-detail-recommendation-note,
+.word-detail-preferred-hint {
+  color: var(--cream-dim);
+  margin: 0;
+}
+
+.word-detail-preferred-hint a {
+  color: #f0c040;
+  font-weight: 600;
+}
+
+.proposal-explainer {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.proposal-card {
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.proposal-card-head {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: var(--cream);
+}
+
+.proposal-note {
+  margin: 0;
+  color: var(--cream);
+}
+
+.proposal-rationale {
+  margin: 0;
+  padding-left: 12px;
+  border-left: 3px solid var(--line);
+  color: var(--cream-dim);
+  font-style: italic;
+  white-space: pre-wrap;
+}
+
+.proposal-tally {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-weight: 600;
+}
+
+.tally-approve {
+  color: #79d182;
+}
+
+.tally-reject {
+  color: #ff8a80;
+}
+
+.proposal-blocked {
+  margin: 0;
+  font-size: 0.88rem;
+}
+
+.usage-table-wrap {
+  overflow-x: auto;
+}
+
+.usage-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  color: var(--cream-dim);
+}
+
+.usage-table caption {
+  text-align: left;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding-bottom: 6px;
+}
+
+.usage-table th,
+.usage-table td {
+  text-align: left;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.usage-table th {
+  font-weight: 500;
+  font-size: 0.8rem;
+}
+
+.usage-table .usage-self td {
+  color: var(--cream);
+  font-weight: 600;
+}
+
+.usage-table a {
+  color: var(--accent);
+}
+
+.vote-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.92rem;
+}
+
+.vote {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  color: var(--cream-dim);
+}
+
+.vote-approve .vote-choice {
+  color: #79d182;
+}
+
+.vote-reject .vote-choice {
+  color: #ff8a80;
+}
+
+.vote-user {
+  color: var(--cream);
+}
+
+.vote-comment {
+  font-style: italic;
+}
+
+.proposal-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.proposal-actions input {
+  flex: 1 1 220px;
+  min-width: 0;
+  font-family: inherit;
+  font-size: 0.95rem;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 9px 12px;
+  color: var(--cream);
+}
+
+.vote-selected-reject {
+  border-color: #ff8a80;
+  color: #ff8a80;
+}
+
+.form-editor textarea {
+  font-family: inherit;
+  font-size: 0.95rem;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 9px 12px;
+  color: var(--cream);
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 400;
+  resize: vertical;
+}
+
+.proposal-history {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--cream-dim);
+}
+
+.proposal-history summary {
+  cursor: pointer;
+}
+
+.proposal-history details[open] {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.proposal-status {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+}
+
+.proposal-status-accepted {
+  color: #79d182;
+  border-color: rgba(76, 175, 80, 0.4);
+}
+
+.proposal-status-rejected {
+  color: #ff8a80;
+  border-color: rgba(255, 138, 128, 0.4);
+}
+
+.word-detail-section .muted {
+  color: var(--cream-dim);
+}

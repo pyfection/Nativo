@@ -33,6 +33,7 @@ from app.models.word.enums import (
     Animacy,
     GrammaticalGender,
     LexemeOrigin,
+    LexemeRecommendation,
     LexemeStatus,
     PartOfSpeech,
     Register,
@@ -89,6 +90,22 @@ class Lexeme(Base):
         nullable=True,
         index=True,
     )
+
+    # Recommendation (preferred / neutral / discouraged) + why. Collective
+    # decision: written only by proposal_service when a ChangeProposal is
+    # accepted — deliberately absent from LexemeUpdate and read-only in admin.
+    recommendation = Column(
+        SQLEnum(
+            LexemeRecommendation,
+            name="lexemerecommendation",
+            values_callable=lambda e: [m.value for m in e],
+        ),
+        default=LexemeRecommendation.NEUTRAL,
+        server_default=LexemeRecommendation.NEUTRAL.value,
+        nullable=False,
+        index=True,
+    )
+    recommendation_note = Column(Text, nullable=True)
 
     # Concept-level documents (one each)
     etymology_document_id = Column(

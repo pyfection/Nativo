@@ -27,6 +27,10 @@ export const LEXEME_ORIGINS: LexemeOrigin[] = ['native', 'loanword', 'calque', '
 /** Origins that may carry a `borrowed_from_language_id`. */
 export const BORROWING_ORIGINS: LexemeOrigin[] = ['loanword', 'calque'];
 
+/** Decided by vote (see proposalService), never edited directly. */
+export type LexemeRecommendation = 'preferred' | 'neutral' | 'discouraged';
+export const LEXEME_RECOMMENDATIONS: LexemeRecommendation[] = ['preferred', 'neutral', 'discouraged'];
+
 export interface Lexeme {
   id: string;
   language_id: string;
@@ -37,6 +41,8 @@ export interface Lexeme {
   language_register?: string;
   origin?: LexemeOrigin | null;
   borrowed_from_language_id?: string | null;
+  recommendation?: LexemeRecommendation;
+  recommendation_note?: string | null;
   source?: string;
   notes?: string;
   created_by_id: string;
@@ -163,6 +169,7 @@ export interface LexemeReference {
   language_id: string;
   language_name?: string;
   part_of_speech?: string;
+  recommendation?: LexemeRecommendation;
 }
 
 export interface SynonymLink extends LexemeReference {

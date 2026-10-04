@@ -3,7 +3,7 @@ Enumerations for lexicographic fields.
 
 Two kinds of enums live here:
 - Lexeme-level: properties of the dictionary entry (POS, gender, animacy,
-  register, origin, status). One value per Lexeme.
+  register, origin, recommendation, status). One value per Lexeme.
 - WordForm-level: properties of a specific inflected form (plurality, case,
   verb aspect). One value per WordForm.
 
@@ -81,6 +81,19 @@ class LexemeOrigin(str, enum.Enum):
     LOANWORD = "loanword"      # adopted from another language (`borrowed_from_language_id`)
     CALQUE = "calque"          # loan translation: native parts, foreign model
     NEOLOGISM = "neologism"    # newly coined from native material
+
+
+class LexemeRecommendation(str, enum.Enum):
+    """
+    Whether a lexeme is recommended over its alternatives (e.g. a native word
+    over a loanword). Prescriptive, so it is never set directly: it changes
+    only through an accepted `ChangeProposal`. It affects ordering and hints,
+    never whether a word is recorded — discouraged words stay in the
+    dictionary and linked in texts.
+    """
+    PREFERRED = "preferred"
+    NEUTRAL = "neutral"
+    DISCOURAGED = "discouraged"
 
 
 class LexemeStatus(str, enum.Enum):

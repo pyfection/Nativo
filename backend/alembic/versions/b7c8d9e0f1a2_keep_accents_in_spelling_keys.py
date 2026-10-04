@@ -1,7 +1,7 @@
 """Keep accents in spelling_variants.normalized
 
 Revision ID: b7c8d9e0f1a2
-Revises: c3d4e5f6a7b8
+Revises: c4d8f2a6e1b9
 Create Date: 2026-10-03 00:00:00.000000
 
 `fold_for_match` no longer strips accents (they are contrastive in the Bavarian
@@ -16,7 +16,7 @@ import sqlalchemy as sa
 from alembic import op
 
 revision: str = "b7c8d9e0f1a2"
-down_revision: str | None = "c3d4e5f6a7b8"
+down_revision: str | None = "c4d8f2a6e1b9"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
