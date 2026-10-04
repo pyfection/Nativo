@@ -3,8 +3,10 @@ Shared text tokenisation and match-folding.
 
 Both the auto-link suggester (`document_service`) and the spelling-correction
 resolver (`spelling_service`) walk a Text the same way: split it into word
-tokens, then fold each token to a diacritic- and case-insensitive key so that
-lookups ignore the cosmetic differences a non-standardised orthography produces.
+tokens, then fold each token to a case-insensitive key. Accents are kept: in
+the Bavarian standard they are contrastive (ia ≠ iá, voat ≠ vóat), so stripping
+them would merge distinct words. Unaccented misspellings are covered explicitly
+by SpellingVariants instead.
 
 Keeping the tokenizer and the fold in one place guarantees the two pipelines
 agree — a token the corrector rewrites to a standard spelling must tokenize
@@ -23,10 +25,9 @@ TOKEN_PATTERN = re.compile(r"\b[\w'-]+\b", re.UNICODE)
 
 
 def fold_for_match(value: str) -> str:
-    """Lower-case and strip combining diacritics for index/lookup keys."""
-    normalized = unicodedata.normalize("NFD", value or "")
-    without_marks = "".join(ch for ch in normalized if unicodedata.category(ch) != "Mn")
-    return without_marks.casefold()
+    """Case-fold for index/lookup keys. NFC first, so a precomposed "á" and
+    "a" + combining accent compare equal; accents themselves are kept."""
+    return unicodedata.normalize("NFC", (value or "").casefold())
 
 
 def iter_tokens(content: str) -> Iterable[tuple[str, int, int]]:

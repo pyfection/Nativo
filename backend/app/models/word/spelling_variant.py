@@ -44,7 +44,7 @@ class SpellingVariant(Base):
 
     # The alternative spelling as written, e.g. "eich".
     variant = Column(String(255), nullable=False, index=True)
-    # Case/diacritic-folded match key (app.utils.text_normalize.fold_for_match).
+    # Case-folded match key, accents kept (app.utils.text_normalize.fold_for_match).
     # Indexed so resolving a token is a single equality lookup, like rhyme_key.
     normalized = Column(String(255), nullable=False, index=True)
 
