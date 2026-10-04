@@ -17,6 +17,7 @@ from app.models.word import (
     GrammaticalCase,
     GrammaticalGender,
     LexemeOrigin,
+    LexemeRecommendation,
     LexemeStatus,
     PartOfSpeech,
     Plurality,
@@ -192,6 +193,9 @@ class Lexeme(LexemeBase):
     is_verified: bool
     status: LexemeStatus
     draft_confidence: DraftConfidence | None = None
+    # Read-only here: changed only via an accepted ChangeProposal.
+    recommendation: LexemeRecommendation = LexemeRecommendation.NEUTRAL
+    recommendation_note: str | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -204,6 +208,7 @@ class LexemeListItem(BaseModel):
     language_id: UUID
     part_of_speech: PartOfSpeech | None = None
     origin: LexemeOrigin | None = None
+    recommendation: LexemeRecommendation = LexemeRecommendation.NEUTRAL
     is_verified: bool
     status: LexemeStatus
     created_at: datetime
@@ -312,6 +317,7 @@ class LexemeReference(BaseModel):
     language_id: UUID
     language_name: str | None = None
     part_of_speech: PartOfSpeech | None = None
+    recommendation: LexemeRecommendation | None = None
 
     model_config = ConfigDict(from_attributes=True)
 

@@ -6,6 +6,13 @@ All models use UUID primary keys.
 
 from app.models.api_token import ApiToken
 from app.models.audio import Audio
+from app.models.change_proposal import (
+    ChangeProposal,
+    ProposalStatus,
+    ProposalType,
+    ProposalVote,
+    VoteChoice,
+)
 from app.models.document import Document
 from app.models.image import Image
 from app.models.language import Language
@@ -58,6 +65,11 @@ __all__ = [
     "TextWordLink",
     "Location",
     "Tag",
+    "ChangeProposal",
+    "ProposalVote",
+    "ProposalStatus",
+    "ProposalType",
+    "VoteChoice",
     "Lexeme",
     "WordForm",
     "SpellingVariant",

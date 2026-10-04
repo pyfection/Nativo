@@ -6,12 +6,15 @@ import { Language } from '../App';
 import AudioRecorder from '../components/common/AudioRecorder';
 import SpellingVariants from '../components/common/SpellingVariants';
 import { useAuth } from '../contexts/AuthContext';
+import proposalService, { ChangeProposal, VoteChoice } from '../services/proposalService';
 import wordService, {
   AntonymLink,
   BORROWING_ORIGINS,
   CreateWordFormData,
   LEXEME_ORIGINS,
+  LEXEME_RECOMMENDATIONS,
   LexemeOrigin,
+  LexemeRecommendation,
   LexemeWithForms,
   SynonymLink,
   TranslationLink,
@@ -50,12 +53,13 @@ export default function WordDetail({ languages }: WordDetailProps) {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { canEditLanguage } = useAuth();
+  const { canEditLanguage, canVerifyLanguage, user } = useAuth();
 
   const [lexeme, setLexeme] = useState<LexemeWithForms | null>(null);
   const [translations, setTranslations] = useState<TranslationLink[]>([]);
   const [synonyms, setSynonyms] = useState<SynonymLink[]>([]);
   const [antonyms, setAntonyms] = useState<AntonymLink[]>([]);
+  const [proposals, setProposals] = useState<ChangeProposal[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
@@ -66,6 +70,15 @@ export default function WordDetail({ languages }: WordDetailProps) {
     lexeme?.borrowed_from_language_id &&
     languages.find((l) => l.id === lexeme.borrowed_from_language_id);
   const canEdit = lexeme ? canEditLanguage(lexeme.language_id) : false;
+  const canVote = lexeme ? canEdit || canVerifyLanguage(lexeme.language_id) : false;
+  const openProposal = proposals.find((p) => p.status === 'open');
+  // "Tomadn" → point at the voted-preferred alternative ("Párádaisa").
+  const preferredAlternatives =
+    lexeme?.recommendation === 'preferred'
+      ? []
+      : synonyms.filter(
+          (s) => s.recommendation === 'preferred' && s.language_id === lexeme?.language_id,
+        );
 
   // Load the lexeme + all its relations.
   const refresh = useCallback(async () => {
@@ -73,16 +86,18 @@ export default function WordDetail({ languages }: WordDetailProps) {
     setLoading(true);
     setError(null);
     try {
-      const [lex, tr, syn, ant] = await Promise.all([
+      const [lex, tr, syn, ant, props] = await Promise.all([
         wordService.getById(id),
         wordService.listTranslations(id).catch(() => []),
         wordService.listSynonyms(id).catch(() => []),
         wordService.listAntonyms(id).catch(() => []),
+        proposalService.listForWord(id).catch(() => []),
       ]);
       setLexeme(lex);
       setTranslations(tr);
       setSynonyms(syn);
       setAntonyms(ant);
+      setProposals(props);
     } catch (err: any) {
       setError(err.response?.data?.detail || t('word_detail.load_failed'));
     } finally {
@@ -159,6 +174,19 @@ export default function WordDetail({ languages }: WordDetailProps) {
                 : t(`add_word.origin_${lexeme.origin}`)}
             </span>
           )}
+          {lexeme.recommendation && lexeme.recommendation !== 'neutral' && (
+            <span
+              className={`status-badge recommendation-${lexeme.recommendation}`}
+              title={t('word_detail.recommendation_by_vote')}
+            >
+              {t(`word_detail.recommendation_${lexeme.recommendation}`)}
+            </span>
+          )}
+          {openProposal && (
+            <a href="#proposals" className="status-badge recommendation-vote-open">
+              {t('word_detail.vote_open')}
+            </a>
+          )}
           <span className={`status-badge status-${lexeme.status}`}>
             {lexeme.status.replace('_', ' ')}
           </span>
@@ -185,6 +213,20 @@ export default function WordDetail({ languages }: WordDetailProps) {
                 </Link>
               </>
             )}
+          </p>
+        )}
+        {lexeme.recommendation_note && lexeme.recommendation !== 'neutral' && (
+          <p className="word-detail-recommendation-note">{lexeme.recommendation_note}</p>
+        )}
+        {preferredAlternatives.length > 0 && (
+          <p className="word-detail-preferred-hint">
+            {t('word_detail.preferred_alternative')}{' '}
+            {preferredAlternatives.map((alt, i) => (
+              <span key={alt.id}>
+                {i > 0 && ', '}
+                <Link to={`/words/${alt.id}`}>{alt.lemma}</Link>
+              </span>
+            ))}
           </p>
         )}
         {lexeme.notes && <p className="word-detail-notes">{lexeme.notes}</p>}
@@ -247,7 +289,7 @@ export default function WordDetail({ languages }: WordDetailProps) {
         addButtonTitle={t('word_detail.add_synonym_title')}
         items={synonyms.map((s) => ({
           id: s.id,
-          lemma: s.lemma,
+          lemma: s.recommendation === 'preferred' ? `${s.lemma} ★` : s.lemma,
           language_id: s.language_id,
           language_name: s.language_name ?? languages.find((l) => l.id === s.language_id)?.name,
           notes: s.nuance ? `(${s.nuance})${s.notes ? ' ' + s.notes : ''}` : s.notes,
@@ -297,6 +339,17 @@ export default function WordDetail({ languages }: WordDetailProps) {
           setAntonyms((prev) => prev.filter((a) => a.id !== otherId));
           setActionMessage(t('word_detail.antonym_removed'));
         }}
+        onError={setActionError}
+      />
+
+      <ProposalsSection
+        lexeme={lexeme}
+        proposals={proposals}
+        canPropose={canEdit}
+        canVote={canVote}
+        currentUserId={user?.id}
+        onChange={refresh}
+        onMessage={setActionMessage}
         onError={setActionError}
       />
 
@@ -980,5 +1033,316 @@ function OriginEditor({ lexeme, languages, onSaved, onError }: OriginEditorProps
         </button>
       </div>
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Recommendation proposals — preferred / discouraged is decided by vote
+// ---------------------------------------------------------------------------
+
+interface ProposalsSectionProps {
+  lexeme: LexemeWithForms;
+  proposals: ChangeProposal[];
+  canPropose: boolean;
+  canVote: boolean;
+  currentUserId?: string;
+  onChange: () => void;
+  onMessage: (msg: string) => void;
+  onError: (msg: string) => void;
+}
+
+function ProposalsSection({
+  lexeme,
+  proposals,
+  canPropose,
+  canVote,
+  currentUserId,
+  onChange,
+  onMessage,
+  onError,
+}: ProposalsSectionProps) {
+  const { t } = useTranslation();
+  const [showForm, setShowForm] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const current = lexeme.recommendation ?? 'neutral';
+  const choices = LEXEME_RECOMMENDATIONS.filter((r) => r !== current);
+  const [recommendation, setRecommendation] = useState<LexemeRecommendation>(choices[0]);
+  const [note, setNote] = useState('');
+  const [rationale, setRationale] = useState('');
+  const [comment, setComment] = useState('');
+
+  const open = proposals.find((p) => p.status === 'open');
+  const history = proposals.filter((p) => p.status !== 'open');
+  const myVote = open?.votes.find((v) => v.user_id === currentUserId);
+
+  const run = async (action: () => Promise<unknown>, message: string) => {
+    setBusy(true);
+    try {
+      await action();
+      onMessage(message);
+      onChange();
+    } catch (err: any) {
+      onError(err.response?.data?.detail || t('word_detail.proposal_failed'));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const submitProposal = () =>
+    run(async () => {
+      await proposalService.proposeRecommendation(lexeme.id, {
+        recommendation,
+        ...(note.trim() && { note: note.trim() }),
+        ...(rationale.trim() && { rationale: rationale.trim() }),
+      });
+      setShowForm(false);
+      setNote('');
+      setRationale('');
+    }, t('word_detail.proposal_created'));
+
+  const castVote = (choice: VoteChoice) =>
+    run(async () => {
+      await proposalService.vote(open!.id, choice, comment.trim() || undefined);
+      setComment('');
+    }, t('word_detail.vote_recorded'));
+
+  const proposalTitle = (p: ChangeProposal) =>
+    t('word_detail.proposal_title', {
+      recommendation: t(`word_detail.recommendation_${p.payload.recommendation}`),
+    });
+
+  return (
+    <section className="word-detail-section" id="proposals">
+      <div className="word-detail-section-header">
+        <h2>{t('word_detail.recommendation_heading')}</h2>
+        {canPropose && !open && !showForm && (
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            onClick={() => {
+              setRecommendation(choices[0]);
+              setShowForm(true);
+            }}
+          >
+            {t('word_detail.propose_change')}
+          </button>
+        )}
+      </div>
+      <p className="muted proposal-explainer">{t('word_detail.recommendation_explainer')}</p>
+
+      {showForm && (
+        <div className="form-editor">
+          <div className="form-editor-row">
+            <label>
+              {t('word_detail.proposal_mark_as')}
+              <select
+                value={recommendation}
+                onChange={(e) => setRecommendation(e.target.value as LexemeRecommendation)}
+              >
+                {choices.map((r) => (
+                  <option key={r} value={r}>{t(`word_detail.recommendation_${r}`)}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <label className="form-editor-notes">
+            {t('word_detail.proposal_note_label')}
+            <input
+              type="text"
+              value={note}
+              maxLength={1000}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder={t('word_detail.proposal_note_placeholder')}
+            />
+          </label>
+          <label className="form-editor-notes">
+            {t('word_detail.proposal_rationale_label')}
+            <textarea
+              value={rationale}
+              maxLength={2000}
+              rows={3}
+              onChange={(e) => setRationale(e.target.value)}
+              placeholder={t('word_detail.proposal_rationale_placeholder')}
+            />
+          </label>
+          <div className="form-editor-actions">
+            <button type="button" className="btn btn-accent" onClick={submitProposal} disabled={busy}>
+              {t('word_detail.proposal_submit')}
+            </button>
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={() => setShowForm(false)}
+              disabled={busy}
+            >
+              {t('word_detail.cancel')}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {open && (
+        <div className="proposal-card">
+          <div className="proposal-card-head">
+            <strong>{proposalTitle(open)}</strong>
+            <span className="muted">
+              {t('word_detail.proposal_by', {
+                username: open.created_by_username ?? '?',
+                date: new Date(open.created_at).toLocaleDateString(),
+              })}
+            </span>
+          </div>
+          {open.payload.note && (
+            <p className="proposal-note">
+              {t('word_detail.proposal_note_label')}: {open.payload.note}
+            </p>
+          )}
+          {open.rationale && <blockquote className="proposal-rationale">{open.rationale}</blockquote>}
+
+          <div className="proposal-tally">
+            <span className="tally-approve">
+              {t('word_detail.tally_approvals', { count: open.approvals, threshold: open.threshold })}
+            </span>
+            <span className={open.rejections > 0 ? 'tally-reject' : 'muted'}>
+              {t('word_detail.tally_objections', { count: open.rejections })}
+            </span>
+          </div>
+          {open.rejections > 0 && (
+            <p className="muted proposal-blocked">{t('word_detail.proposal_blocked')}</p>
+          )}
+
+          {open.usage.length > 0 && (
+            <div className="usage-table-wrap">
+              <table className="usage-table">
+                <caption>{t('word_detail.usage_caption')}</caption>
+                <thead>
+                  <tr>
+                    <th>{t('word_detail.usage_word')}</th>
+                    <th>{t('add_word.origin_label')}</th>
+                    <th>{t('word_detail.usage_texts')}</th>
+                    <th>{t('word_detail.usage_recordings')}</th>
+                    <th>{t('word_detail.usage_places')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {open.usage.map((u) => (
+                    <tr key={u.lexeme_id} className={u.lexeme_id === lexeme.id ? 'usage-self' : ''}>
+                      <td>
+                        {u.lexeme_id === lexeme.id ? (
+                          u.lemma
+                        ) : (
+                          <Link to={`/words/${u.lexeme_id}`}>{u.lemma}</Link>
+                        )}
+                        {u.recommendation === 'preferred' && ' ★'}
+                      </td>
+                      <td>{u.origin ? t(`add_word.origin_${u.origin}`) : '—'}</td>
+                      <td>{u.text_count}</td>
+                      <td>{u.audio_count}</td>
+                      <td>{u.locations.length ? u.locations.join(', ') : '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          <VoteList proposal={open} />
+
+          {(canVote || open.created_by_id === currentUserId) && (
+            <div className="proposal-actions">
+              {canVote && (
+                <>
+                  <input
+                    type="text"
+                    value={comment}
+                    maxLength={1000}
+                    onChange={(e) => setComment(e.target.value)}
+                    placeholder={t('word_detail.vote_comment_placeholder')}
+                  />
+                  <button
+                    type="button"
+                    className={`btn ${myVote?.choice === 'approve' ? 'btn-accent' : 'btn-ghost'}`}
+                    onClick={() => castVote('approve')}
+                    disabled={busy}
+                  >
+                    ✓ {t('word_detail.vote_approve')}
+                  </button>
+                  <button
+                    type="button"
+                    className={`btn btn-ghost ${myVote?.choice === 'reject' ? 'vote-selected-reject' : ''}`}
+                    onClick={() => castVote('reject')}
+                    disabled={busy}
+                  >
+                    ✗ {t('word_detail.vote_reject')}
+                  </button>
+                </>
+              )}
+              {open.created_by_id === currentUserId && (
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-xs"
+                  onClick={() =>
+                    run(() => proposalService.withdraw(open.id), t('word_detail.proposal_withdrawn'))
+                  }
+                  disabled={busy}
+                >
+                  {t('word_detail.proposal_withdraw')}
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {!open && !showForm && history.length === 0 && (
+        <p className="muted">{t('word_detail.no_proposals')}</p>
+      )}
+
+      {history.length > 0 && (
+        <ul className="proposal-history">
+          {history.map((p) => (
+            <li key={p.id}>
+              <details>
+                <summary>
+                  <span className={`proposal-status proposal-status-${p.status}`}>
+                    {t(`word_detail.proposal_status_${p.status}`)}
+                  </span>{' '}
+                  {proposalTitle(p)}
+                  <span className="muted">
+                    {' · '}
+                    {t('word_detail.tally_short', {
+                      approvals: p.approvals,
+                      rejections: p.rejections,
+                    })}
+                    {' · '}
+                    {new Date(p.resolved_at ?? p.created_at).toLocaleDateString()}
+                  </span>
+                </summary>
+                {p.rationale && <blockquote className="proposal-rationale">{p.rationale}</blockquote>}
+                <VoteList proposal={p} />
+              </details>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+function VoteList({ proposal }: { proposal: ChangeProposal }) {
+  const { t } = useTranslation();
+  return (
+    <ul className="vote-list">
+      {proposal.votes.map((v) => (
+        <li key={v.user_id} className={`vote vote-${v.choice}`}>
+          <span className="vote-choice">
+            {v.choice === 'approve' ? '✓' : '✗'}{' '}
+            {t(v.choice === 'approve' ? 'word_detail.vote_approve' : 'word_detail.vote_reject')}
+          </span>
+          <span className="vote-user">{v.username ?? '?'}</span>
+          {v.comment && <span className="vote-comment">“{v.comment}”</span>}
+        </li>
+      ))}
+    </ul>
   );
 }
