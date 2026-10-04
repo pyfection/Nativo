@@ -14,6 +14,7 @@ from app.api.v1.endpoints import (
     learn,
     statistics,
     text_links,
+    transcribe,
     user_languages,
     users,
     words,
@@ -33,4 +34,5 @@ router.include_router(audio.router, prefix="/audio", tags=["Audio"])
 router.include_router(statistics.router, prefix="/statistics", tags=["Statistics"])
 router.include_router(activity.router, prefix="/activity", tags=["Activity"])
 router.include_router(learn.router, prefix="/learn", tags=["Learn"])
+router.include_router(transcribe.router, prefix="/transcribe", tags=["Transcription"])
 router.include_router(contributors.router, prefix="/contributors", tags=["Contributors"])

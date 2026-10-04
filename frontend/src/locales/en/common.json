@@ -124,7 +124,8 @@
     "audio": "Audio",
     "contributors": "Contributors",
     "languages": "Languages",
-    "learn": "Learn"
+    "learn": "Learn",
+    "transcribe": "Speech to text"
   },
   "audio_page": {
     "title": "{{language}} audio",
@@ -403,6 +404,29 @@
     "ambiguous": "More than one word is written this way — pick the one you mean.",
     "not_found_pre": "No standard spelling found for",
     "not_found_post": ". It may not be in the dictionary yet."
+  },
+  "transcribe_page": {
+    "title": "Speech to text",
+    "subtitle": "Say something in {{language}} — or type its IPA — and get it written in the standard spelling.",
+    "audio_heading": "From audio",
+    "record": "Record",
+    "stop": "Stop",
+    "upload": "Upload a file",
+    "sign_in": "Sign in",
+    "sign_in_post": "to transcribe audio. Typing IPA works without an account.",
+    "audio_hint": "Early prototype: the speech recogniser hasn't been trained on this language yet, so check and fix the IPA below, then transcribe again.",
+    "ipa_heading": "IPA",
+    "transcribe": "Transcribe",
+    "working": "Working…",
+    "error_transcribe": "Transcription failed. Please try again.",
+    "result_heading": "Standard spelling",
+    "empty_lexicon": "No words in this language have IPA yet, so everything is spelled by rule. Add IPA to dictionary entries to improve results.",
+    "confidence": "{{pct}}% match",
+    "unknown": "not in the dictionary — spelled by rule",
+    "legend_unknown": "not in the dictionary",
+    "legend_low": "uncertain match",
+    "copy": "Copy",
+    "copied": "Copied"
   },
   "doc_detail": {
     "loading": "Loading document...",
