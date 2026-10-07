@@ -78,7 +78,9 @@ Ranked by value after the open-platform + learning-path work landed.
    what their work did (suggestion approved, "your recording was played N
    times"), streaks, and an "ask your grandparents" recording mode.
 
-Honorable mentions, unscheduled: mobile/PWA audit for the reader;
+Honorable mentions, unscheduled: offline data for the PWA (cache dictionary
+and text reads, queue recordings and suggestions made offline; the app is
+already installable with an offline shell and a phone layout);
 author-facing "this draft introduces N new words" difficulty report; error
 monitoring before real users; Bavarian for the deep editor tools (en/es
 done, bar falls back to English by design).

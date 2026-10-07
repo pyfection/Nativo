@@ -146,7 +146,7 @@ function App() {
         }
       } catch (err) {
         console.error('Failed to fetch languages:', err);
-        setError('Failed to load languages');
+        setError(navigator.onLine ? 'Failed to load languages' : "You're offline. Connect to the internet and retry.");
       } finally {
         setLoading(false);
       }
