@@ -544,7 +544,7 @@
   background: rgba(var(--tint-rgb), 0.04);
   color: var(--cream-dim);
   text-decoration: line-through;
-  text-decoration-color: rgba(var(--tint-rgb), 0.3);
+  text-decoration-color: rgba(var(--fg-rgb), 0.3);
 }
 
 .recommendation-vote-open {

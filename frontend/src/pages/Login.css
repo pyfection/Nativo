@@ -120,7 +120,7 @@
 }
 
 .login-button:disabled {
-  background: rgba(var(--tint-rgb), 0.1);
+  background: rgba(var(--fg-rgb), 0.1);
   color: var(--sage);
   cursor: not-allowed;
 }

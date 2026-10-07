@@ -13,8 +13,10 @@
    accent text stays readable on paper).
 
    `*-rgb` tokens exist for translucent tints: use
-   `rgba(var(--tint-rgb), 0.04)` for a subtle raised fill,
-   `rgba(var(--fg-rgb), 0.25)` for a foreground-coloured border, and
+   `rgba(var(--tint-rgb), 0.04)` for a subtle resting fill (it goes lighter
+   on paper, so it is nearly invisible there — borders carry the shape),
+   `rgba(var(--fg-rgb), …)` for anything that must stay visible in both
+   themes (borders, hover/active/disabled fills, progress tracks), and
    `rgba(var(--shade-rgb), calc(0.18 * var(--shade-k)))` for a sunken well.
    --------------------------------------------------------------------------- */
 :root {

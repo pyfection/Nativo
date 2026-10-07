@@ -106,7 +106,7 @@
   font-family: inherit;
 }
 .btn-secondary:hover {
-  background: rgba(var(--tint-rgb), 0.07);
+  background: rgba(var(--fg-rgb), 0.07);
   border-color: rgba(var(--fg-rgb), 0.3);
 }
 

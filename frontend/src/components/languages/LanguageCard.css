@@ -195,7 +195,7 @@
 }
 
 .btn-manage:not(:disabled):hover {
-  background: rgba(var(--tint-rgb), 0.07);
+  background: rgba(var(--fg-rgb), 0.07);
   color: var(--cream);
   border-color: rgba(var(--fg-rgb), 0.25);
 }

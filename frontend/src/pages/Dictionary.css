@@ -58,7 +58,7 @@
   transform: translateY(-1px);
 }
 .search-button:disabled {
-  background: rgba(var(--tint-rgb), 0.08);
+  background: rgba(var(--fg-rgb), 0.08);
   color: var(--sage);
   cursor: not-allowed;
 }

@@ -132,7 +132,7 @@
 }
 .toast-dismiss:hover {
   opacity: 1;
-  background: rgba(var(--tint-rgb), 0.08);
+  background: rgba(var(--fg-rgb), 0.08);
 }
 
 @keyframes toast-in {
