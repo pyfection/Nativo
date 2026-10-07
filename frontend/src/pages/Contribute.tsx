@@ -8,12 +8,21 @@ import { useAuth } from '../contexts/AuthContext';
 import { AudioListItem } from '../services/audioService';
 import contributeService, {
   ConfirmLinkTask,
+  ConfirmSpellingTask,
+  ContributeResult,
   ContributeTask,
   DefineWordAnswer,
   DefineWordTask,
   RecordAudioTask,
+  ReviewAdditionTask,
   ReviewWordTask,
+  SourceContext,
+  SpellingAnswer,
   TextContext,
+  TranslateTextAnswer,
+  TranslateTextTask,
+  TranslateWordAnswer,
+  TranslateWordTask,
   VoteTask,
 } from '../services/contributeService';
 import proposalService from '../services/proposalService';
@@ -39,9 +48,14 @@ const PARTS_OF_SPEECH = [
 ];
 
 // Cards answered with yes / no (keys y / n).
-type BinaryTask = ConfirmLinkTask | ReviewWordTask | VoteTask;
-const isBinary = (task: ContributeTask): task is BinaryTask =>
-  task.type === 'confirm_link' || task.type === 'review_word' || task.type === 'vote';
+type BinaryTask = ConfirmLinkTask | ReviewWordTask | VoteTask | ReviewAdditionTask;
+const BINARY_TYPES: ContributeTask['type'][] = [
+  'confirm_link',
+  'review_word',
+  'vote',
+  'review_addition',
+];
+const isBinary = (task: ContributeTask): task is BinaryTask => BINARY_TYPES.includes(task.type);
 
 const isTyping = (target: EventTarget | null) =>
   target instanceof HTMLElement &&
@@ -68,8 +82,10 @@ function writeToday(count: number) {
 
 /**
  * Quick Contribute: one small task at a time, drawn from what the language
- * is missing (unknown words in texts, unrecorded words, unconfirmed links,
- * pending suggestions, open votes). Each card takes seconds; skip anything.
+ * is missing (unknown words in texts and outside sources, unrecorded words,
+ * unconfirmed links, untranslated words and texts from languages the user
+ * speaks, pending suggestions, open votes). Each card takes seconds; skip
+ * anything.
  */
 export default function Contribute({ selectedLanguage, languages }: ContributeProps) {
   const { t } = useTranslation();
@@ -91,6 +107,10 @@ export default function Contribute({ selectedLanguage, languages }: ContributePr
   // Auto-promotion lives on the membership row, so it needs a join first.
   const isMember = !!user?.language_proficiencies?.some(
     (lp) => lp.language_id === selectedLanguage.id,
+  );
+  // Translation cards come from the other languages the user has joined.
+  const speaksOthers = !!user?.language_proficiencies?.some(
+    (lp) => lp.language_id !== selectedLanguage.id,
   );
   const glossLanguage = languages.find(
     (lang) => (lang.iso === 'eng' || lang.name === 'English') && lang.id !== selectedLanguage.id,
@@ -171,12 +191,16 @@ export default function Contribute({ selectedLanguage, languages }: ContributePr
     drop(task);
   };
 
-  const run = async (task: ContributeTask, action: () => Promise<unknown>, message: string) => {
+  const run = async <T,>(
+    task: ContributeTask,
+    action: () => Promise<T>,
+    message: string | ((result: T) => string),
+  ) => {
     setBusy(true);
     setError('');
     try {
-      await action();
-      complete(task, message);
+      const result = await action();
+      complete(task, typeof message === 'function' ? message(result) : message);
     } catch (err: any) {
       setError(err.response?.data?.detail || t('contribute.action_failed'));
     } finally {
@@ -207,8 +231,16 @@ export default function Contribute({ selectedLanguage, languages }: ContributePr
           () => proposalService.vote(task.proposal.id, yes ? 'approve' : 'reject'),
           t('contribute.done_vote'),
         );
+      case 'review_addition':
+        return run(
+          task,
+          () => proposalService.review(task.proposal_id, yes),
+          yes ? t('contribute.done_review_approved') : t('contribute.done_review_rejected'),
+        );
     }
   };
+
+  const outcomeMessage = (result: ContributeResult) => t(`contribute.done_${result.outcome}`);
 
   const define = (task: DefineWordTask, data: DefineWordAnswer) =>
     run(
@@ -216,6 +248,15 @@ export default function Contribute({ selectedLanguage, languages }: ContributePr
       () => contributeService.defineWord(selectedLanguage.id, data),
       canEdit ? t('contribute.done_define_published') : t('contribute.done_define_suggested'),
     );
+
+  const confirmSpelling = (task: ConfirmSpellingTask, data: SpellingAnswer) =>
+    run(task, () => contributeService.confirmSpelling(selectedLanguage.id, data), outcomeMessage);
+
+  const translateWord = (task: TranslateWordTask, data: TranslateWordAnswer) =>
+    run(task, () => contributeService.translateWord(selectedLanguage.id, data), outcomeMessage);
+
+  const translateText = (task: TranslateTextTask, data: TranslateTextAnswer) =>
+    run(task, () => contributeService.translateText(selectedLanguage.id, data), outcomeMessage);
 
   // y / n answer the yes-no cards, s skips. Re-bound every render so the
   // handler sees the current card.
@@ -262,6 +303,37 @@ export default function Contribute({ selectedLanguage, languages }: ContributePr
         return <ReviewWordCard task={task} />;
       case 'vote':
         return <VoteCard task={task} />;
+      case 'confirm_spelling':
+        return (
+          <ConfirmSpellingCard
+            task={task}
+            glossLanguage={glossLanguage}
+            busy={busy}
+            onSubmit={(data) => void confirmSpelling(task, data)}
+          />
+        );
+      case 'translate_word':
+        return (
+          <TranslateWordCard
+            task={task}
+            languages={languages}
+            targetLanguage={selectedLanguage}
+            busy={busy}
+            onSubmit={(data) => void translateWord(task, data)}
+          />
+        );
+      case 'translate_text':
+        return (
+          <TranslateTextCard
+            task={task}
+            languages={languages}
+            targetLanguage={selectedLanguage}
+            busy={busy}
+            onSubmit={(data) => void translateText(task, data)}
+          />
+        );
+      case 'review_addition':
+        return <ReviewAdditionCard task={task} languages={languages} />;
     }
   };
 
@@ -289,6 +361,12 @@ export default function Contribute({ selectedLanguage, languages }: ContributePr
           {t('contribute.suggester_note')}
           {!isMember &&
             ` ${t('contribute.join_note', { language: languageDisplayName(selectedLanguage) })}`}
+        </p>
+      )}
+      {!speaksOthers && (
+        <p className="contribute-note">
+          {t('contribute.languages_note')}{' '}
+          <Link to="/languages">{t('contribute.languages_link')}</Link>
         </p>
       )}
       {flash && (
@@ -361,17 +439,58 @@ export default function Contribute({ selectedLanguage, languages }: ContributePr
 
 /* ---------- Pieces shared by the cards ---------- */
 
-function Snippet({ context }: { context: TextContext }) {
+function Highlighted({ text, start, end }: { text: string; start: number; end: number }) {
   // Offsets come from Python (code points), so slice by code point too.
-  const chars = Array.from(context.snippet);
-  const { highlight_start: start, highlight_end: end } = context;
+  const chars = Array.from(text);
+  return (
+    <blockquote>
+      {chars.slice(0, start).join('')}
+      <mark>{chars.slice(start, end).join('')}</mark>
+      {chars.slice(end).join('')}
+    </blockquote>
+  );
+}
+
+/** Credit line for outside content: linked title, plus its licence. */
+function SourceCredit({ url, title, license }: { url: string; title: string; license: string | null }) {
+  return (
+    <>
+      <a href={url} target="_blank" rel="noopener noreferrer">
+        {title} ↗
+      </a>
+      {license && <span className="contribute-license"> · {license}</span>}
+    </>
+  );
+}
+
+function OutsideSnippet({ source }: { source: SourceContext }) {
   return (
     <figure className="contribute-snippet">
-      <blockquote>
-        {chars.slice(0, start).join('')}
-        <mark>{chars.slice(start, end).join('')}</mark>
-        {chars.slice(end).join('')}
-      </blockquote>
+      <Highlighted
+        text={source.snippet}
+        start={source.highlight_start}
+        end={source.highlight_end}
+      />
+      <figcaption>
+        <SourceCredit url={source.source_url} title={source.source_title} license={source.license} />
+      </figcaption>
+    </figure>
+  );
+}
+
+const languageName = (languages: Language[], id: string | null) => {
+  const lang = languages.find((l) => l.id === id);
+  return lang ? languageDisplayName(lang) : '';
+};
+
+function Snippet({ context }: { context: TextContext }) {
+  return (
+    <figure className="contribute-snippet">
+      <Highlighted
+        text={context.snippet}
+        start={context.highlight_start}
+        end={context.highlight_end}
+      />
       <figcaption>
         {context.document_id ? (
           <Link to={`/documents/${context.document_id}`}>{context.title}</Link>
@@ -572,6 +691,258 @@ function VoteCard({ task }: { task: VoteTask }) {
         {' · '}
         {t('word_detail.tally_objections', { count: proposal.rejections })}
       </p>
+    </div>
+  );
+}
+
+interface ConfirmSpellingCardProps {
+  task: ConfirmSpellingTask;
+  glossLanguage?: Language;
+  busy: boolean;
+  onSubmit: (data: SpellingAnswer) => void;
+}
+
+function ConfirmSpellingCard({ task, glossLanguage, busy, onSubmit }: ConfirmSpellingCardProps) {
+  const { t } = useTranslation();
+  const [standard, setStandard] = useState(task.token);
+  const [gloss, setGloss] = useState('');
+
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
+    if (!standard.trim() || busy) return;
+    onSubmit({
+      token: task.token,
+      standard: standard.trim(),
+      snippet_id: task.source.snippet_id,
+      gloss: gloss.trim() || undefined,
+      gloss_language_id: gloss.trim() ? glossLanguage?.id : undefined,
+    });
+  };
+
+  return (
+    <form className="contribute-define" onSubmit={submit}>
+      <p className="contribute-question">
+        {t('contribute.spelling_question', { word: task.token })}
+      </p>
+      <OutsideSnippet source={task.source} />
+      {task.occurrences > 1 && (
+        <p className="contribute-meta">
+          {t('contribute.spelling_occurrences', { count: task.occurrences })}
+        </p>
+      )}
+      <label className="contribute-field">
+        <span>{t('contribute.spelling_standard_label')}</span>
+        <input autoFocus value={standard} onChange={(e) => setStandard(e.target.value)} />
+      </label>
+      <p className="contribute-hint">{t('contribute.spelling_hint')}</p>
+      {glossLanguage && (
+        <label className="contribute-field">
+          <span>
+            {t('contribute.spelling_gloss_label', {
+              language: languageDisplayName(glossLanguage),
+            })}
+          </span>
+          <input
+            value={gloss}
+            onChange={(e) => setGloss(e.target.value)}
+            placeholder={t('contribute.define_gloss_placeholder')}
+          />
+        </label>
+      )}
+      <button type="submit" className="btn btn-accent" disabled={!standard.trim() || busy}>
+        {t('contribute.spelling_submit')}
+      </button>
+    </form>
+  );
+}
+
+interface TranslateCardProps<T, A> {
+  task: T;
+  languages: Language[];
+  targetLanguage: Language;
+  busy: boolean;
+  onSubmit: (data: A) => void;
+}
+
+function TranslateWordCard({
+  task,
+  languages,
+  targetLanguage,
+  busy,
+  onSubmit,
+}: TranslateCardProps<TranslateWordTask, TranslateWordAnswer>) {
+  const { t } = useTranslation();
+  const [lemma, setLemma] = useState('');
+  const [pos, setPos] = useState(task.part_of_speech ?? '');
+
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
+    if (!lemma.trim() || busy) return;
+    onSubmit({
+      source_lexeme_id: task.source_lexeme_id,
+      lemma: lemma.trim(),
+      part_of_speech: pos || undefined,
+    });
+  };
+
+  const others = task.translations.map(
+    (tr) => `${tr.lemma} (${languageName(languages, tr.language_id) || tr.language_name || ''})`,
+  );
+
+  return (
+    <form className="contribute-define" onSubmit={submit}>
+      <p className="contribute-question">
+        {t('contribute.translate_word_question', {
+          word: task.lemma,
+          language: languageDisplayName(targetLanguage),
+        })}
+      </p>
+      <div className="contribute-word">{task.lemma}</div>
+      <p className="contribute-meta">
+        {languageName(languages, task.source_language_id)}
+        {task.part_of_speech && ` · ${t(`add_word.pos_${task.part_of_speech}`)}`}
+      </p>
+      {others.length > 0 && (
+        <p className="contribute-meta">{t('contribute.translate_also', { list: others.join(', ') })}</p>
+      )}
+      <div className="contribute-field-row">
+        <label className="contribute-field">
+          <span>{languageDisplayName(targetLanguage)}</span>
+          <input autoFocus value={lemma} onChange={(e) => setLemma(e.target.value)} />
+        </label>
+        <label className="contribute-field">
+          <span>{t('contribute.define_pos_label')}</span>
+          <select value={pos} onChange={(e) => setPos(e.target.value)}>
+            <option value="">{t('add_word.select_placeholder')}</option>
+            {PARTS_OF_SPEECH.map((value) => (
+              <option key={value} value={value}>
+                {t(`add_word.pos_${value}`)}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <button type="submit" className="btn btn-accent" disabled={!lemma.trim() || busy}>
+        {t('contribute.translate_submit')}
+      </button>
+    </form>
+  );
+}
+
+function TranslateTextCard({
+  task,
+  languages,
+  targetLanguage,
+  busy,
+  onSubmit,
+}: TranslateCardProps<TranslateTextTask, TranslateTextAnswer>) {
+  const { t } = useTranslation();
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
+    if (!content.trim() || busy) return;
+    onSubmit({
+      text_id: task.text_id ?? undefined,
+      snippet_id: task.snippet_id ?? undefined,
+      title: title.trim() || undefined,
+      content: content.trim(),
+    });
+  };
+
+  return (
+    <form className="contribute-define" onSubmit={submit}>
+      <p className="contribute-question">
+        {t('contribute.translate_text_question', {
+          from: languageName(languages, task.source_language_id),
+          language: languageDisplayName(targetLanguage),
+        })}
+      </p>
+      <figure className="contribute-snippet contribute-source-text">
+        <blockquote>{task.content}</blockquote>
+        <figcaption>
+          {task.source_url ? (
+            <SourceCredit url={task.source_url} title={task.title} license={task.license} />
+          ) : task.document_id ? (
+            <Link to={`/documents/${task.document_id}`}>{task.title}</Link>
+          ) : (
+            task.title
+          )}
+        </figcaption>
+      </figure>
+      <label className="contribute-field">
+        <span>{t('contribute.translate_text_label', { language: languageDisplayName(targetLanguage) })}</span>
+        <textarea
+          autoFocus
+          rows={Math.min(8, Math.max(3, Math.ceil(task.content.length / 70)))}
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+        />
+      </label>
+      <label className="contribute-field">
+        <span>{t('contribute.translate_title_label')}</span>
+        <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={task.title} />
+      </label>
+      <button type="submit" className="btn btn-accent" disabled={!content.trim() || busy}>
+        {t('contribute.translate_submit')}
+      </button>
+    </form>
+  );
+}
+
+/** Note text with its URL (if any) made clickable. */
+function LinkedNote({ note }: { note: string }) {
+  const match = note.match(/https?:\/\/\S+/);
+  if (!match || match.index === undefined) return <>{note}</>;
+  return (
+    <>
+      {note.slice(0, match.index)}
+      <a href={match[0]} target="_blank" rel="noopener noreferrer">
+        {match[0]}
+      </a>
+      {note.slice(match.index + match[0].length)}
+    </>
+  );
+}
+
+function ReviewAdditionCard({ task, languages }: { task: ReviewAdditionTask; languages: Language[] }) {
+  const { t } = useTranslation();
+  return (
+    <div className="contribute-review">
+      {task.proposal_type === 'add_spelling_variant' ? (
+        <>
+          <p className="contribute-question">
+            {t('contribute.review_spelling_question', { variant: task.variant, lemma: task.lemma })}
+          </p>
+          <div className="contribute-word">
+            {task.variant} → <Link to={`/words/${task.lexeme_id}`}>{task.lemma}</Link>
+          </div>
+          {task.note && (
+            <p className="contribute-meta">
+              <LinkedNote note={task.note} />
+            </p>
+          )}
+        </>
+      ) : (
+        <>
+          <p className="contribute-question">
+            {t('contribute.review_translation_question', {
+              lemma: task.lemma,
+              other: task.other_lemma,
+              language: languageName(languages, task.other_language_id),
+            })}
+          </p>
+          <div className="contribute-word">
+            <Link to={`/words/${task.lexeme_id}`}>{task.lemma}</Link> = {task.other_lemma}
+          </div>
+        </>
+      )}
+      {task.creator_username && (
+        <p className="contribute-meta">
+          {t('review.suggested_by', { username: task.creator_username })}
+        </p>
+      )}
     </div>
   );
 }

@@ -21,6 +21,18 @@ class TextContext(BaseModel):
     highlight_end: int
 
 
+class SourceContext(BaseModel):
+    """Where a word was seen outside Nativo: an excerpt, its link and licence."""
+
+    snippet_id: UUID
+    snippet: str
+    highlight_start: int
+    highlight_end: int
+    source_url: str
+    source_title: str
+    license: str | None = None
+
+
 class _Task(BaseModel):
     # Stable per-item id ("<type>:<id>"); the client sends skipped keys back
     # as `exclude` so a skipped card doesn't come straight back.
@@ -82,8 +94,68 @@ class VoteTask(_Task):
     proposal: ChangeProposal
 
 
+class ConfirmSpellingTask(_Task):
+    """A word as an outside source writes it, for its standard spelling."""
+
+    type: Literal["confirm_spelling"] = "confirm_spelling"
+    token: str
+    occurrences: int  # across all stored source snippets
+    source: SourceContext
+
+
+class TranslateWordTask(_Task):
+    """A word in a language the user speaks with no translation yet."""
+
+    type: Literal["translate_word"] = "translate_word"
+    source_lexeme_id: UUID
+    lemma: str
+    source_language_id: UUID
+    part_of_speech: PartOfSpeech | None = None
+    # Its translations into other languages, to pin down the sense.
+    translations: list[TranslationLink] = []
+
+
+class TranslateTextTask(_Task):
+    """A short text in a language the user speaks: an internal document
+    (text_id) or an outside snippet (snippet_id)."""
+
+    type: Literal["translate_text"] = "translate_text"
+    source_language_id: UUID
+    title: str
+    content: str
+    text_id: UUID | None = None
+    document_id: UUID | None = None
+    snippet_id: UUID | None = None
+    source_url: str | None = None
+    license: str | None = None
+
+
+class ReviewAdditionTask(_Task):
+    """Someone's suggested addition to an existing entry: a spelling variant
+    or a translation link."""
+
+    type: Literal["review_addition"] = "review_addition"
+    proposal_id: UUID
+    proposal_type: Literal["add_spelling_variant", "add_translation"]
+    lexeme_id: UUID
+    lemma: str
+    variant: str | None = None  # add_spelling_variant: the outside spelling
+    note: str | None = None  # e.g. where the spelling was seen
+    other_lemma: str | None = None  # add_translation: the word it translates
+    other_language_id: UUID | None = None
+    creator_username: str | None = None
+
+
 ContributeTask = Annotated[
-    DefineWordTask | RecordAudioTask | ConfirmLinkTask | ReviewWordTask | VoteTask,
+    DefineWordTask
+    | RecordAudioTask
+    | ConfirmLinkTask
+    | ReviewWordTask
+    | VoteTask
+    | ConfirmSpellingTask
+    | TranslateWordTask
+    | TranslateTextTask
+    | ReviewAdditionTask,
     Field(discriminator="type"),
 ]
 
@@ -103,3 +175,55 @@ class DefineWordAnswer(BaseModel):
 class DefineWordResult(BaseModel):
     lexeme_id: UUID
     status: LexemeStatus
+
+
+class SpellingAnswer(BaseModel):
+    """The standard spelling of a word seen in an outside source."""
+
+    token: str = Field(..., min_length=1, max_length=255)  # as the source writes it
+    standard: str = Field(..., min_length=1, max_length=255)
+    snippet_id: UUID | None = None
+    # Only used when the standard spelling is a new word.
+    part_of_speech: PartOfSpeech | None = None
+    gloss: str | None = Field(None, max_length=255)
+    gloss_language_id: UUID | None = None
+
+
+class TranslateWordAnswer(BaseModel):
+    source_lexeme_id: UUID
+    lemma: str = Field(..., min_length=1, max_length=255)
+    part_of_speech: PartOfSpeech | None = None
+
+
+class TranslateTextAnswer(BaseModel):
+    """A translation of an internal text or an outside snippet (one of the two)."""
+
+    text_id: UUID | None = None
+    snippet_id: UUID | None = None
+    title: str | None = Field(None, max_length=500)  # defaults to the source's title
+    content: str = Field(..., min_length=1)
+
+
+Outcome = Literal["published", "suggested", "proposed"]
+
+
+class ContributeResult(BaseModel):
+    """What an answer did: published directly, suggested (a new entry pending
+    review) or proposed (an addition to an existing entry, for a reviewer)."""
+
+    outcome: Outcome
+    lexeme_id: UUID | None = None
+    document_id: UUID | None = None
+
+
+class SourceTextCreate(BaseModel):
+    """Text from an outside source, stored as sentence snippets."""
+
+    source_url: str = Field(..., min_length=1, max_length=1000)
+    source_title: str = Field(..., min_length=1, max_length=500)
+    text: str = Field(..., min_length=1)
+    license: str | None = Field(None, max_length=100)
+
+
+class SourceTextResult(BaseModel):
+    created: int

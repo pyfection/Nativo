@@ -1,9 +1,10 @@
 """
-Quick Contribute endpoints: the task deck and the one answer that has no
-existing endpoint (define a word with its meaning in one step).
+Quick Contribute endpoints: the task deck, the answers that have no
+existing endpoint (define a word, confirm an outside spelling, translate a
+word or text), and adding outside source text.
 
 The other cards are answered through the endpoints they already have:
-audio upload, link update, word verify/reject, and proposal votes.
+audio upload, link update, word verify/reject, proposal votes and reviews.
 """
 
 from uuid import UUID
@@ -14,7 +15,17 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_current_active_user, get_db
 from app.models.language import Language
 from app.models.user import User
-from app.schemas.contribute import ContributeTask, DefineWordAnswer, DefineWordResult
+from app.schemas.contribute import (
+    ContributeResult,
+    ContributeTask,
+    DefineWordAnswer,
+    DefineWordResult,
+    SourceTextCreate,
+    SourceTextResult,
+    SpellingAnswer,
+    TranslateTextAnswer,
+    TranslateWordAnswer,
+)
 from app.services import contribute_service
 
 router = APIRouter()
@@ -54,3 +65,57 @@ def define_word(
     anyone else's lands in the review queue."""
     lexeme = contribute_service.define_word(db, current_user, language_id, answer)
     return DefineWordResult(lexeme_id=lexeme.id, status=lexeme.status)
+
+
+@router.post("/{language_id}/spelling", response_model=ContributeResult)
+def confirm_spelling(
+    language_id: UUID,
+    answer: SpellingAnswer,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+):
+    """Give the standard spelling of a word an outside source writes its own
+    way. Known words gain the source's spelling as a variant; unknown ones
+    become new words."""
+    return contribute_service.confirm_spelling(db, current_user, language_id, answer)
+
+
+@router.post("/{language_id}/translate-word", response_model=ContributeResult)
+def translate_word(
+    language_id: UUID,
+    answer: TranslateWordAnswer,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+):
+    """Translate a word from another language into this one."""
+    return contribute_service.translate_word(db, current_user, language_id, answer)
+
+
+@router.post("/{language_id}/translate-text", response_model=ContributeResult)
+def translate_text(
+    language_id: UUID,
+    answer: TranslateTextAnswer,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+):
+    """Translate a short text (internal, or an outside snippet) into this
+    language."""
+    return contribute_service.translate_text(db, current_user, language_id, answer)
+
+
+@router.post(
+    "/{language_id}/sources",
+    response_model=SourceTextResult,
+    status_code=status.HTTP_201_CREATED,
+)
+def add_source_text(
+    language_id: UUID,
+    data: SourceTextCreate,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+):
+    """Store text from an outside page (in this language) as sentence
+    snippets for spelling and translation cards. Editors of the language
+    only; the server stores what it's given and never fetches the URL."""
+    created = contribute_service.add_source_text(db, current_user, language_id, data)
+    return SourceTextResult(created=created)

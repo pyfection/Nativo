@@ -32,7 +32,7 @@ export interface ChangeProposal {
   language_id: string;
   lexeme_id?: string | null;
   lexeme_lemma?: string | null;
-  proposal_type: 'set_recommendation';
+  proposal_type: 'set_recommendation' | 'add_spelling_variant' | 'add_translation';
   payload: { recommendation: LexemeRecommendation; note?: string | null };
   rationale?: string | null;
   status: ProposalStatus;
@@ -81,6 +81,14 @@ const proposalService = {
     const response = await api.post<ChangeProposal>(`/api/v1/proposals/${proposalId}/votes`, {
       choice,
       ...(comment && { comment }),
+    });
+    return response.data;
+  },
+
+  /** Settle a suggested addition (spelling variant, translation link). */
+  async review(proposalId: string, approve: boolean): Promise<ChangeProposal> {
+    const response = await api.post<ChangeProposal>(`/api/v1/proposals/${proposalId}/review`, {
+      approve,
     });
     return response.data;
   },

@@ -261,3 +261,28 @@
   justify-content: center;
   flex-wrap: wrap;
 }
+
+/* ---------- Outside sources & translation ---------- */
+
+.contribute-field textarea {
+  font: inherit;
+  font-size: 1rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.2);
+  color: inherit;
+  resize: vertical;
+}
+
+.contribute-license {
+  opacity: 0.8;
+}
+
+.contribute-source-text blockquote {
+  white-space: pre-line;
+}
+
+.contribute-word a {
+  text-decoration: none;
+}

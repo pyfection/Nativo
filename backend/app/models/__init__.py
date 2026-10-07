@@ -18,6 +18,7 @@ from app.models.image import Image
 from app.models.language import Language
 from app.models.learning import DifficultyRating, UserLexemeKnowledge, UserTextProgress
 from app.models.location import Location
+from app.models.source_snippet import SourceSnippet
 from app.models.tag import Tag
 from app.models.text import DocumentType, Text
 from app.models.text_word_link import TextWordLink, TextWordLinkStatus
@@ -54,6 +55,7 @@ from app.models.word import (
 )
 
 __all__ = [
+    "SourceSnippet",
     # Core models
     "User",
     "ApiToken",

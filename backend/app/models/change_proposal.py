@@ -7,9 +7,9 @@ directly, an editor opens a `ChangeProposal`; members of the language with
 edit/verify rights vote on it, and it is applied only once it reaches the
 language's `proposal_approval_threshold` with no objection.
 
-The table is generic (type + JSON payload) so later edit/delete proposals
-from the suggester tier can reuse it. Today the only type is
-SET_RECOMMENDATION, which targets a Lexeme.
+The table is generic (type + JSON payload). SET_RECOMMENDATION is voted on;
+the suggester tier's additions to existing entries (a spelling variant, a
+translation link) reuse the table but are settled by one reviewer.
 """
 
 import enum
@@ -38,12 +38,20 @@ def _now() -> datetime:
 
 class ProposalType(str, enum.Enum):
     SET_RECOMMENDATION = "set_recommendation"  # payload: {recommendation, note}
+    # Suggester additions to existing published entries. Factual, not
+    # prescriptive, so one reviewer (can_verify) settles them — no vote.
+    ADD_SPELLING_VARIANT = "add_spelling_variant"  # payload: {word_form_id, variant, note}
+    ADD_TRANSLATION = "add_translation"  # payload: {other_lexeme_id}
+
+
+# Types settled by a single reviewer instead of a vote.
+REVIEWED_TYPES = frozenset({ProposalType.ADD_SPELLING_VARIANT, ProposalType.ADD_TRANSLATION})
 
 
 class ProposalStatus(str, enum.Enum):
     OPEN = "open"
-    ACCEPTED = "accepted"  # threshold reached, change applied
-    REJECTED = "rejected"  # threshold of objections reached
+    ACCEPTED = "accepted"  # threshold reached (or reviewer approved), change applied
+    REJECTED = "rejected"  # threshold of objections reached (or reviewer rejected)
     WITHDRAWN = "withdrawn"  # pulled by its author
 
 
