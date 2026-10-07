@@ -1,4 +1,5 @@
 import api from './api';
+import type { OutboxConfig } from './outbox';
 
 export type PathState = 'completed' | 'recommended' | 'upcoming';
 
@@ -54,8 +55,12 @@ const learnService = {
   },
 
   /** Tapping a word to look it up is a "don't know yet" signal. */
-  async clickWord(lexemeId: string): Promise<LexemeKnowledge> {
-    const response = await api.post<LexemeKnowledge>(`/api/v1/learn/words/${lexemeId}/click`);
+  async clickWord(lexemeId: string, config?: OutboxConfig): Promise<LexemeKnowledge> {
+    const response = await api.post<LexemeKnowledge>(
+      `/api/v1/learn/words/${lexemeId}/click`,
+      undefined,
+      config,
+    );
     return response.data;
   },
 
@@ -68,10 +73,12 @@ const learnService = {
   },
 
   /** Flashcard verdict: knew it (+1) or didn't (-1). */
-  async reviewWord(lexemeId: string, knew: boolean): Promise<LexemeKnowledge> {
-    const response = await api.post<LexemeKnowledge>(`/api/v1/learn/words/${lexemeId}/review`, {
-      knew,
-    });
+  async reviewWord(lexemeId: string, knew: boolean, config?: OutboxConfig): Promise<LexemeKnowledge> {
+    const response = await api.post<LexemeKnowledge>(
+      `/api/v1/learn/words/${lexemeId}/review`,
+      { knew },
+      config,
+    );
     return response.data;
   },
 
@@ -88,11 +95,13 @@ const learnService = {
     textId: string,
     difficultyRating: DifficultyRating,
     clickedLexemeIds: string[],
+    config?: OutboxConfig,
   ): Promise<void> {
-    await api.post(`/api/v1/learn/texts/${textId}/complete`, {
-      difficulty_rating: difficultyRating,
-      clicked_lexeme_ids: clickedLexemeIds,
-    });
+    await api.post(
+      `/api/v1/learn/texts/${textId}/complete`,
+      { difficulty_rating: difficultyRating, clicked_lexeme_ids: clickedLexemeIds },
+      config,
+    );
   },
 };
 

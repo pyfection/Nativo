@@ -1189,5 +1189,24 @@
     "done_published": "Saved. Thank you!",
     "done_suggested": "Sent for review. Thank you!",
     "done_proposed": "Sent to a reviewer. Thank you!"
+  },
+  "offline": {
+    "offline": "You're offline.",
+    "offline_body": "Pages you've opened before still work, and your changes will be sent when you're back online.",
+    "waiting_one": "{{count}} change waiting to be sent.",
+    "waiting_other": "{{count}} changes waiting to be sent.",
+    "sending_one": "Sending {{count}} saved change…",
+    "sending_other": "Sending {{count}} saved changes…",
+    "send_now": "Send now",
+    "failed_one": "{{count}} saved change couldn't be sent:",
+    "failed_other": "{{count}} saved changes couldn't be sent:",
+    "dismiss": "Dismiss",
+    "saved": "Saved. It will be sent when you're back online.",
+    "recording": "Recording",
+    "recordings_saved_one": "{{count}} recording saved. It will upload when you're back online.",
+    "recordings_saved_other": "{{count}} recordings saved. They will upload when you're back online.",
+    "word_lookup": "Looked up “{{word}}”",
+    "text_finished": "Finished “{{title}}”",
+    "flashcard": "Flashcard “{{word}}”"
   }
 }

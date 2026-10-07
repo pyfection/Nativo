@@ -1,4 +1,5 @@
 import api from './api';
+import type { OutboxConfig } from './outbox';
 
 // -----------------------------------------------------------------------------
 // Lexeme + WordForm types (matches backend/app/schemas/word.py)
@@ -301,8 +302,8 @@ export const wordService = {
   },
 
   /** Approve a word (publishing its drafted glosses), optionally fixing it first. */
-  async verify(id: string, corrections?: ReviewCorrections): Promise<Lexeme> {
-    const response = await api.post<Lexeme>(`/api/v1/words/${id}/verify`, corrections);
+  async verify(id: string, corrections?: ReviewCorrections, config?: OutboxConfig): Promise<Lexeme> {
+    const response = await api.post<Lexeme>(`/api/v1/words/${id}/verify`, corrections, config);
     return response.data;
   },
 
@@ -315,8 +316,12 @@ export const wordService = {
   },
 
   /** Reject a pending suggestion; the reason is kept in the lexeme notes. */
-  async reject(id: string, reason?: string): Promise<Lexeme> {
-    const response = await api.post<Lexeme>(`/api/v1/words/${id}/reject`, reason ? { reason } : {});
+  async reject(id: string, reason?: string, config?: OutboxConfig): Promise<Lexeme> {
+    const response = await api.post<Lexeme>(
+      `/api/v1/words/${id}/reject`,
+      reason ? { reason } : {},
+      config,
+    );
     return response.data;
   },
 

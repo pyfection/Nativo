@@ -79,6 +79,13 @@
   font-style: italic;
 }
 
+
+.audio-recorder-queued {
+  margin: 8px 0 0;
+  font-size: 0.85rem;
+  color: var(--cream-dim);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .audio-recorder-stop {
     animation: none;

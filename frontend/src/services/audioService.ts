@@ -1,4 +1,5 @@
 import api, { API_URL } from './api';
+import type { OutboxConfig } from './outbox';
 
 export interface AudioListItem {
   id: string;
@@ -57,6 +58,7 @@ export const uploadAudio = async (
     durationSeconds?: number | null;
     isPrimary?: boolean;
     filename?: string;
+    outbox?: OutboxConfig['outbox'];
   } = {},
 ): Promise<UploadedAudio> => {
   const form = new FormData();
@@ -72,6 +74,7 @@ export const uploadAudio = async (
   if (opts.isPrimary) form.append('is_primary', 'true');
   const response = await api.post<UploadedAudio>('/api/v1/audio/upload', form, {
     headers: { 'Content-Type': 'multipart/form-data' },
+    outbox: opts.outbox,
   });
   return response.data;
 };

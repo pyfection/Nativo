@@ -1,4 +1,4 @@
-import api from './api';
+import api, { clearApiCache } from './api';
 
 export interface RegisterData {
   email: string;
@@ -81,6 +81,7 @@ export const authService = {
 
   logout(): void {
     localStorage.removeItem('access_token');
+    clearApiCache();
   },
 
   isAuthenticated(): boolean {

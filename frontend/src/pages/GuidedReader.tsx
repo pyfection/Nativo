@@ -7,6 +7,7 @@ import Modal from '../components/common/Modal';
 import { useAuth } from '../contexts/AuthContext';
 import { fullAudioUrl, listAudioForForm, listAudioForText } from '../services/audioService';
 import documentService from '../services/documentService';
+import { QueuedOffline } from '../services/outbox';
 import learnService, {
   DifficultyRating,
   KNOWN_SCORE_THRESHOLD,
@@ -219,9 +220,13 @@ export default function GuidedReader({ selectedLanguage }: GuidedReaderProps) {
     // Record the "don't know yet" signal once per lexeme per session.
     if (isAuthenticated && lexemeId && !clickedRef.current.has(lexemeId)) {
       clickedRef.current.add(lexemeId);
-      learnService.clickWord(lexemeId).catch(() => {
-        clickedRef.current.delete(lexemeId);
-      });
+      learnService
+        .clickWord(lexemeId, {
+          outbox: { label: t('offline.word_lookup', { word: link.word_text ?? link.word_lemma ?? '' }) },
+        })
+        .catch((err) => {
+          if (!(err instanceof QueuedOffline)) clickedRef.current.delete(lexemeId);
+        });
     } else if (lexemeId) {
       clickedRef.current.add(lexemeId);
     }
@@ -256,11 +261,14 @@ export default function GuidedReader({ selectedLanguage }: GuidedReaderProps) {
     if (!text) return;
     setSaving(true);
     try {
-      await learnService.completeText(text.id, rating, Array.from(clickedRef.current));
+      await learnService.completeText(text.id, rating, Array.from(clickedRef.current), {
+        outbox: { label: t('offline.text_finished', { title: text.title }) },
+      });
       setShowDifficulty(false);
       setFinished(true);
     } catch (err: any) {
-      setError(err.response?.data?.detail || t('reader.save_failed'));
+      if (err instanceof QueuedOffline) setFinished(true);
+      else setError(err.response?.data?.detail || t('reader.save_failed'));
       setShowDifficulty(false);
     } finally {
       setSaving(false);

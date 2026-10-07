@@ -130,9 +130,11 @@ export default function Learn({ selectedLanguage }: LearnProps) {
     if (!card) return;
     if (knew) setKnewCount((n) => n + 1);
     try {
-      await learnService.reviewWord(card.lexeme_id, knew);
+      await learnService.reviewWord(card.lexeme_id, knew, {
+        outbox: { label: t('offline.flashcard', { word: card.lemma }) },
+      });
     } catch {
-      // Scoring is best-effort; keep the flow moving.
+      // Scoring is best-effort (and queued when offline); keep the flow moving.
     }
     setRevealed(false);
     setCardIndex((i) => i + 1);

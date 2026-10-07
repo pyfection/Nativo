@@ -8,9 +8,10 @@ export default defineConfig({
   base: process.env.VITE_BASE || '/',
   plugins: [
     react(),
-    // Installable app + offline app shell. The manifest is public/site.webmanifest;
-    // the service worker only precaches the built assets. API calls go to
-    // VITE_API_URL and are never cached, so data is always live.
+    // Installable app that works offline. The manifest is public/site.webmanifest.
+    // The service worker precaches the built app, and keeps a copy of API reads
+    // (network first, so data is live whenever there's a connection) for
+    // offline use. Writes made offline are queued by src/services/outbox.ts.
     VitePWA({
       registerType: 'autoUpdate',
       manifest: false,
@@ -18,6 +19,21 @@ export default defineConfig({
       workbox: {
         navigateFallbackDenylist: [/^\/(api|admin|mcp|uploads)(\/|$)/],
         runtimeCaching: [
+          {
+            // API reads, on whatever origin VITE_API_URL points at. Cleared
+            // on logout (clearApiCache in api.ts). Token management stays live-only.
+            urlPattern: ({ url, request }) =>
+              request.method === 'GET' &&
+              url.pathname.startsWith('/api/v1/') &&
+              !url.pathname.startsWith('/api/v1/auth/tokens'),
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'nativo-api',
+              networkTimeoutSeconds: 6,
+              expiration: { maxEntries: 1000, maxAgeSeconds: 30 * 24 * 60 * 60 },
+              cacheableResponse: { statuses: [200] },
+            },
+          },
           {
             urlPattern: ({ url }) =>
               url.origin === 'https://fonts.googleapis.com' ||
