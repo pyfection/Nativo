@@ -8,6 +8,7 @@ from app.api.v1.endpoints import (
     activity,
     audio,
     auth,
+    contribute,
     contributors,
     documents,
     languages,
@@ -37,4 +38,5 @@ router.include_router(statistics.router, prefix="/statistics", tags=["Statistics
 router.include_router(activity.router, prefix="/activity", tags=["Activity"])
 router.include_router(learn.router, prefix="/learn", tags=["Learn"])
 router.include_router(transcribe.router, prefix="/transcribe", tags=["Transcription"])
+router.include_router(contribute.router, prefix="/contribute", tags=["Contribute"])
 router.include_router(contributors.router, prefix="/contributors", tags=["Contributors"])

@@ -27,6 +27,7 @@ import ContributorsList from './pages/ContributorsList';
 import GuidedReader from './pages/GuidedReader';
 import Learn from './pages/Learn';
 import Review from './pages/Review';
+import Contribute from './pages/Contribute';
 import ApiTokens from './pages/ApiTokens';
 import languageService, { LanguageResponse } from './services/languageService';
 import { API_URL } from './services/api';
@@ -376,6 +377,22 @@ function App() {
                     languages={languages}
                   >
                     <Review selectedLanguage={selectedLanguage!} languages={languages} />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Quick Contribute — one small task at a time */}
+            <Route
+              path="/contribute"
+              element={
+                <ProtectedRoute>
+                  <AppLayout
+                    selectedLanguage={selectedLanguage!}
+                    onLanguageChange={setSelectedLanguage}
+                    languages={languages}
+                  >
+                    <Contribute selectedLanguage={selectedLanguage!} languages={languages} />
                   </AppLayout>
                 </ProtectedRoute>
               }

@@ -1,0 +1,288 @@
+.contribute-page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 4rem;
+}
+
+.contribute-header h1 {
+  margin-bottom: 0.25rem;
+}
+
+.contribute-subtitle {
+  margin: 0 0 1.25rem;
+  opacity: 0.75;
+}
+
+/* ---------- Daily goal ---------- */
+
+.contribute-progress {
+  margin-bottom: 1.25rem;
+}
+
+.contribute-progress-bar {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.contribute-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+  transition: width 0.4s ease;
+}
+
+.contribute-progress-text {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.4rem;
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.contribute-note {
+  margin: 0 0 1rem;
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+.contribute-flash {
+  margin-bottom: 1rem;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid rgba(90, 200, 140, 0.4);
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+/* ---------- The card ---------- */
+
+.contribute-card {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 1.25rem 1.4rem;
+  animation: contribute-card-in 0.2s ease;
+}
+
+@keyframes contribute-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contribute-card {
+    animation: none;
+  }
+}
+
+.contribute-card-kind {
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.6;
+  margin-bottom: 0.6rem;
+}
+
+.contribute-question {
+  margin: 0 0 0.75rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.contribute-word {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+  overflow-wrap: anywhere;
+}
+
+.contribute-word a {
+  color: inherit;
+}
+
+.contribute-ipa {
+  opacity: 0.7;
+  margin-bottom: 0.5rem;
+}
+
+.contribute-translations {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+}
+
+.contribute-meta,
+.contribute-hint {
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+.contribute-notes {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  white-space: pre-line;
+}
+
+.contribute-snippet {
+  margin: 0 0 0.75rem;
+  padding: 0.75rem 0.9rem;
+  border-left: 3px solid var(--accent);
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 0 8px 8px 0;
+}
+
+.contribute-snippet blockquote {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.contribute-snippet mark {
+  background: var(--accent);
+  color: var(--accent-deep);
+  border-radius: 3px;
+  padding: 0 0.15em;
+}
+
+.contribute-snippet figcaption {
+  margin-top: 0.4rem;
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+.contribute-usage {
+  margin: 0 0 0.75rem;
+  padding-left: 1.1rem;
+  font-size: 0.9rem;
+}
+
+/* ---------- Define-word form ---------- */
+
+.contribute-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.85rem;
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+
+.contribute-field input,
+.contribute-field select {
+  font: inherit;
+  font-size: 1rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.2);
+  color: inherit;
+}
+
+.contribute-field-row {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.contribute-record .audio-recorder {
+  margin-bottom: 0.75rem;
+}
+
+/* ---------- Actions ---------- */
+
+.contribute-card-actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.contribute-skip {
+  margin-left: auto;
+}
+
+.contribute-btn-yes,
+.contribute-btn-no {
+  padding: 0.55rem 1.2rem;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+}
+
+.contribute-btn-yes {
+  background: rgba(90, 200, 140, 0.18);
+  border-color: rgba(90, 200, 140, 0.5);
+  color: #9fe3bd;
+}
+
+.contribute-btn-no {
+  background: rgba(230, 110, 110, 0.15);
+  border-color: rgba(230, 110, 110, 0.45);
+  color: #f0a9a9;
+}
+
+.contribute-btn-yes:disabled,
+.contribute-btn-no:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.contribute-card kbd {
+  font-size: 0.7rem;
+  padding: 0 0.3rem;
+  border-radius: 4px;
+  border: 1px solid currentColor;
+  opacity: 0.6;
+  margin-left: 0.25rem;
+}
+
+@media (hover: none) {
+  .contribute-card kbd {
+    display: none;
+  }
+}
+
+/* ---------- Empty state ---------- */
+
+.contribute-empty {
+  padding: 2rem 0;
+  text-align: center;
+}
+
+.contribute-empty-actions {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ---------- Outside sources & translation ---------- */
+
+.contribute-field textarea {
+  font: inherit;
+  font-size: 1rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.2);
+  color: inherit;
+  resize: vertical;
+}
+
+.contribute-license {
+  opacity: 0.8;
+}
+
+.contribute-source-text blockquote {
+  white-space: pre-line;
+}
+
+.contribute-word a {
+  text-decoration: none;
+}
