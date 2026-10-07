@@ -2,7 +2,8 @@
 Change-proposal endpoints: propose, vote, withdraw, and read the audit trail.
 
 Reads are public (the decision history is part of the record); writes need
-edit rights to propose and edit-or-verify rights to vote.
+edit rights to propose and edit-or-verify rights to vote. Suggested additions
+(spelling variants, translation links) are settled by one reviewer instead.
 """
 
 from uuid import UUID
@@ -15,8 +16,8 @@ from app.database import get_db
 from app.models.change_proposal import ChangeProposal, ProposalStatus
 from app.models.user import User
 from app.models.word import Lexeme
+from app.schemas.proposal import AdditionReview, RecommendationProposalCreate, VoteCreate
 from app.schemas.proposal import ChangeProposal as ChangeProposalSchema
-from app.schemas.proposal import RecommendationProposalCreate, VoteCreate
 from app.services import proposal_service
 from app.services.auth_service import require_language_edit_permission
 
@@ -79,6 +80,19 @@ async def vote(
     proposal = _get_proposal_or_404(db, proposal_id)
     proposal = proposal_service.cast_vote(db, proposal, current_user, data)
     return proposal_service.to_schema(db, proposal)
+
+
+@router.post("/proposals/{proposal_id}/review", response_model=ChangeProposalSchema)
+async def review(
+    proposal_id: UUID,
+    data: AdditionReview,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+):
+    """Accept or reject a suggested addition (needs verify rights)."""
+    proposal = _get_proposal_or_404(db, proposal_id)
+    proposal = proposal_service.review_addition(db, proposal, current_user, data.approve)
+    return proposal_service.to_schema(db, proposal, with_usage=False)
 
 
 @router.post("/proposals/{proposal_id}/withdraw", response_model=ChangeProposalSchema)

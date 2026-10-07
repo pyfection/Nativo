@@ -30,12 +30,13 @@ from sqlalchemy.orm import Session, joinedload
 from starlette.applications import Starlette
 
 from app.api.deps import get_current_user
-from app.api.v1.endpoints import documents, words
+from app.api.v1.endpoints import contribute, documents, words
 from app.database import SessionLocal
 from app.models.language import Language
 from app.models.text import Text
 from app.models.user import User, UserRole
 from app.models.user_language import UserLanguage
+from app.schemas.contribute import SourceTextCreate
 from app.schemas.document import DocumentListItem, DocumentWithTexts
 from app.schemas.language import LanguageListItem
 from app.schemas.text import Text as TextSchema
@@ -430,6 +431,34 @@ async def add_spelling_variant(
             db=db,
         )
         return SpellingVariantSchema.model_validate(row)
+
+
+@mcp.tool(annotations=WRITE)
+async def add_source_text(
+    language_id: UUID,
+    source_url: str,
+    source_title: str,
+    text: str,
+    ctx: Context,
+    license: str | None = None,
+) -> int:
+    """Store text from an outside page written in `language_id` (e.g. a
+    Wikipedia article you fetched) as sentence snippets. Contributors then
+    confirm the standard spelling of its unknown words, and people who speak
+    the language translate its sentences. Pass the page URL, its title and
+    licence (e.g. "CC BY-SA 4.0") so cards can credit it. Needs edit rights
+    on the language. Returns how many new sentences were stored."""
+    with _db() as db:
+        user = await _require_user(ctx, db)
+        result = contribute.add_source_text(
+            language_id=language_id,
+            data=SourceTextCreate(
+                source_url=source_url, source_title=source_title, text=text, license=license
+            ),
+            current_user=user,
+            db=db,
+        )
+        return result.created
 
 
 @mcp.tool(annotations=WRITE)

@@ -66,6 +66,18 @@ Ranked by value after the open-platform + learning-path work landed.
    until then reset emails go nowhere.* Nothing is gated on verification
    yet; it's the hook for suggestion-approved notifications later.
 
+6. **Quick Contribute — the contribution hook.** `done` (phase 1)
+   /contribute deals one small card at a time from the language's gaps
+   (define an unknown word from a text, record an unrecorded word, confirm
+   a suggested link, review a suggestion, vote), gated by per-language
+   rights, with skip, y/n/s keys and a daily goal of 5. Phase 2 added
+   outside sources (Wikipedia harvest → spelling-confirmation cards) and
+   translation cards (words, corpus texts and outside sentences from the
+   languages a user has joined), with suggesters' additions to existing
+   words going to one reviewer as proposals. Next: tell people
+   what their work did (suggestion approved, "your recording was played N
+   times"), streaks, and an "ask your grandparents" recording mode.
+
 Honorable mentions, unscheduled: mobile/PWA audit for the reader;
 author-facing "this draft introduces N new words" difficulty report; error
 monitoring before real users; Bavarian for the deep editor tools (en/es

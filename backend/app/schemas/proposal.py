@@ -17,6 +17,12 @@ class RecommendationProposalCreate(BaseModel):
     rationale: str | None = Field(None, max_length=2000)  # the case made to voters
 
 
+class AdditionReview(BaseModel):
+    """A reviewer's verdict on a suggested addition (spelling, translation)."""
+
+    approve: bool
+
+
 class VoteCreate(BaseModel):
     choice: VoteChoice
     comment: str | None = Field(None, max_length=1000)

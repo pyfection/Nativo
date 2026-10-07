@@ -12,6 +12,10 @@ as soon as either side reaches the language's `proposal_approval_threshold`:
 An open objection blocks acceptance until it is withdrawn (votes can be
 changed) or enough people object to reject. Admins vote like anyone else;
 there is no override.
+
+Additions from the suggester tier to existing entries (a spelling variant, a
+translation link — REVIEWED_TYPES) are factual rather than prescriptive, so
+they skip the vote: one reviewer with verify rights accepts or rejects them.
 """
 
 from __future__ import annotations
@@ -20,10 +24,11 @@ from datetime import UTC, datetime
 from uuid import UUID
 
 from fastapi import HTTPException, status
-from sqlalchemy import distinct, func, select
+from sqlalchemy import and_, distinct, func, insert, select
 from sqlalchemy.orm import Session
 
 from app.models.change_proposal import (
+    REVIEWED_TYPES,
     ChangeProposal,
     ProposalStatus,
     ProposalType,
@@ -37,7 +42,9 @@ from app.models.user import User
 from app.models.word import (
     Lexeme,
     LexemeRecommendation,
+    SpellingVariant,
     WordForm,
+    lexeme_translations,
     word_form_audio,
     word_form_locations,
 )
@@ -107,6 +114,11 @@ def propose_recommendation(
 def cast_vote(
     db: Session, proposal: ChangeProposal, voter: User, data: VoteCreate
 ) -> ChangeProposal:
+    if proposal.proposal_type in REVIEWED_TYPES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This proposal is reviewed, not voted on",
+        )
     if proposal.status != ProposalStatus.OPEN:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="This proposal is already closed"
@@ -128,6 +140,73 @@ def cast_vote(
         vote.updated_at = _now()
     db.flush()
     _resolve(db, proposal)
+    db.commit()
+    db.refresh(proposal)
+    return proposal
+
+
+def propose_addition(
+    db: Session,
+    *,
+    language_id: UUID,
+    lexeme_id: UUID,
+    proposal_type: ProposalType,
+    payload: dict,
+    author: User,
+) -> ChangeProposal:
+    """Queue a suggester's addition to an existing entry for one reviewer.
+    The same open addition twice is the same proposal. Does not commit."""
+    for open_one in (
+        db.query(ChangeProposal)
+        .filter(
+            ChangeProposal.lexeme_id == lexeme_id,
+            ChangeProposal.proposal_type == proposal_type,
+            ChangeProposal.status == ProposalStatus.OPEN,
+        )
+        .all()
+    ):
+        if open_one.payload == payload:
+            return open_one
+    proposal = ChangeProposal(
+        language_id=language_id,
+        lexeme_id=lexeme_id,
+        proposal_type=proposal_type,
+        payload=payload,
+        created_by_id=author.id,
+    )
+    db.add(proposal)
+    db.flush()
+    return proposal
+
+
+def review_addition(
+    db: Session, proposal: ChangeProposal, reviewer: User, approve: bool
+) -> ChangeProposal:
+    """Accept (applying it) or reject a suggester's addition."""
+    if proposal.proposal_type not in REVIEWED_TYPES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This proposal is decided by vote",
+        )
+    if proposal.status != ProposalStatus.OPEN:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="This proposal is already closed"
+        )
+    if not can_user_verify_language(db, reviewer.id, proposal.language_id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only reviewers of this language can settle this",
+        )
+    if proposal.created_by_id == reviewer.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Someone else has to review this"
+        )
+    if approve:
+        _apply(db, proposal)
+        proposal.status = ProposalStatus.ACCEPTED
+    else:
+        proposal.status = ProposalStatus.REJECTED
+    proposal.resolved_at = _now()
     db.commit()
     db.refresh(proposal)
     return proposal
@@ -172,10 +251,52 @@ def _resolve(db: Session, proposal: ChangeProposal) -> None:
 
 
 def _apply(db: Session, proposal: ChangeProposal) -> None:
+    payload = proposal.payload
     if proposal.proposal_type == ProposalType.SET_RECOMMENDATION:
         lexeme = db.get(Lexeme, proposal.lexeme_id)
-        lexeme.recommendation = LexemeRecommendation(proposal.payload["recommendation"])
-        lexeme.recommendation_note = proposal.payload.get("note")
+        lexeme.recommendation = LexemeRecommendation(payload["recommendation"])
+        lexeme.recommendation_note = payload.get("note")
+    elif proposal.proposal_type == ProposalType.ADD_SPELLING_VARIANT:
+        word_form_id = UUID(payload["word_form_id"])
+        exists = (
+            db.query(SpellingVariant)
+            .filter(
+                SpellingVariant.word_form_id == word_form_id,
+                SpellingVariant.variant == payload["variant"],
+            )
+            .first()
+        )
+        if exists is None and db.get(WordForm, word_form_id) is not None:
+            db.add(
+                SpellingVariant(
+                    word_form_id=word_form_id,
+                    variant=payload["variant"],
+                    note=payload.get("note"),
+                    created_by_id=proposal.created_by_id,
+                )
+            )
+    elif proposal.proposal_type == ProposalType.ADD_TRANSLATION:
+        other_id = UUID(payload["other_lexeme_id"])
+        if db.get(Lexeme, other_id) is None:
+            return
+        low, high = lexeme_service._ordered_pair(proposal.lexeme_id, other_id)
+        linked = db.execute(
+            select(lexeme_translations).where(
+                and_(
+                    lexeme_translations.c.lexeme_id == low,
+                    lexeme_translations.c.translation_id == high,
+                )
+            )
+        ).first()
+        if linked is None:
+            db.execute(
+                insert(lexeme_translations).values(
+                    lexeme_id=low,
+                    translation_id=high,
+                    created_at=_now(),
+                    created_by_id=proposal.created_by_id,
+                )
+            )
 
 
 # ---------------------------------------------------------------------------
@@ -184,18 +305,27 @@ def _apply(db: Session, proposal: ChangeProposal) -> None:
 
 
 def list_for_lexeme(db: Session, lexeme_id: UUID) -> list[ChangeProposal]:
+    """The word page's recommendation history (votes only, not additions)."""
     return (
         db.query(ChangeProposal)
-        .filter(ChangeProposal.lexeme_id == lexeme_id)
+        .filter(
+            ChangeProposal.lexeme_id == lexeme_id,
+            ChangeProposal.proposal_type == ProposalType.SET_RECOMMENDATION,
+        )
         .order_by(ChangeProposal.created_at.desc())
         .all()
     )
 
 
 def list_proposals(
-    db: Session, language_id: UUID | None, status_filter: ProposalStatus | None
+    db: Session,
+    language_id: UUID | None,
+    status_filter: ProposalStatus | None,
+    proposal_type: ProposalType | None = ProposalType.SET_RECOMMENDATION,
 ) -> list[ChangeProposal]:
     query = db.query(ChangeProposal)
+    if proposal_type:
+        query = query.filter(ChangeProposal.proposal_type == proposal_type)
     if language_id:
         query = query.filter(ChangeProposal.language_id == language_id)
     if status_filter:
