@@ -29,6 +29,7 @@ import Learn from './pages/Learn';
 import Review from './pages/Review';
 import Contribute from './pages/Contribute';
 import ApiTokens from './pages/ApiTokens';
+import DeleteAccount from './pages/DeleteAccount';
 import languageService, { LanguageResponse } from './services/languageService';
 import { API_URL } from './services/api';
 import { getThemeStyles } from './styles/theme';
@@ -409,6 +410,22 @@ function App() {
                     languages={languages}
                   >
                     <ApiTokens />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Delete your own account (required by the app stores) */}
+            <Route
+              path="/account/delete"
+              element={
+                <ProtectedRoute>
+                  <AppLayout
+                    selectedLanguage={selectedLanguage!}
+                    onLanguageChange={setSelectedLanguage}
+                    languages={languages}
+                  >
+                    <DeleteAccount />
                   </AppLayout>
                 </ProtectedRoute>
               }

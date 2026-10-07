@@ -181,6 +181,18 @@ export function setOutboxUser(id: string | null) {
   void refresh().then(flush);
 }
 
+/** Drop the current user's unsent writes (their account is gone). */
+export async function discardOutbox() {
+  try {
+    for (const item of await myItems()) {
+      await withStore('outbox', 'readwrite', (store) => store.delete(item.id!));
+    }
+  } catch {
+    // Nothing stored.
+  }
+  await refresh();
+}
+
 export function dismissFailures() {
   setState({ failures: [] });
 }

@@ -117,7 +117,8 @@
     "register": "Register",
     "admin_panel": "Admin Panel",
     "api_tokens": "API tokens",
-    "sign_out": "Sign Out"
+    "sign_out": "Sign Out",
+    "delete_account": "Delete account"
   },
   "nav": {
     "words": "Words",
@@ -1208,5 +1209,22 @@
     "word_lookup": "Looked up “{{word}}”",
     "text_finished": "Finished “{{title}}”",
     "flashcard": "Flashcard “{{word}}”"
+  },
+  "delete_account": {
+    "title": "Delete your account",
+    "intro": "This deletes the account {{username}}. It can't be undone.",
+    "removed_heading": "What is removed",
+    "removed_login": "Your username, email address and password. You can't sign in again.",
+    "removed_languages": "Your language memberships, proficiency and editing permissions.",
+    "removed_learning": "Your learning progress (known words, finished texts).",
+    "removed_tokens": "Your API tokens, and changes saved offline on this device that weren't sent yet.",
+    "kept_heading": "What stays",
+    "kept_body": "Words, texts, recordings, translations, links, votes and suggestions you added stay in the archive, because the language community relies on them. They will be credited to an anonymous name like “deleted-user-3f2a…” instead of yours.",
+    "password": "Your password",
+    "confirm": "I understand that my account will be deleted and can't be restored.",
+    "submit": "Delete my account",
+    "deleting": "Deleting…",
+    "failed": "Couldn't delete the account. Please try again.",
+    "done": "Your account has been deleted."
   }
 }

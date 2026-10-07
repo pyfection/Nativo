@@ -73,8 +73,11 @@ npx @capacitor/assets generate --ios --android \
 
 - [ ] **Privacy policy URL.** Nativo stores accounts (email, username), recordings and
       contributions, so a policy is required. It isn't written yet.
-- [ ] **Account deletion inside the app.** Required for any app with sign-up
-      (Apple 5.1.1(v), Google Play account deletion policy). Not built yet.
+- [x] **Account deletion inside the app**: user menu → Delete account
+      (`/account/delete`). Contributions stay, credited to `deleted-user-…`;
+      login, memberships, learning progress and API tokens are removed. Play
+      also asks for a web link where people can delete their account: use
+      `https://<your site>/account/delete`.
 - [ ] Data safety form (Play) and App Privacy details (Apple): email, username,
       audio recordings, user content; nothing is used for tracking or ads.
 - [ ] Store listing: name, short and full description, screenshots (phone; plus

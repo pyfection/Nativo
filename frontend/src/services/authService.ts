@@ -121,6 +121,11 @@ export const authService = {
     return response.data;
   },
 
+  /** Delete the account; contributions stay, credited to a placeholder. */
+  async deleteAccount(password: string): Promise<void> {
+    await api.post('/api/v1/auth/delete-account', { password });
+  },
+
   async revokeApiToken(id: string): Promise<void> {
     await api.delete(`/api/v1/auth/tokens/${id}`);
   },

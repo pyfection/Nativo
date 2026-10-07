@@ -117,7 +117,8 @@
     "register": "Registrarse",
     "admin_panel": "Panel de administración",
     "api_tokens": "Tokens de API",
-    "sign_out": "Cerrar sesión"
+    "sign_out": "Cerrar sesión",
+    "delete_account": "Eliminar cuenta"
   },
   "nav": {
     "words": "Palabras",
@@ -1217,5 +1218,22 @@
     "word_lookup": "Consultaste «{{word}}»",
     "text_finished": "Terminaste «{{title}}»",
     "flashcard": "Tarjeta «{{word}}»"
+  },
+  "delete_account": {
+    "title": "Eliminar tu cuenta",
+    "intro": "Esto elimina la cuenta {{username}}. No se puede deshacer.",
+    "removed_heading": "Qué se elimina",
+    "removed_login": "Tu nombre de usuario, correo y contraseña. No podrás volver a iniciar sesión.",
+    "removed_languages": "Tus idiomas, nivel y permisos de edición.",
+    "removed_learning": "Tu progreso de aprendizaje (palabras conocidas, textos terminados).",
+    "removed_tokens": "Tus tokens de API y los cambios guardados sin conexión en este dispositivo que aún no se enviaron.",
+    "kept_heading": "Qué se conserva",
+    "kept_body": "Las palabras, textos, grabaciones, traducciones, enlaces, votos y sugerencias que añadiste se quedan en el archivo, porque la comunidad del idioma depende de ellos. Aparecerán con un nombre anónimo como “deleted-user-3f2a…” en lugar del tuyo.",
+    "password": "Tu contraseña",
+    "confirm": "Entiendo que mi cuenta se eliminará y no se podrá recuperar.",
+    "submit": "Eliminar mi cuenta",
+    "deleting": "Eliminando…",
+    "failed": "No se pudo eliminar la cuenta. Inténtalo de nuevo.",
+    "done": "Tu cuenta ha sido eliminada."
   }
 }

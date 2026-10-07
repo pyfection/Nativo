@@ -1,0 +1,74 @@
+.delete-account-page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 4rem;
+  color: var(--cream);
+}
+
+.delete-account-page ul {
+  padding-left: 1.2rem;
+}
+
+.delete-account-page h2 {
+  font-size: 1.05rem;
+  margin: 1.5rem 0 0.5rem;
+}
+
+.delete-account-page p,
+.delete-account-page li {
+  color: var(--cream-dim);
+  line-height: 1.5;
+}
+
+.delete-account-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1.75rem;
+  padding: 1.25rem;
+  border: 1px solid color-mix(in srgb, var(--danger) 40%, var(--line));
+  border-radius: 12px;
+}
+
+.delete-account-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.delete-account-field input {
+  padding: 0.6rem 0.8rem;
+  font: inherit;
+  color: var(--cream);
+  background: rgba(var(--tint-rgb), 0.03);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.delete-account-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  color: var(--cream-dim);
+}
+
+.delete-account-check input {
+  margin-top: 0.25rem;
+}
+
+.delete-account-submit {
+  align-self: flex-start;
+  padding: 0.6rem 1.2rem;
+  font: inherit;
+  font-weight: 600;
+  color: var(--bg);
+  background: var(--danger);
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.delete-account-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
