@@ -23,13 +23,13 @@
 .audio-list-error {
   padding: 16px 18px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(var(--tint-rgb), 0.03);
   border: 1px solid var(--line);
   color: var(--cream-dim);
 }
 
 .audio-list-error {
-  color: #f08a8a;
+  color: var(--danger);
   background: rgba(240, 138, 138, 0.08);
   border-color: rgba(240, 138, 138, 0.25);
 }
@@ -37,7 +37,7 @@
 .audio-list-empty {
   text-align: center;
   padding: 56px 24px;
-  background: rgba(255, 255, 255, 0.025);
+  background: rgba(var(--tint-rgb), 0.025);
   border: 1px solid var(--line);
   border-radius: 16px;
   color: var(--cream-dim);
@@ -79,13 +79,13 @@
 
 .audio-item {
   padding: 14px 16px;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(var(--tint-rgb), 0.03);
   border: 1px solid var(--line);
   border-radius: 12px;
   transition: border-color 0.18s ease;
 }
 .audio-item:hover {
-  border-color: rgba(245, 239, 226, 0.22);
+  border-color: rgba(var(--fg-rgb), 0.22);
 }
 
 .audio-item-meta {

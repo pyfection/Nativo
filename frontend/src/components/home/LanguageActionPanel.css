@@ -11,7 +11,7 @@
   gap: 8px;
   padding: 9px 16px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(var(--tint-rgb), 0.04);
   border: 1px solid var(--line);
   color: var(--cream);
   font-size: 0.9rem;
@@ -23,8 +23,8 @@
 }
 
 .language-action:hover {
-  background: rgba(255, 255, 255, 0.07);
-  border-color: rgba(245, 239, 226, 0.3);
+  background: rgba(var(--tint-rgb), 0.07);
+  border-color: rgba(var(--fg-rgb), 0.3);
   transform: translateY(-1px);
 }
 
@@ -46,14 +46,14 @@
 }
 
 .language-action-disabled {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(var(--tint-rgb), 0.02);
   color: var(--sage);
   cursor: not-allowed;
   border-color: var(--line);
 }
 
 .language-action-disabled:hover {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(var(--tint-rgb), 0.02);
   transform: none;
   border-color: var(--line);
 }

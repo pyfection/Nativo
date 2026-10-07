@@ -90,6 +90,8 @@
   },
   "header": {
     "interface_language": "Idioma de la interfaz",
+    "theme_to_light": "Cambiar al tema claro",
+    "theme_to_dark": "Cambiar al tema oscuro",
     "contribute": "Contribuir",
     "contribute_tooltip": "Contribuir al {{language}}"
   },

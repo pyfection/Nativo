@@ -10,7 +10,7 @@
 }
 
 .word-form {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(var(--tint-rgb), 0.03);
   border: 1px solid var(--line);
   border-radius: 16px;
   padding: 24px;
@@ -44,7 +44,7 @@
 .form-group textarea {
   padding: 11px 14px;
   font-size: 0.95rem;
-  background: rgba(0, 0, 0, 0.18);
+  background: rgba(var(--shade-rgb), calc(0.18 * var(--shade-k)));
   border: 1px solid var(--line);
   border-radius: 10px;
   color: var(--cream);
@@ -54,15 +54,15 @@
 
 .form-group select {
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23A9C2BD' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238A8D90' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
   padding-right: 36px;
 }
 
 .form-group select option {
-  color: #12222a;
-  background: var(--cream);
+  color: var(--cream);
+  background: var(--surface);
 }
 
 .form-group input:focus,
@@ -94,7 +94,7 @@
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(var(--tint-rgb), 0.04);
   color: var(--cream);
   padding: 10px 22px;
   font-size: 0.95rem;
@@ -106,8 +106,8 @@
   font-family: inherit;
 }
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.07);
-  border-color: rgba(245, 239, 226, 0.3);
+  background: rgba(var(--tint-rgb), 0.07);
+  border-color: rgba(var(--fg-rgb), 0.3);
 }
 
 @media (max-width: 768px) {
@@ -145,7 +145,7 @@
   padding: 18px;
   border: 1px dashed var(--line);
   border-radius: 14px;
-  background: rgba(0, 0, 0, 0.12);
+  background: rgba(var(--shade-rgb), calc(0.12 * var(--shade-k)));
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -173,7 +173,7 @@
 
 .additional-form-row {
   padding: 14px;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(var(--tint-rgb), 0.03);
   border: 1px solid var(--line);
   border-radius: 12px;
   display: flex;

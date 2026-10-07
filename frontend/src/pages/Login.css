@@ -10,13 +10,13 @@
 }
 
 .login-container {
-  background: rgba(255, 255, 255, 0.035);
+  background: rgba(var(--tint-rgb), 0.035);
   border: 1px solid var(--line);
   border-radius: 20px;
   padding: 40px clamp(28px, 4vw, 48px);
   width: 100%;
   max-width: 460px;
-  box-shadow: 0 30px 60px -34px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 30px 60px -34px rgba(var(--shade-rgb), calc(0.7 * var(--shade-k)));
 }
 
 .login-header {
@@ -73,7 +73,7 @@
 .form-group input {
   padding: 13px 15px;
   font-size: 15px;
-  background: rgba(0, 0, 0, 0.18);
+  background: rgba(var(--shade-rgb), calc(0.18 * var(--shade-k)));
   border: 1px solid var(--line);
   border-radius: 12px;
   color: var(--cream);
@@ -93,11 +93,11 @@
 
 .error-message {
   background: rgba(240, 138, 138, 0.1);
-  color: #f08a8a;
+  color: var(--danger);
   padding: 12px 14px;
   border-radius: 10px;
   font-size: 0.9rem;
-  border-left: 3px solid #f08a8a;
+  border-left: 3px solid var(--danger);
 }
 
 .login-button {
@@ -120,7 +120,7 @@
 }
 
 .login-button:disabled {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(var(--tint-rgb), 0.1);
   color: var(--sage);
   cursor: not-allowed;
 }
@@ -163,6 +163,7 @@
 
 .forgot-password-link {
   display: block;
+  color: var(--accent);
   text-align: right;
   font-size: 0.85rem;
   margin-top: -0.5rem;

@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import Sidebar from '../common/Sidebar';
 import LanguageSelector from '../common/LanguageSelector';
 import UILanguageSelector from '../common/UILanguageSelector';
+import ThemeToggle from '../common/ThemeToggle';
 import UserMenu from '../common/UserMenu';
 import { Language } from '../../App';
 import './AppLayout.css';
@@ -37,6 +38,7 @@ export default function AppLayout({ children, selectedLanguage, onLanguageChange
               onLanguageJoined={handleLanguageJoined}
             />
             <UILanguageSelector />
+            <ThemeToggle />
             <UserMenu />
           </div>
         </div>

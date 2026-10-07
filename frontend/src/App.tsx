@@ -51,11 +51,9 @@ export interface Language {
   };
 }
 
-// Default color scheme for languages without DB-stored colours. These five
-// values feed `getThemeStyles()` in styles/theme.ts, which derives the full
-// dark palette via HSL shifts. The primary tone here is a calm teal so any
-// unconfigured language reads as "Nativo brand" rather than dropping into
-// the old saddle-brown light theme.
+// Default color scheme for languages without DB-stored colours. Only
+// `primary` is used for the UI: `getThemeStyles()` in styles/theme.ts derives
+// the language accent from it.
 const DEFAULT_COLOR_SCHEME = {
   primary: '#5DA9E9',
   secondary: '#06243f',
@@ -163,9 +161,8 @@ function App() {
     }
   }, [selectedLanguage]);
 
-  // Push the per-language theme onto <html> so `body` (which paints the
-  // radial gradient) picks up the new --base1 / --base2 / --glow / --accent
-  // values. Setting them on a `.app` wrapper alone misses the body element.
+  // Push the per-language accent onto <html>, where index.css derives
+  // --accent / --accent-deep from it for the active light/dark theme.
   useEffect(() => {
     if (!selectedLanguage) return;
     const styles = getThemeStyles(selectedLanguage) as Record<string, string>;
@@ -191,7 +188,7 @@ function App() {
       <div className="app-error" style={{ padding: '2rem', textAlign: 'center' }}>
         <h2>Error</h2>
         <p>{error}</p>
-        <p style={{ fontSize: '0.875rem', color: '#666' }}>Backend: {API_URL}</p>
+        <p style={{ fontSize: '0.875rem', color: 'var(--cream-dim)' }}>Backend: {API_URL}</p>
         <button onClick={() => window.location.reload()} style={{ marginTop: '1rem', padding: '0.5rem 1rem', cursor: 'pointer' }}>Retry</button>
       </div>
     );

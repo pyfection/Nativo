@@ -1,31 +1,56 @@
 /* ---------------------------------------------------------------------------
-   Design tokens — nativo-hero-v2 dark theme.
-   The accent / accent-deep / base1 / base2 / glow values are overridden per
-   language by `getThemeStyles()` in src/styles/theme.ts; the cream / sage /
-   line tones below are language-agnostic.
+   Design tokens.
 
-   Anything outside the language-scoped tree (login / register / error
-   states / modals before language is loaded) gets these Bavarian defaults.
+   Two themes, picked with `data-theme` on <html> (see contexts/ThemeContext
+   and the inline script in index.html):
+     - dark  ("graphite"): neutral dark grey, the default
+     - light ("paper"):    warm off-white
+
+   Backgrounds and text are the same for every language. Only the accent
+   follows the selected language: `getThemeStyles()` in src/styles/theme.ts
+   sets --lang-accent / --lang-accent-deep on <html>, and --accent /
+   --accent-deep are derived from them here (darkened in the light theme so
+   accent text stays readable on paper).
+
+   `*-rgb` tokens exist for translucent tints: use
+   `rgba(var(--tint-rgb), 0.04)` for a subtle raised fill,
+   `rgba(var(--fg-rgb), 0.25)` for a foreground-coloured border, and
+   `rgba(var(--shade-rgb), calc(0.18 * var(--shade-k)))` for a sunken well.
    --------------------------------------------------------------------------- */
 :root {
-  /* Per-language (overridden by `.app` wrapper inline style) */
-  --accent: #5DA9E9;
-  --accent-deep: #06243f;
-  --base1: #0a2733;
-  --base2: #061d2a;
-  --glow: #155f9c;
+  /* Per-language (overridden on <html> by getThemeStyles) */
+  --lang-accent: #5DA9E9;
+  --lang-accent-deep: #06243f;
+
+  --accent: var(--lang-accent);
+  --accent-deep: var(--lang-accent-deep);
+
+  /* Surfaces */
+  --bg: #15171a;
+  --surface: #1c1f23;          /* solid raised surface: popovers, sticky bars */
+  --header-bg: rgba(21, 23, 26, 0.72);
+
+  /* Foreground */
+  --cream: #F2EFE9;            /* primary text (name kept from the old theme) */
+  --cream-dim: #A7AAAD;        /* secondary text */
+  --sage: #7d8084;             /* muted labels */
+  --line: rgba(255, 255, 255, 0.10);
+
+  --fg-rgb: 242, 239, 233;
+  --tint-rgb: 255, 255, 255;
+  --shade-rgb: 0, 0, 0;
+  --shade-k: 1;
+
+  /* Status */
+  --success: #79d182;
+  --warning: #f6c25c;
+  --danger: #f08a8a;
+  --info: #7ec1ed;
 
   /* Back-compat aliases — kept until every page CSS uses the new names */
   --primary: var(--accent);
   --secondary: var(--accent-deep);
-  --accent-legacy: var(--accent);
-  --background: var(--base1);
-
-  /* Universal foreground / divider tones */
-  --cream: #F5EFE2;
-  --cream-dim: #A9C2BD;
-  --sage: #7C9BA0;
-  --line: rgba(245, 239, 226, 0.12);
+  --background: var(--bg);
 
   /* Typography */
   --font-serif: 'Fraunces', 'Georgia', 'Times New Roman', serif;
@@ -46,6 +71,32 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+:root[data-theme='light'] {
+  --accent: color-mix(in srgb, var(--lang-accent) 68%, #000);
+  --accent-deep: #ffffff;
+
+  --bg: #F6F4EF;
+  --surface: #ffffff;
+  --header-bg: rgba(246, 244, 239, 0.8);
+
+  --cream: #1D2022;
+  --cream-dim: #55595d;
+  --sage: #7a7e82;
+  --line: rgba(0, 0, 0, 0.10);
+
+  --fg-rgb: 29, 32, 34;
+  --tint-rgb: 255, 255, 255;   /* raised fills go lighter on paper, borders carry the shape */
+  --shade-rgb: 0, 0, 0;
+  --shade-k: 0.25;
+
+  --success: #2e7d3c;
+  --warning: #9a6700;
+  --danger: #b4342b;
+  --info: #2367a0;
+
+  color-scheme: light;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -60,10 +111,7 @@ body {
   margin: 0;
   min-height: 100vh;
   color: var(--cream);
-  background:
-    radial-gradient(120% 90% at 82% -12%, var(--glow) 0%, rgba(0, 0, 0, 0) 52%),
-    radial-gradient(90% 80% at 0% 112%, var(--base2) 0%, rgba(0, 0, 0, 0) 55%),
-    var(--base1);
+  background: var(--bg);
   transition: background 0.55s ease, color 0.35s ease;
   overflow-x: hidden;
 }

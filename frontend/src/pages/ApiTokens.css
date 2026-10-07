@@ -38,7 +38,7 @@
   padding: 0.55rem 0.8rem;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(var(--shade-rgb), calc(0.2 * var(--shade-k)));
   font-size: 0.85rem;
   overflow-wrap: anywhere;
   user-select: all;
@@ -50,7 +50,7 @@
   padding: 0.4rem 0.9rem;
   border-radius: 8px;
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(var(--tint-rgb), 0.05);
   color: inherit;
   cursor: pointer;
   font-weight: 600;
@@ -60,7 +60,7 @@
 
 .api-tokens-copy:hover,
 .api-tokens-create:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(var(--tint-rgb), 0.1);
 }
 
 .api-tokens-create {
@@ -84,7 +84,7 @@
   padding: 0.5rem 0.8rem;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(var(--shade-rgb), calc(0.2 * var(--shade-k)));
   color: inherit;
   font-family: inherit;
 }
@@ -115,7 +115,7 @@
   align-items: center;
   gap: 0.5rem 1rem;
   padding: 0.85rem 1.1rem;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(var(--tint-rgb), 0.12);
   border-radius: 10px;
 }
 
@@ -140,7 +140,7 @@
 .api-tokens-revoke {
   background: rgba(230, 110, 110, 0.12);
   border-color: rgba(230, 110, 110, 0.45);
-  color: #f0a8a8;
+  color: var(--danger);
 }
 
 .api-tokens-revoke:hover {

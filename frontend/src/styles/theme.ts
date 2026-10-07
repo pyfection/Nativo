@@ -1,29 +1,24 @@
 /**
- * Per-language dark theme derivation.
+ * Per-language accent derivation.
  *
- * The new design has 5 colour slots that move together: an accent (CTAs and
- * highlights), a deep variant of the accent (used as foreground on accent
- * buttons), two dark background tones (used in the radial gradient), and a
- * glow tone for the top-right radial.
+ * Backgrounds and text are language-agnostic (graphite dark / paper light,
+ * see src/index.css). Only the accent follows the selected language: two
+ * slots, an accent (CTAs and highlights) and a deep variant of it (used as
+ * foreground on accent buttons in the dark theme).
  *
  * Most languages only have a single primary colour stored in the DB. We
- * compute the rest by HSL-shifting from that primary. The few language ISOs
- * we have hand-tuned palettes for (Bavarian and the design-doc demo set)
- * override the derived values.
+ * compute the deep variant by HSL-shifting from that primary. The few
+ * language ISOs we have hand-tuned palettes for override the derived values.
  *
- * The CSS variables this returns are merged onto the root wrapper of the app
- * so global styles can reference them: `--accent`, `--accent-deep`,
- * `--base1`, `--base2`, `--glow`. For backwards compatibility with pages
- * still using the old tokens we ALSO emit `--primary`, `--secondary`,
- * `--accent-legacy`, `--background`.
+ * The CSS variables this returns are set on <html>: `--lang-accent` and
+ * `--lang-accent-deep`. index.css maps them onto `--accent` /
+ * `--accent-deep` per theme (the light theme darkens the accent so accent
+ * text stays readable on paper).
  */
 
 export interface ThemePalette {
   accent: string;
   accentDeep: string;
-  base1: string;
-  base2: string;
-  glow: string;
 }
 
 export interface LanguageColorScheme {
@@ -33,56 +28,25 @@ export interface LanguageColorScheme {
   background: string;
 }
 
-// Hand-tuned palettes pulled from the nativo-hero-v2 design doc and
-// any future curator overrides. Keyed by ISO 639-3.
+// Hand-tuned palettes keyed by ISO 639-3.
 const OVERRIDES: Record<string, ThemePalette> = {
-  bar: {
-    accent: '#5DA9E9',
-    accentDeep: '#06243f',
-    base1: '#0a2733',
-    base2: '#061d2a',
-    glow: '#155f9c',
-  },
-  cym: {
-    accent: '#EC6A5E',
-    accentDeep: '#3a100b',
-    base1: '#241315',
-    base2: '#170d10',
-    glow: '#9c3b33',
-  },
-  mri: {
-    accent: '#36C2A6',
-    accentDeep: '#04241e',
-    base1: '#0a2a27',
-    base2: '#061d1b',
-    glow: '#0f8a72',
-  },
-  gle: {
-    accent: '#54B776',
-    accentDeep: '#0c2614',
-    base1: '#112a1c',
-    base2: '#0a1d13',
-    glow: '#2f8a4f',
-  },
+  bar: { accent: '#5DA9E9', accentDeep: '#06243f' },
+  cym: { accent: '#EC6A5E', accentDeep: '#3a100b' },
+  mri: { accent: '#36C2A6', accentDeep: '#04241e' },
+  gle: { accent: '#54B776', accentDeep: '#0c2614' },
 };
 
 /**
- * Compute the dark palette from a single accent hex by shifting its HSL.
+ * Compute the palette from a single accent hex by shifting its HSL.
  *
  * - accent: the input, unchanged. Use a vivid mid-light colour (~60% L).
  * - accentDeep: same hue, slightly desaturated, very dark (~14% L).
- * - base1: same hue, low chroma, dark (~10% L).
- * - base2: same hue, slightly more chroma, darker (~7% L).
- * - glow: same hue, medium chroma, mid-dark (~33% L).
  */
 export function deriveTheme(accentHex: string): ThemePalette {
   const [h, s] = hexToHsl(accentHex);
   return {
     accent: accentHex,
     accentDeep: hslToHex(h, Math.min(s, 80), 14),
-    base1: hslToHex(h, Math.min(s, 35), 10),
-    base2: hslToHex(h, Math.min(s, 40), 7),
-    glow: hslToHex(h, Math.min(s, 65), 33),
   };
 }
 
@@ -94,28 +58,16 @@ export function getThemeForLanguage(language: {
 }
 
 /**
- * Returns a `style` object suitable for spreading onto a wrapper element
- * (e.g. `style={getThemeStyles(language)}`). Sets both the new tokens and
- * the legacy `--primary` family so unmigrated CSS keeps working.
+ * Returns the CSS custom properties to set on <html> for a language.
  */
 export function getThemeStyles(language: {
   iso: string;
   colorScheme: LanguageColorScheme;
 }): React.CSSProperties {
   const t = getThemeForLanguage(language);
-  // The legacy tokens are derived from the new palette to stay consistent
-  // while we migrate per-page CSS over.
   return {
-    '--accent': t.accent,
-    '--accent-deep': t.accentDeep,
-    '--base1': t.base1,
-    '--base2': t.base2,
-    '--glow': t.glow,
-    // Back-compat
-    '--primary': t.accent,
-    '--secondary': t.accentDeep,
-    '--accent-legacy': language.colorScheme.accent,
-    '--background': t.base1,
+    '--lang-accent': t.accent,
+    '--lang-accent-deep': t.accentDeep,
   } as React.CSSProperties;
 }
 

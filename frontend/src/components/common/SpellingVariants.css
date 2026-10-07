@@ -28,7 +28,7 @@
   align-items: center;
   gap: 6px;
   padding: 3px 8px;
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(var(--shade-rgb), calc(0.25 * var(--shade-k)));
   border: 1px solid var(--line);
   border-radius: 999px;
   font-size: 0.9rem;
@@ -47,7 +47,7 @@
 }
 
 .spelling-chip-remove:hover:not(:disabled) {
-  color: #f08a8a;
+  color: var(--danger);
 }
 
 .spelling-chip-remove:disabled {
@@ -64,7 +64,7 @@
 
 .spelling-variants-input {
   padding: 5px 9px;
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(var(--shade-rgb), calc(0.25 * var(--shade-k)));
   border: 1px solid var(--line);
   border-radius: 8px;
   color: var(--cream);

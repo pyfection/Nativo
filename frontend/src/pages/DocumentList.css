@@ -73,7 +73,7 @@
   height: 34px;
   border-radius: 10px;
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(var(--tint-rgb), 0.03);
   color: var(--cream-dim);
   transition: 0.18s ease;
   cursor: pointer;
@@ -113,15 +113,15 @@
 
 .coverage-high {
   background: rgba(90, 200, 140, 0.18);
-  color: #9fe3bd;
+  color: var(--success);
 }
 
 .coverage-mid {
   background: rgba(240, 190, 90, 0.18);
-  color: #f0d49b;
+  color: var(--warning);
 }
 
 .coverage-low {
   background: rgba(230, 110, 110, 0.15);
-  color: #f0a8a8;
+  color: var(--danger);
 }

@@ -24,7 +24,7 @@
 .search-input {
   flex: 1;
   min-width: 220px;
-  background: rgba(0, 0, 0, 0.18);
+  background: rgba(var(--shade-rgb), calc(0.18 * var(--shade-k)));
   border: 1px solid var(--line);
   border-radius: 12px;
   padding: 13px 15px;
@@ -58,7 +58,7 @@
   transform: translateY(-1px);
 }
 .search-button:disabled {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(var(--tint-rgb), 0.08);
   color: var(--sage);
   cursor: not-allowed;
 }
@@ -73,7 +73,7 @@
 .dictionary-filter-pill {
   padding: 7px 14px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(var(--tint-rgb), 0.03);
   border: 1px solid var(--line);
   color: var(--cream-dim);
   font-size: 13px;
@@ -82,7 +82,7 @@
   font-family: inherit;
 }
 .dictionary-filter-pill:hover {
-  border-color: rgba(245, 239, 226, 0.3);
+  border-color: rgba(var(--fg-rgb), 0.3);
   color: var(--cream);
 }
 .dictionary-filter-pill.active {
@@ -99,7 +99,7 @@
 }
 
 .dictionary-result {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(var(--tint-rgb), 0.03);
   border: 1px solid var(--line);
   border-radius: 14px;
   padding: 18px 20px;
@@ -107,8 +107,8 @@
   border-left: 3px solid var(--accent);
 }
 .dictionary-result:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(245, 239, 226, 0.2);
+  background: rgba(var(--tint-rgb), 0.05);
+  border-color: rgba(var(--fg-rgb), 0.2);
   border-left-color: var(--accent);
 }
 
@@ -140,7 +140,7 @@
   text-transform: uppercase;
   letter-spacing: 0.12em;
   padding: 3px 9px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(var(--tint-rgb), 0.05);
   border-radius: 999px;
 }
 
@@ -181,7 +181,7 @@
   font-size: 0.95rem;
   color: var(--cream-dim);
   padding: 3px 10px;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(var(--tint-rgb), 0.04);
   border: 1px solid var(--line);
   border-radius: 999px;
 }
