@@ -1,5 +1,5 @@
 .sidebar {
-  background: rgba(10, 39, 51, 0.4);
+  background: color-mix(in srgb, var(--bg) 40%, transparent);
   border-right: 1px solid var(--line);
   height: calc(100vh - 73px);
   position: sticky;
@@ -51,7 +51,7 @@
 }
 
 .sidebar-toggle-button:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(var(--tint-rgb), 0.05);
   color: var(--accent);
 }
 
@@ -89,7 +89,7 @@
 }
 
 .sidebar-button:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(var(--tint-rgb), 0.04);
   color: var(--cream);
 }
 

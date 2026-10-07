@@ -50,7 +50,7 @@
   padding: 7px 14px;
   border-radius: 999px;
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(var(--tint-rgb), 0.04);
   color: var(--cream-dim);
   font-size: 0.85rem;
   transition: 0.18s ease;
@@ -82,7 +82,7 @@
   border-radius: 12px;
   border: 1px solid rgba(245, 158, 11, 0.4);
   background: rgba(245, 158, 11, 0.1);
-  color: #f6c25c;
+  color: var(--warning);
 }
 
 .error-message {
@@ -90,7 +90,7 @@
   border-radius: 12px;
   border: 1px solid rgba(240, 138, 138, 0.4);
   background: rgba(240, 138, 138, 0.1);
-  color: #f08a8a;
+  color: var(--danger);
 }
 
 .success-message {
@@ -98,12 +98,12 @@
   border-radius: 12px;
   border: 1px solid rgba(76, 175, 80, 0.4);
   background: rgba(76, 175, 80, 0.12);
-  color: #79d182;
+  color: var(--success);
 }
 
 /* Form */
 .edit-document-form {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(var(--tint-rgb), 0.03);
   border: 1px solid var(--line);
   border-radius: 16px;
   padding: 24px;
@@ -129,7 +129,7 @@
 .edit-document-form .form-group select,
 .edit-document-form .form-group textarea {
   border: 1px solid var(--line);
-  background: rgba(0, 0, 0, 0.18);
+  background: rgba(var(--shade-rgb), calc(0.18 * var(--shade-k)));
   border-radius: 10px;
   padding: 11px 14px;
   font-size: 0.95rem;
@@ -148,15 +148,15 @@
 
 .edit-document-form .form-group select {
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23A9C2BD' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238A8D90' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
   padding-right: 36px;
 }
 
 .edit-document-form .form-group select option {
-  color: #12222a;
-  background: var(--cream);
+  color: var(--cream);
+  background: var(--surface);
 }
 
 .edit-document-form .form-group textarea {

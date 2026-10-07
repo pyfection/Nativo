@@ -56,7 +56,7 @@
 
 .document-sidebar {
   padding: 22px;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(var(--tint-rgb), 0.03);
   border-radius: 16px;
   border: 1px solid var(--line);
 }
@@ -84,7 +84,7 @@
   padding: 10px 12px;
   border-radius: 10px;
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(var(--tint-rgb), 0.02);
   transition: 0.18s ease;
   cursor: pointer;
   color: var(--cream-dim);
@@ -92,8 +92,8 @@
 }
 
 .translation-button:hover {
-  border-color: rgba(245, 239, 226, 0.25);
-  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(var(--fg-rgb), 0.25);
+  background: rgba(var(--tint-rgb), 0.05);
   color: var(--cream);
 }
 
@@ -121,7 +121,7 @@
 
 .document-content {
   padding: 28px;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(var(--tint-rgb), 0.03);
   border-radius: 16px;
   border: 1px solid var(--line);
   display: flex;
@@ -189,7 +189,7 @@
 .document-narration {
   margin-top: 1.5rem;
   padding-top: 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(var(--fg-rgb), 0.1);
 }
 
 .document-narration h2 {

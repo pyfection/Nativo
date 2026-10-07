@@ -23,8 +23,8 @@
   border-color: var(--line);
 }
 .login-btn:hover {
-  border-color: rgba(245, 239, 226, 0.4);
-  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(var(--fg-rgb), 0.4);
+  background: rgba(var(--tint-rgb), 0.03);
 }
 
 /* Register — accent */
@@ -50,7 +50,7 @@
   padding: 7px 12px 7px 7px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(var(--tint-rgb), 0.03);
   cursor: pointer;
   transition: 0.18s ease;
   font-family: inherit;
@@ -63,14 +63,14 @@
 }
 
 .user-menu-button:hover {
-  border-color: rgba(245, 239, 226, 0.4);
+  border-color: rgba(var(--fg-rgb), 0.4);
 }
 
 .user-avatar {
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent) 0%, var(--glow) 100%);
+  background: linear-gradient(135deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 55%, #000) 100%);
   color: var(--accent-deep);
   display: flex;
   align-items: center;
@@ -98,10 +98,10 @@
   position: absolute;
   top: calc(100% + 0.5rem);
   right: 0;
-  background: rgba(10, 39, 51, 0.92);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
   border: 1px solid var(--line);
   border-radius: 14px;
-  box-shadow: 0 18px 40px -20px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 18px 40px -20px rgba(var(--shade-rgb), calc(0.6 * var(--shade-k)));
   min-width: 230px;
   z-index: 1000;
   animation: nativo-menu-in 0.2s ease;
@@ -172,7 +172,7 @@
 }
 
 .user-menu-item:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(var(--tint-rgb), 0.05);
   color: var(--cream);
 }
 
@@ -186,7 +186,7 @@
 }
 
 .user-menu-item.logout {
-  color: #f08a8a;
+  color: var(--danger);
 }
 
 .user-menu-item.logout:hover {

@@ -12,10 +12,10 @@
 }
 
 .modal-content {
-  background: rgba(10, 39, 51, 0.96);
+  background: color-mix(in srgb, var(--surface) 96%, transparent);
   border: 1px solid var(--line);
   border-radius: 20px;
-  box-shadow: 0 40px 80px -30px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 40px 80px -30px rgba(var(--shade-rgb), calc(0.7 * var(--shade-k)));
   max-width: 520px;
   width: 100%;
   max-height: 90vh;
@@ -66,7 +66,7 @@
 }
 
 .modal-close:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(var(--fg-rgb), 0.06);
   color: var(--cream);
   border-color: var(--line);
 }

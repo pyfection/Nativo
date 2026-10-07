@@ -9,13 +9,13 @@
 }
 
 .register-container {
-  background: rgba(255, 255, 255, 0.035);
+  background: rgba(var(--tint-rgb), 0.035);
   border: 1px solid var(--line);
   border-radius: 20px;
   padding: 40px clamp(28px, 4vw, 48px);
   width: 100%;
   max-width: 460px;
-  box-shadow: 0 30px 60px -34px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 30px 60px -34px rgba(var(--shade-rgb), calc(0.7 * var(--shade-k)));
 }
 
 .register-header {
@@ -76,7 +76,7 @@
 }
 
 .register-button:disabled {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(var(--fg-rgb), 0.1);
   color: var(--sage);
   cursor: not-allowed;
 }

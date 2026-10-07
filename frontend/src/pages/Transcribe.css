@@ -16,7 +16,7 @@
 .transcribe-panel {
   margin-bottom: 18px;
   padding: 16px 18px;
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(var(--shade-rgb), calc(0.2 * var(--shade-k)));
   border: 1px solid var(--line);
   border-radius: 12px;
 }
@@ -38,8 +38,8 @@
   padding: 10px 20px;
   border-radius: 10px;
   border: 1px solid var(--line);
-  background: var(--accent, #6f9f8a);
-  color: var(--ink, #10231c);
+  background: var(--accent);
+  color: var(--accent-deep);
   font-weight: 600;
   font-size: 0.95rem;
   cursor: pointer;
@@ -51,7 +51,7 @@
 }
 
 .transcribe-button.recording {
-  background: #c0564b;
+  background: var(--danger);
   color: #fff;
 }
 
@@ -74,7 +74,7 @@
   box-sizing: border-box;
   margin-bottom: 10px;
   padding: 10px 14px;
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(var(--shade-rgb), calc(0.25 * var(--shade-k)));
   border: 1px solid var(--line);
   border-radius: 10px;
   color: var(--cream);
@@ -91,7 +91,7 @@
 
 .transcribe-token {
   padding: 6px 10px;
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(var(--shade-rgb), calc(0.25 * var(--shade-k)));
   border: 1px solid var(--line);
   border-radius: 8px;
   color: var(--cream);
@@ -99,16 +99,16 @@
 }
 
 .transcribe-token.ambiguous {
-  border-color: var(--accent, #6f9f8a);
+  border-color: var(--accent);
 }
 
 .transcribe-token.low {
-  border-color: #c9a24b;
+  border-color: var(--warning);
 }
 
 .transcribe-token.unknown {
   border-style: dashed;
-  border-color: #c0564b;
+  border-color: var(--danger);
   font-style: italic;
 }
 

@@ -2,14 +2,12 @@
    App-level styles + a small design-system primitive set.
 
    Tokens live in src/index.css and src/styles/theme.ts. This file does NOT
-   own colour values for accents — it only references --accent / --base1 /
-   --cream etc. so the per-language theme propagates everywhere.
+   own colour values — it only references --accent / --bg / --cream etc. so
+   the light/dark theme and the per-language accent propagate everywhere.
    --------------------------------------------------------------------------- */
 
 .app {
   min-height: 100vh;
-  /* `body` already paints the gradient using --base1/--base2/--glow; we let
-     it show through. */
   color: var(--cream);
 }
 
@@ -39,8 +37,8 @@
   border-color: var(--line);
 }
 .btn-ghost:hover:not(:disabled) {
-  border-color: rgba(245, 239, 226, 0.4);
-  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(var(--fg-rgb), 0.4);
+  background: rgba(var(--tint-rgb), 0.03);
 }
 
 .btn-accent {
@@ -77,11 +75,11 @@
 /* ---------- Cards ---------- */
 .card {
   position: relative;
-  background: rgba(255, 255, 255, 0.035);
+  background: rgba(var(--tint-rgb), 0.035);
   border: 1px solid var(--line);
   border-radius: 20px;
   padding: 26px 28px 24px;
-  box-shadow: 0 30px 60px -34px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 30px 60px -34px rgba(var(--shade-rgb), calc(0.7 * var(--shade-k)));
 }
 
 /* ---------- Inputs ---------- */
@@ -97,7 +95,7 @@ input[type='password'],
 input[type='search'],
 input[type='number'],
 textarea {
-  background: rgba(0, 0, 0, 0.18);
+  background: rgba(var(--shade-rgb), calc(0.18 * var(--shade-k)));
   border: 1px solid var(--line);
   border-radius: 12px;
   padding: 13px 15px;
@@ -141,13 +139,13 @@ textarea::placeholder {
 }
 @keyframes nativo-pulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.25);
+    box-shadow: 0 0 0 0 rgba(var(--fg-rgb), 0.25);
   }
   70% {
-    box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
+    box-shadow: 0 0 0 10px rgba(var(--fg-rgb), 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+    box-shadow: 0 0 0 0 rgba(var(--fg-rgb), 0);
   }
 }
 
@@ -274,7 +272,7 @@ textarea::placeholder {
 .filter-group select {
   font-family: inherit;
   font-size: 14px;
-  background: rgba(0, 0, 0, 0.18);
+  background: rgba(var(--shade-rgb), calc(0.18 * var(--shade-k)));
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 9px 12px;
@@ -290,13 +288,13 @@ textarea::placeholder {
 .filter-group select {
   appearance: none;
   padding-right: 30px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23A9C2BD' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238A8D90' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 10px center;
 }
 .filter-group select option {
-  color: #12222a;
-  background: var(--cream);
+  color: var(--cream);
+  background: var(--surface);
 }
 
 .btn-clear-filters {
@@ -311,7 +309,7 @@ textarea::placeholder {
   transition: 0.18s ease;
 }
 .btn-clear-filters:hover {
-  border-color: rgba(245, 239, 226, 0.35);
+  border-color: rgba(var(--fg-rgb), 0.35);
   color: var(--cream);
 }
 
@@ -320,7 +318,7 @@ textarea::placeholder {
   margin: 24px clamp(20px, 5vw, 64px);
   max-width: 1180px;
   width: auto;
-  background: rgba(255, 255, 255, 0.025);
+  background: rgba(var(--tint-rgb), 0.025);
   border: 1px solid var(--line);
   border-radius: 16px;
   overflow: hidden;
@@ -342,7 +340,7 @@ textarea::placeholder {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--sage);
-  background: rgba(0, 0, 0, 0.15);
+  background: rgba(var(--shade-rgb), calc(0.15 * var(--shade-k)));
 }
 .table-container td {
   color: var(--cream);
@@ -356,7 +354,7 @@ textarea::placeholder {
   transition: background 0.15s ease;
 }
 .clickable-row:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(var(--tint-rgb), 0.04);
 }
 
 /* ---------- Status badges ---------- */
@@ -369,16 +367,16 @@ textarea::placeholder {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(var(--tint-rgb), 0.04);
   color: var(--cream-dim);
 }
 .status-published {
-  color: #79d182;
+  color: var(--success);
   border-color: rgba(76, 175, 80, 0.4);
   background: rgba(76, 175, 80, 0.12);
 }
 .status-pending_review {
-  color: #f6c25c;
+  color: var(--warning);
   border-color: rgba(245, 158, 11, 0.4);
   background: rgba(245, 158, 11, 0.12);
 }
@@ -386,7 +384,7 @@ textarea::placeholder {
   color: var(--cream-dim);
 }
 .verified-badge {
-  color: #79d182;
+  color: var(--success);
 }
 .unverified-badge {
   color: var(--sage);
@@ -415,7 +413,7 @@ textarea::placeholder {
   color: var(--cream-dim);
 }
 .error-state {
-  color: #f08a8a;
+  color: var(--danger);
 }
 
 /* ---------- Forms (page-level form-row pattern) ---------- */

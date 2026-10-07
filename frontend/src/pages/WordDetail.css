@@ -54,7 +54,7 @@
   text-transform: uppercase;
   letter-spacing: 0.12em;
   padding: 4px 11px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(var(--tint-rgb), 0.05);
   border-radius: 999px;
 }
 
@@ -68,7 +68,7 @@
 
 .status-verified {
   background: rgba(76, 175, 80, 0.16);
-  color: #79d182;
+  color: var(--success);
   border-color: rgba(76, 175, 80, 0.4);
 }
 
@@ -98,7 +98,7 @@
 
 /* ---------- Section card ---------- */
 .word-detail-section {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(var(--tint-rgb), 0.03);
   border: 1px solid var(--line);
   border-radius: 16px;
   padding: 22px 24px;
@@ -157,13 +157,13 @@
   row-gap: 6px;
   column-gap: 12px;
   padding: 12px 14px;
-  background: rgba(0, 0, 0, 0.18);
+  background: rgba(var(--shade-rgb), calc(0.18 * var(--shade-k)));
   border: 1px solid var(--line);
   border-radius: 12px;
   transition: border-color 0.18s ease;
 }
 .form-row:hover {
-  border-color: rgba(245, 239, 226, 0.2);
+  border-color: rgba(var(--fg-rgb), 0.2);
 }
 
 .form-row-main {
@@ -218,7 +218,7 @@
   letter-spacing: 0.08em;
   color: var(--cream-dim);
   padding: 2px 8px;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(var(--tint-rgb), 0.04);
   border-radius: 999px;
   border: 1px solid var(--line);
 }
@@ -282,7 +282,7 @@
 .form-editor select {
   font-family: inherit;
   font-size: 0.95rem;
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(var(--shade-rgb), calc(0.25 * var(--shade-k)));
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 9px 12px;
@@ -301,14 +301,14 @@
 
 .form-editor select {
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23A9C2BD' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238A8D90' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 10px center;
   padding-right: 30px;
 }
 .form-editor select option {
-  background: var(--cream);
-  color: #12222a;
+  background: var(--surface);
+  color: var(--cream);
 }
 
 .form-editor-actions {
@@ -333,13 +333,13 @@
   gap: 12px;
   flex-wrap: wrap;
   padding: 10px 14px;
-  background: rgba(0, 0, 0, 0.18);
+  background: rgba(var(--shade-rgb), calc(0.18 * var(--shade-k)));
   border: 1px solid var(--line);
   border-radius: 10px;
   transition: border-color 0.18s ease;
 }
 .relation-row:hover {
-  border-color: rgba(245, 239, 226, 0.2);
+  border-color: rgba(var(--fg-rgb), 0.2);
 }
 
 .relation-lemma {
@@ -380,13 +380,13 @@
   flex-direction: column;
   gap: 10px;
   padding: 14px;
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(var(--shade-rgb), calc(0.25 * var(--shade-k)));
   border: 1px solid var(--line);
   border-radius: 12px;
 }
 
 .relation-picker input {
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(var(--shade-rgb), calc(0.3 * var(--shade-k)));
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 11px 14px;
@@ -419,7 +419,7 @@
 .relation-picker-result {
   width: 100%;
   text-align: left;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(var(--tint-rgb), 0.03);
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 10px 12px;
@@ -450,7 +450,7 @@
   letter-spacing: 0.1em;
   color: var(--sage);
   padding: 1px 7px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(var(--tint-rgb), 0.05);
   border-radius: 999px;
 }
 
@@ -482,8 +482,8 @@
   padding: 12px 14px;
   border-radius: 14px;
   border: 1px solid var(--line);
-  background: rgba(10, 39, 51, 0.94);
-  box-shadow: 0 20px 40px -16px rgba(0, 0, 0, 0.55);
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  box-shadow: 0 20px 40px -16px rgba(var(--shade-rgb), calc(0.55 * var(--shade-k)));
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   font-size: 0.92rem;
@@ -492,13 +492,13 @@
 
 .word-detail-toast.toast-success {
   border-color: rgba(76, 175, 80, 0.45);
-  color: #aee0b3;
-  background: rgba(20, 49, 33, 0.94);
+  color: var(--success);
+  background: color-mix(in srgb, var(--success) 14%, var(--surface));
 }
 .word-detail-toast.toast-error {
   border-color: rgba(240, 138, 138, 0.5);
-  color: #f6b1b1;
-  background: rgba(56, 26, 26, 0.94);
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 14%, var(--surface));
 }
 
 @keyframes word-detail-toast-in {
@@ -536,15 +536,15 @@
 /* ---------- Recommendation (preferred / discouraged) + proposals ---------- */
 .recommendation-preferred {
   background: rgba(240, 192, 64, 0.16);
-  color: #f0c040;
+  color: var(--warning);
   border-color: rgba(240, 192, 64, 0.45);
 }
 
 .recommendation-discouraged {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(var(--tint-rgb), 0.04);
   color: var(--cream-dim);
   text-decoration: line-through;
-  text-decoration-color: rgba(255, 255, 255, 0.3);
+  text-decoration-color: rgba(var(--fg-rgb), 0.3);
 }
 
 .recommendation-vote-open {
@@ -560,7 +560,7 @@
 }
 
 .word-detail-preferred-hint a {
-  color: #f0c040;
+  color: var(--warning);
   font-weight: 600;
 }
 
@@ -608,11 +608,11 @@
 }
 
 .tally-approve {
-  color: #79d182;
+  color: var(--success);
 }
 
 .tally-reject {
-  color: #ff8a80;
+  color: var(--danger);
 }
 
 .proposal-blocked {
@@ -678,11 +678,11 @@
 }
 
 .vote-approve .vote-choice {
-  color: #79d182;
+  color: var(--success);
 }
 
 .vote-reject .vote-choice {
-  color: #ff8a80;
+  color: var(--danger);
 }
 
 .vote-user {
@@ -705,7 +705,7 @@
   min-width: 0;
   font-family: inherit;
   font-size: 0.95rem;
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(var(--shade-rgb), calc(0.25 * var(--shade-k)));
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 9px 12px;
@@ -713,14 +713,14 @@
 }
 
 .vote-selected-reject {
-  border-color: #ff8a80;
-  color: #ff8a80;
+  border-color: var(--danger);
+  color: var(--danger);
 }
 
 .form-editor textarea {
   font-family: inherit;
   font-size: 0.95rem;
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(var(--shade-rgb), calc(0.25 * var(--shade-k)));
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 9px 12px;
@@ -761,12 +761,12 @@
 }
 
 .proposal-status-accepted {
-  color: #79d182;
+  color: var(--success);
   border-color: rgba(76, 175, 80, 0.4);
 }
 
 .proposal-status-rejected {
-  color: #ff8a80;
+  color: var(--danger);
   border-color: rgba(255, 138, 128, 0.4);
 }
 

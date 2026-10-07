@@ -9,7 +9,7 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(10, 39, 51, 0.6);
+  background: var(--header-bg);
   backdrop-filter: saturate(140%) blur(14px);
   -webkit-backdrop-filter: saturate(140%) blur(14px);
   border-bottom: 1px solid var(--line);

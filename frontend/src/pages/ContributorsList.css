@@ -24,13 +24,13 @@
 .contributors-empty {
   padding: 16px 18px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(var(--tint-rgb), 0.03);
   border: 1px solid var(--line);
   color: var(--cream-dim);
 }
 
 .contributors-error {
-  color: #f08a8a;
+  color: var(--danger);
   background: rgba(240, 138, 138, 0.08);
   border-color: rgba(240, 138, 138, 0.25);
 }
@@ -43,7 +43,7 @@
 .contributors-table {
   width: 100%;
   border-collapse: collapse;
-  background: rgba(255, 255, 255, 0.025);
+  background: rgba(var(--tint-rgb), 0.025);
   border: 1px solid var(--line);
   border-radius: 14px;
   overflow: hidden;
@@ -57,7 +57,7 @@
 }
 
 .contributors-table th {
-  background: rgba(0, 0, 0, 0.15);
+  background: rgba(var(--shade-rgb), calc(0.15 * var(--shade-k)));
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
@@ -89,7 +89,7 @@
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent) 0%, var(--glow) 100%);
+  background: linear-gradient(135deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 55%, #000) 100%);
   color: var(--accent-deep);
   display: flex;
   align-items: center;

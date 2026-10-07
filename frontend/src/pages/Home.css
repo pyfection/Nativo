@@ -91,7 +91,7 @@
 .language-strip-inner {
   max-width: 1180px;
   margin: 0 auto;
-  background: rgba(255, 255, 255, 0.025);
+  background: rgba(var(--tint-rgb), 0.025);
   border: 1px solid var(--line);
   border-radius: 20px;
   padding: 28px 32px;
@@ -172,7 +172,7 @@
 .stat-card {
   text-align: center;
   padding: 22px 20px;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(var(--tint-rgb), 0.03);
   border: 1px solid var(--line);
   border-radius: 16px;
   transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
@@ -199,8 +199,8 @@
 
 .stat-card:hover {
   transform: translateY(-3px);
-  border-color: rgba(245, 239, 226, 0.25);
-  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(var(--fg-rgb), 0.25);
+  background: rgba(var(--tint-rgb), 0.05);
 }
 
 .stat-number {
@@ -270,7 +270,7 @@
 }
 
 .mission-card {
-  background: rgba(255, 255, 255, 0.025);
+  background: rgba(var(--tint-rgb), 0.025);
   border: 1px solid var(--line);
   border-radius: 16px;
   padding: 22px;
@@ -279,7 +279,7 @@
 
 .mission-card:hover {
   transform: translateY(-3px);
-  border-color: rgba(245, 239, 226, 0.25);
+  border-color: rgba(var(--fg-rgb), 0.25);
 }
 
 .mission-icon {

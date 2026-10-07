@@ -27,7 +27,7 @@
   gap: 0.4rem;
   margin-bottom: 1.5rem;
   padding: 0.75rem 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(var(--fg-rgb), 0.12);
   border-radius: 8px;
   font-size: 0.85rem;
 }
@@ -77,12 +77,12 @@
 /* Words the learner hasn't met yet get a quiet dotted underline. */
 .reader-word-new {
   text-decoration: underline dotted;
-  text-decoration-color: var(--accent, #a9c2bd);
+  text-decoration-color: var(--accent);
   text-decoration-thickness: 2px;
 }
 
 .reader-word-active {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(var(--fg-rgb), 0.12);
 }
 
 /* ---------- Completion ---------- */
@@ -105,9 +105,9 @@
   max-width: calc(100% - 0.5rem);
   padding: 0.9rem 1.1rem;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: var(--base1, #0a2733);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(var(--fg-rgb), 0.18);
+  background: var(--surface);
+  box-shadow: 0 8px 30px rgba(var(--shade-rgb), calc(0.45 * var(--shade-k)));
   z-index: 50;
   font-size: 1rem;
   line-height: 1.5;
@@ -207,7 +207,7 @@
   gap: 0.15rem;
   padding: 0.75rem 1rem;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(var(--fg-rgb), 0.18);
   background: none;
   color: inherit;
   cursor: pointer;
@@ -217,7 +217,7 @@
 
 .reader-difficulty-option:hover {
   border-color: currentColor;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(var(--fg-rgb), 0.06);
 }
 
 .reader-difficulty-label {

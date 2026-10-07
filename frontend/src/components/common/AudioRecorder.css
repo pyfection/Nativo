@@ -14,7 +14,7 @@
 .audio-recorder-stop {
   /* Subtle pulse so the user notices recording is live. */
   animation: audio-recorder-pulse 1.4s ease-in-out infinite;
-  color: #f08a8a;
+  color: var(--danger);
   border-color: rgba(240, 138, 138, 0.4);
 }
 
@@ -48,7 +48,7 @@
   align-items: center;
   gap: 12px;
   padding: 10px 12px;
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(var(--shade-rgb), calc(0.25 * var(--shade-k)));
   border: 1px solid var(--line);
   border-radius: 10px;
   flex-wrap: wrap;

@@ -108,8 +108,8 @@ export default function DocumentList({ selectedLanguage }: DocumentListProps) {
       </div>
 
       {!canEdit && selectedLanguage && (
-        <div style={{ padding: '1rem', backgroundColor: '#fff3cd', border: '1px solid #ffc107', borderRadius: '4px', marginBottom: '1rem' }}>
-          <p style={{ margin: 0, color: '#856404' }}>
+        <div style={{ padding: '1rem', backgroundColor: 'color-mix(in srgb, var(--warning) 12%, transparent)', border: '1px solid color-mix(in srgb, var(--warning) 45%, transparent)', borderRadius: '4px', marginBottom: '1rem' }}>
+          <p style={{ margin: 0, color: 'var(--cream)' }}>
             {isAuthenticated ? (
               <>
                 {t('docs_page.suggest_notice', { language: languageDisplayName(selectedLanguage) })}{' '}
