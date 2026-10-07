@@ -40,6 +40,18 @@ const NAV_ITEMS: NavItem[] = [
     ),
   },
   {
+    path: '/contribute',
+    labelKey: 'nav.contribute',
+    // Plus inside a circle — "add something"
+    icon: (
+      <svg {...ICON_PROPS}>
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 8V16" />
+        <path d="M8 12H16" />
+      </svg>
+    ),
+  },
+  {
     path: '/words',
     labelKey: 'nav.words',
     // Custom "Αω" glyph icon — fill is fine here because <text> doesn't

@@ -23,7 +23,7 @@ export default function LanguageActionPanel() {
         <span className="language-action-icon" aria-hidden="true">🎙️</span>
         {t('action_panel.upload_audio')}
       </span>
-      <Link className="language-action language-action-primary" to="/languages">
+      <Link className="language-action language-action-primary" to="/contribute">
         <span className="language-action-icon" aria-hidden="true">🤝</span>
         {t('action_panel.contribute')}
       </Link>

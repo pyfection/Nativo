@@ -830,27 +830,45 @@ def _set_glosses(
     for gloss in wanted:
         if gloss in have:
             continue
-        target = find_gloss_target(db, language_id, gloss)
-        if target is None:
-            # The reviewer typed it, so it is reviewed content: publish it.
-            target = Lexeme(
-                language_id=language_id,
-                lemma=gloss,
-                created_by_id=reviewer_id,
-                verified_by_id=reviewer_id,
-                is_verified=True,
-                status=LexemeStatus.PUBLISHED,
-            )
-            db.add(target)
-            db.flush()
-            db.add(WordForm(lexeme_id=target.id, form=gloss, is_lemma=True))
-        low, high = _ordered_pair(lexeme.id, target.id)
-        db.execute(
-            insert(lexeme_translations).values(
-                lexeme_id=low, translation_id=high, created_at=_now(), created_by_id=reviewer_id
-            )
-        )
+        # The reviewer typed it, so it is reviewed content: publish it.
+        add_gloss(db, lexeme, language_id, gloss, reviewer_id, publish=True)
     db.flush()
+
+
+def add_gloss(
+    db: Session,
+    lexeme: Lexeme,
+    language_id: UUID,
+    gloss: str,
+    creator_id: UUID,
+    *,
+    publish: bool,
+) -> Lexeme:
+    """Link `lexeme` to a gloss in another language, reusing an existing
+    entry for it when there is one. A new gloss entry is published (and
+    verified) when `publish`; otherwise it is a drafted gloss — pending, by
+    the same author — so approving or rejecting the word settles it too.
+    Does not commit."""
+    target = find_gloss_target(db, language_id, gloss)
+    if target is None:
+        target = Lexeme(
+            language_id=language_id,
+            lemma=gloss,
+            created_by_id=creator_id,
+            verified_by_id=creator_id if publish else None,
+            is_verified=publish,
+            status=LexemeStatus.PUBLISHED if publish else LexemeStatus.PENDING_REVIEW,
+        )
+        db.add(target)
+        db.flush()
+        db.add(WordForm(lexeme_id=target.id, form=gloss, is_lemma=True))
+    low, high = _ordered_pair(lexeme.id, target.id)
+    db.execute(
+        insert(lexeme_translations).values(
+            lexeme_id=low, translation_id=high, created_at=_now(), created_by_id=creator_id
+        )
+    )
+    return target
 
 
 def _apply_corrections(
