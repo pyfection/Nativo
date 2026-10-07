@@ -13,6 +13,8 @@
   backdrop-filter: saturate(140%) blur(14px);
   -webkit-backdrop-filter: saturate(140%) blur(14px);
   border-bottom: 1px solid var(--line);
+  /* Clear the status bar / notch in the store apps and installed PWA. */
+  padding-top: env(safe-area-inset-top);
 }
 
 .app-header-content {

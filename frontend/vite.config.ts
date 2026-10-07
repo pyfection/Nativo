@@ -8,32 +8,19 @@ export default defineConfig({
   base: process.env.VITE_BASE || '/',
   plugins: [
     react(),
-    // Installable app that works offline. The manifest is public/site.webmanifest.
-    // The service worker precaches the built app, and keeps a copy of API reads
-    // (network first, so data is live whenever there's a connection) for
-    // offline use. Writes made offline are queued by src/services/outbox.ts.
+    // Installable web app. The manifest is public/site.webmanifest. The
+    // service worker only precaches the built app so it opens offline; API
+    // data offline is handled in the app (services/readCache.ts, outbox.ts)
+    // so it also works in the store apps, which don't use the worker.
+    // Registered from src/index.tsx (web only).
     VitePWA({
       registerType: 'autoUpdate',
+      injectRegister: false,
       manifest: false,
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png'],
       workbox: {
         navigateFallbackDenylist: [/^\/(api|admin|mcp|uploads)(\/|$)/],
         runtimeCaching: [
-          {
-            // API reads, on whatever origin VITE_API_URL points at. Cleared
-            // on logout (clearApiCache in api.ts). Token management stays live-only.
-            urlPattern: ({ url, request }) =>
-              request.method === 'GET' &&
-              url.pathname.startsWith('/api/v1/') &&
-              !url.pathname.startsWith('/api/v1/auth/tokens'),
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'nativo-api',
-              networkTimeoutSeconds: 6,
-              expiration: { maxEntries: 1000, maxAgeSeconds: 30 * 24 * 60 * 60 },
-              cacheableResponse: { statuses: [200] },
-            },
-          },
           {
             urlPattern: ({ url }) =>
               url.origin === 'https://fonts.googleapis.com' ||

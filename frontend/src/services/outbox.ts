@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import axios, { AxiosRequestConfig } from 'axios';
 import api from './api';
+import { withStore } from './localDb';
 
 /**
  * Offline outbox. A write that opts in (`outbox` on its request config) and
@@ -58,8 +59,6 @@ interface OutboxState {
   failures: OutboxFailure[];
 }
 
-const DB_NAME = 'nativo';
-const STORE = 'outbox';
 const RETRY_MS = 60_000;
 
 let userId: string | null = null;
@@ -83,42 +82,9 @@ export function isNetworkError(error: unknown): boolean {
   return axios.isAxiosError(error) && !error.response && error.code !== 'ERR_CANCELED';
 }
 
-// ---------- IndexedDB ----------
-
-let dbPromise: Promise<IDBDatabase> | null = null;
-
-function openDb(): Promise<IDBDatabase> {
-  dbPromise ??= new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, 1);
-    request.onupgradeneeded = () => {
-      request.result.createObjectStore(STORE, { keyPath: 'id', autoIncrement: true });
-    };
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => {
-      dbPromise = null;
-      reject(request.error);
-    };
-  });
-  return dbPromise;
-}
-
-async function withStore<T>(
-  mode: IDBTransactionMode,
-  run: (store: IDBObjectStore) => IDBRequest<T>,
-): Promise<T> {
-  const db = await openDb();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE, mode);
-    const request = run(tx.objectStore(STORE));
-    tx.oncomplete = () => resolve(request.result);
-    tx.onerror = () => reject(tx.error);
-    tx.onabort = () => reject(tx.error);
-  });
-}
-
 async function myItems(): Promise<OutboxItem[]> {
   if (!userId) return [];
-  const all = await withStore<OutboxItem[]>('readonly', (store) => store.getAll());
+  const all = await withStore<OutboxItem[]>('outbox', 'readonly', (store) => store.getAll());
   return all.filter((item) => item.userId === userId).sort((a, b) => a.id! - b.id!);
 }
 
@@ -151,7 +117,7 @@ export async function enqueue(config: AxiosRequestConfig): Promise<boolean> {
   if (config.data instanceof FormData) item.form = Array.from(config.data.entries());
   else if (typeof config.data === 'string') item.body = config.data;
   try {
-    await withStore('readwrite', (store) => store.add(item));
+    await withStore('outbox', 'readwrite', (store) => store.add(item));
   } catch {
     return false;
   }
@@ -195,7 +161,7 @@ export async function flush() {
           ],
         });
       }
-      await withStore('readwrite', (store) => store.delete(item.id!));
+      await withStore('outbox', 'readwrite', (store) => store.delete(item.id!));
       await refresh();
     }
   } catch {
