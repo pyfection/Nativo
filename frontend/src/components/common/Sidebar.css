@@ -108,26 +108,48 @@
   white-space: nowrap;
 }
 
+/* Phones: a bottom tab bar with the same icons (labels stay in title /
+   aria-label). Scrolls sideways if the icons don't fit. */
 @media (max-width: 768px) {
-  .sidebar {
-    position: fixed;
-    top: 73px;
-    left: 0;
-    height: calc(100vh - 73px);
-    border-right: 1px solid var(--line);
-    border-bottom: none;
-    width: 64px;
-  }
-
+  .sidebar,
+  .sidebar.collapsed,
   .sidebar.expanded {
-    width: 220px;
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: auto;
+    height: auto;
+    flex-direction: row;
+    align-items: stretch;
+    padding: 4px 4px calc(4px + env(safe-area-inset-bottom));
+    border-right: none;
+    border-top: 1px solid var(--line);
+    background: var(--header-bg);
+    overflow-x: auto;
+    overflow-y: hidden;
+    z-index: 100;
   }
 
-  .app-main.with-sidebar {
-    margin-left: 64px;
+  .sidebar-toggle {
+    display: none;
   }
 
-  .sidebar.expanded + .app-main.with-sidebar {
-    margin-left: 220px;
+  .sidebar-nav {
+    flex-direction: row;
+    justify-content: space-between;
+    min-width: max-content;
+  }
+
+  .sidebar.collapsed .sidebar-button,
+  .sidebar.expanded .sidebar-button {
+    width: auto;
+    justify-content: center;
+    padding: 12px 9px;
+  }
+
+  .sidebar-label {
+    display: none;
   }
 }

@@ -1,4 +1,5 @@
 import api from './api';
+import type { OutboxConfig } from './outbox';
 import { ChangeProposal } from './proposalService';
 import { TranslationLink } from './wordService';
 
@@ -181,34 +182,54 @@ const contributeService = {
     return response.data;
   },
 
-  async confirmSpelling(languageId: string, answer: SpellingAnswer): Promise<ContributeResult> {
+  async confirmSpelling(
+    languageId: string,
+    answer: SpellingAnswer,
+    config?: OutboxConfig,
+  ): Promise<ContributeResult> {
     const response = await api.post<ContributeResult>(
       `/api/v1/contribute/${languageId}/spelling`,
       answer,
+      config,
     );
     return response.data;
   },
 
-  async translateWord(languageId: string, answer: TranslateWordAnswer): Promise<ContributeResult> {
+  async translateWord(
+    languageId: string,
+    answer: TranslateWordAnswer,
+    config?: OutboxConfig,
+  ): Promise<ContributeResult> {
     const response = await api.post<ContributeResult>(
       `/api/v1/contribute/${languageId}/translate-word`,
       answer,
+      config,
     );
     return response.data;
   },
 
-  async translateText(languageId: string, answer: TranslateTextAnswer): Promise<ContributeResult> {
+  async translateText(
+    languageId: string,
+    answer: TranslateTextAnswer,
+    config?: OutboxConfig,
+  ): Promise<ContributeResult> {
     const response = await api.post<ContributeResult>(
       `/api/v1/contribute/${languageId}/translate-text`,
       answer,
+      config,
     );
     return response.data;
   },
 
-  async defineWord(languageId: string, answer: DefineWordAnswer): Promise<DefineWordResult> {
+  async defineWord(
+    languageId: string,
+    answer: DefineWordAnswer,
+    config?: OutboxConfig,
+  ): Promise<DefineWordResult> {
     const response = await api.post<DefineWordResult>(
       `/api/v1/contribute/${languageId}/define`,
       answer,
+      config,
     );
     return response.data;
   },

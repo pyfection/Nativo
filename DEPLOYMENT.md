@@ -112,6 +112,8 @@ Pages will deploy on every push to `master`. PR previews work automatically with
 
 The Fly secret `BACKEND_CORS_ORIGINS` must list your Pages hostnames, including any preview branch you want to hit the API from. The simplest pattern early on is to include `https://*.nativo.pages.dev` once Cloudflare supports wildcards; until then, add each preview URL or keep `["*"]` and rely on JWT auth to gate writes.
 
+The store apps need their own origins in the same list: `https://localhost` (Android) and `capacitor://localhost` (iOS). See [MOBILE.md](MOBILE.md).
+
 ## 4. Live URLs
 
 | Service | URL |

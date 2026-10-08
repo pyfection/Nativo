@@ -1,4 +1,5 @@
 import api from './api';
+import type { OutboxConfig } from './outbox';
 import {
   TextWordLink,
   TextWordLinkCreate,
@@ -16,8 +17,17 @@ export const wordLinkService = {
     return response.data;
   },
 
-  async update(textId: string, linkId: string, data: TextWordLinkUpdate): Promise<TextWordLink> {
-    const response = await api.patch<TextWordLink>(`/api/v1/texts/${textId}/links/${linkId}`, data);
+  async update(
+    textId: string,
+    linkId: string,
+    data: TextWordLinkUpdate,
+    config?: OutboxConfig,
+  ): Promise<TextWordLink> {
+    const response = await api.patch<TextWordLink>(
+      `/api/v1/texts/${textId}/links/${linkId}`,
+      data,
+      config,
+    );
     return response.data;
   },
 

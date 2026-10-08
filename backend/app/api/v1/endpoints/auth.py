@@ -20,6 +20,7 @@ from app.schemas.user import (
     ApiTokenCreate,
     ApiTokenCreated,
     ApiTokenResponse,
+    DeleteAccountRequest,
     ForgotPasswordRequest,
     ResetPasswordRequest,
     Token,
@@ -31,6 +32,7 @@ from app.services.auth_service import (
     API_TOKEN_PREFIX,
     create_access_token,
     create_api_token,
+    delete_account,
     make_email_verify_token,
     make_password_reset_token,
     verify_email_token,
@@ -296,6 +298,32 @@ async def get_current_user_info(
     )
 
     return user
+
+
+@router.post("/delete-account", status_code=status.HTTP_204_NO_CONTENT)
+@limiter.limit("5/minute")
+async def delete_my_account(
+    request: Request,
+    payload: DeleteAccountRequest,
+    raw_token: str = Depends(oauth2_scheme),
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Delete the current user's account. Contributions stay in the archive,
+    credited to a "deleted-user-…" placeholder; personal data is removed
+    (see auth_service.delete_account). Needs a login session and the
+    current password, so a leaked API token can't delete an account.
+    """
+    if raw_token.startswith(API_TOKEN_PREFIX):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Accounts can only be deleted from a login session",
+        )
+    if not verify_password(payload.password, current_user.hashed_password):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Wrong password")
+    delete_account(db, current_user)
+    return None
 
 
 @router.get("/tokens", response_model=list[ApiTokenResponse])

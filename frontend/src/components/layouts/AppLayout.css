@@ -13,6 +13,8 @@
   backdrop-filter: saturate(140%) blur(14px);
   -webkit-backdrop-filter: saturate(140%) blur(14px);
   border-bottom: 1px solid var(--line);
+  /* Clear the status bar / notch in the store apps and installed PWA. */
+  padding-top: env(safe-area-inset-top);
 }
 
 .app-header-content {
@@ -67,13 +69,36 @@
 }
 
 /* ---------- Mobile ---------- */
+/* Phones: logo + theme + account on the first row, the language pickers on
+   the second. The sidebar turns into a bottom tab bar (see Sidebar.css), so
+   the page needs room at the bottom instead of a left margin. */
 @media (max-width: 768px) {
   .app-header-content {
-    flex-direction: column;
-    gap: 1rem;
-    padding: 14px 16px;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px 16px;
+  }
+  .app-logo {
+    margin-right: auto;
+    font-size: 22px;
+  }
+  .app-header-right {
+    display: contents;
+  }
+  .app-header-right > .language-selector,
+  .app-header-right > .ui-language-selector {
+    order: 1;
+  }
+  /* Too wide for the first row, so it wraps and takes the second. */
+  .app-header-right > .language-selector {
+    flex: 1 1 200px;
+    min-width: 0;
   }
   .app-content-wrapper {
     flex-direction: column;
+  }
+  .app-main {
+    min-width: 0;
+    padding-bottom: calc(60px + env(safe-area-inset-bottom));
   }
 }

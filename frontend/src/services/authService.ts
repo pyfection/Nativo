@@ -1,4 +1,4 @@
-import api from './api';
+import api, { clearApiCache } from './api';
 
 export interface RegisterData {
   email: string;
@@ -81,6 +81,7 @@ export const authService = {
 
   logout(): void {
     localStorage.removeItem('access_token');
+    clearApiCache();
   },
 
   isAuthenticated(): boolean {
@@ -118,6 +119,11 @@ export const authService = {
   async createApiToken(name: string): Promise<CreatedApiToken> {
     const response = await api.post<CreatedApiToken>('/api/v1/auth/tokens', { name });
     return response.data;
+  },
+
+  /** Delete the account; contributions stay, credited to a placeholder. */
+  async deleteAccount(password: string): Promise<void> {
+    await api.post('/api/v1/auth/delete-account', { password });
   },
 
   async revokeApiToken(id: string): Promise<void> {

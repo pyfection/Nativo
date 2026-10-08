@@ -11,6 +11,7 @@ import {
   listAudioForText,
   uploadAudio,
 } from '../../services/audioService';
+import { OutboxConfig, QueuedOffline } from '../../services/outbox';
 import './AudioRecorder.css';
 
 interface AudioRecorderProps {
@@ -26,6 +27,10 @@ interface AudioRecorderProps {
   onError?: (msg: string) => void;
   /** Surface success messages similarly. */
   onMessage?: (msg: string) => void;
+  /** How to name a recording made offline in the offline banner. */
+  outbox?: OutboxConfig['outbox'];
+  /** Called when a recording was saved offline to upload later. */
+  onQueued?: () => void;
 }
 
 type Status = 'idle' | 'recording' | 'uploading';
@@ -47,6 +52,8 @@ export default function AudioRecorder({
   onChange,
   onError,
   onMessage,
+  outbox,
+  onQueued,
 }: AudioRecorderProps) {
   const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
@@ -55,6 +62,8 @@ export default function AudioRecorder({
   const [status, setStatus] = useState<Status>('idle');
   const [elapsed, setElapsed] = useState(0);
   const [unsupported, setUnsupported] = useState(false);
+  // Recordings made offline here, waiting in the outbox.
+  const [queued, setQueued] = useState(0);
 
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -156,6 +165,7 @@ export default function AudioRecorder({
             durationSeconds: duration,
             // is_primary is a word-form concept; irrelevant for narration.
             isPrimary: wordFormId ? audios.length === 0 : false,
+            outbox: outbox ?? { label: t('offline.recording') },
           });
           // Refresh from server so we get the canonical Audio rows (with
           // file_path) rather than constructing optimistically.
@@ -166,7 +176,12 @@ export default function AudioRecorder({
           onChange?.(refreshed);
           onMessage?.(t('audio_recorder.recording_uploaded'));
         } catch (err: any) {
-          onError?.(err.response?.data?.detail || t('audio_recorder.upload_failed'));
+          if (err instanceof QueuedOffline) {
+            setQueued((n) => n + 1);
+            onQueued?.();
+          } else {
+            onError?.(err.response?.data?.detail || t('audio_recorder.upload_failed'));
+          }
         } finally {
           setStatus('idle');
           setElapsed(0);
@@ -245,6 +260,12 @@ export default function AudioRecorder({
           </Link>
         )}
       </div>
+
+      {queued > 0 && (
+        <p className="audio-recorder-queued" role="status">
+          {t('offline.recordings_saved', { count: queued })}
+        </p>
+      )}
 
       {audios.length > 0 && (
         <ul className="audio-recorder-list">

@@ -92,6 +92,12 @@ export default function UserMenu() {
               </svg>
               {t('user_menu.api_tokens')}
             </Link>
+            <Link to="/account/delete" onClick={() => setIsOpen(false)} className="user-menu-item">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M6.5 1h3a.5.5 0 0 1 .5.5V2h3a.5.5 0 0 1 0 1h-.54l-.82 10.66A1.5 1.5 0 0 1 10.15 15h-4.3a1.5 1.5 0 0 1-1.5-1.34L3.54 3H3a.5.5 0 0 1 0-1h3v-.5a.5.5 0 0 1 .5-.5zm-1.95 2 .8 10.58a.5.5 0 0 0 .5.42h4.3a.5.5 0 0 0 .5-.42L11.45 3h-6.9z"/>
+              </svg>
+              {t('user_menu.delete_account')}
+            </Link>
             <button onClick={handleLogout} className="user-menu-item logout">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                 <path d="M5 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H5zm6 13H5V2h6v12z"/>

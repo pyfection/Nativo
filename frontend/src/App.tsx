@@ -29,6 +29,7 @@ import Learn from './pages/Learn';
 import Review from './pages/Review';
 import Contribute from './pages/Contribute';
 import ApiTokens from './pages/ApiTokens';
+import DeleteAccount from './pages/DeleteAccount';
 import languageService, { LanguageResponse } from './services/languageService';
 import { API_URL } from './services/api';
 import { getThemeStyles } from './styles/theme';
@@ -146,7 +147,7 @@ function App() {
         }
       } catch (err) {
         console.error('Failed to fetch languages:', err);
-        setError('Failed to load languages');
+        setError(navigator.onLine ? 'Failed to load languages' : "You're offline. Connect to the internet and retry.");
       } finally {
         setLoading(false);
       }
@@ -409,6 +410,22 @@ function App() {
                     languages={languages}
                   >
                     <ApiTokens />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Delete your own account (required by the app stores) */}
+            <Route
+              path="/account/delete"
+              element={
+                <ProtectedRoute>
+                  <AppLayout
+                    selectedLanguage={selectedLanguage!}
+                    onLanguageChange={setSelectedLanguage}
+                    languages={languages}
+                  >
+                    <DeleteAccount />
                   </AppLayout>
                 </ProtectedRoute>
               }

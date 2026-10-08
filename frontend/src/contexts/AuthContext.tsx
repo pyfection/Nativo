@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import authService, { User, LoginData, RegisterData } from '../services/authService';
+import { isNetworkError, setOutboxUser } from '../services/outbox';
 
 interface AuthContextType {
   user: User | null;
@@ -39,7 +40,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser(currentUser);
         } catch (error) {
           console.error('Failed to load user:', error);
-          authService.logout();
+          // Offline with nothing cached: keep the token for when we're back.
+          if (!isNetworkError(error)) authService.logout();
         }
       }
       setLoading(false);
@@ -47,6 +49,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     loadUser();
   }, []);
+
+  // Saved offline writes are sent as the user who made them.
+  useEffect(() => {
+    setOutboxUser(user?.id ?? null);
+  }, [user?.id]);
 
   const login = async (data: LoginData) => {
     await authService.login(data);

@@ -37,6 +37,12 @@ class ForgotPasswordRequest(BaseModel):
     email: EmailStr
 
 
+class DeleteAccountRequest(BaseModel):
+    """Confirm account deletion with the current password."""
+
+    password: str
+
+
 class ResetPasswordRequest(BaseModel):
     """Set a new password using an emailed reset token."""
 

@@ -338,3 +338,51 @@ def maybe_promote_suggester(db: Session, user_id: UUID, language_id: UUID) -> bo
         return False
     user_language.can_edit = True
     return True
+
+
+DELETED_USERNAME_PREFIX = "deleted-user-"
+
+
+def delete_account(db: Session, user: User) -> None:
+    """
+    Delete a user's account but keep what they contributed.
+
+    Words, texts, recordings, links, votes and proposals stay in the archive,
+    still pointing at this user row, which is scrubbed: a placeholder username
+    ("deleted-user-…") and email, an unusable password, inactive, no role.
+    Personal data goes: API tokens, language memberships (proficiency and
+    permissions) and learning progress. Login, password reset and every
+    outstanding token stop working (reset tokens are tied to the password).
+    """
+    from app.models.learning import UserLexemeKnowledge, UserTextProgress
+    from app.utils.security import hash_password
+
+    if user.role == UserRole.ADMIN or user.is_superuser:
+        other_admins = (
+            db.query(User)
+            .filter(
+                User.id != user.id,
+                User.is_active.is_(True),
+                (User.role == UserRole.ADMIN) | User.is_superuser.is_(True),
+            )
+            .count()
+        )
+        if other_admins == 0:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="You are the last admin. Make someone else an admin first.",
+            )
+
+    for model in (ApiToken, UserLanguage, UserLexemeKnowledge, UserTextProgress):
+        db.query(model).filter(model.user_id == user.id).delete(synchronize_session=False)
+
+    placeholder = f"{DELETED_USERNAME_PREFIX}{user.id.hex[:12]}"
+    user.username = placeholder
+    user.email = f"{placeholder}@deleted.invalid"
+    user.hashed_password = hash_password(secrets.token_urlsafe(32))
+    user.role = UserRole.PUBLIC
+    user.is_superuser = False
+    user.is_active = False
+    user.email_verified_at = None
+    db.commit()
+    db.expire(user)

@@ -5,6 +5,7 @@ import LanguageSelector from '../common/LanguageSelector';
 import UILanguageSelector from '../common/UILanguageSelector';
 import ThemeToggle from '../common/ThemeToggle';
 import UserMenu from '../common/UserMenu';
+import OfflineBanner from '../common/OfflineBanner';
 import { Language } from '../../App';
 import './AppLayout.css';
 
@@ -42,6 +43,7 @@ export default function AppLayout({ children, selectedLanguage, onLanguageChange
             <UserMenu />
           </div>
         </div>
+        <OfflineBanner />
       </header>
 
       {/* Main Content Area. The sidebar is the map of what the platform is —

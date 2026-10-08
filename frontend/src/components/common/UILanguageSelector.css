@@ -11,3 +11,16 @@
   color: var(--cream-dim);
   line-height: 1;
 }
+
+/* Phones: globe only, the menu still names the languages. */
+@media (max-width: 480px) {
+  .ui-language-selector .dropdown-trigger {
+    padding-right: 26px;
+  }
+  .ui-language-selector .dropdown-trigger-label {
+    display: none;
+  }
+  .ui-language-selector .dropdown-caret {
+    right: 10px;
+  }
+}

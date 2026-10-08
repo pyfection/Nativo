@@ -83,8 +83,24 @@
 }
 
 @media (max-width: 768px) {
-  .language-selector {
-    flex-wrap: wrap;
+  .language-selector .dropdown,
+  .language-selector .dropdown-trigger {
+    min-width: 0 !important; /* beats the inline minWidth */
+    max-width: 100%;
+  }
+
+  .language-selector .dropdown-trigger-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .language-selector .dropdown-label {
+    display: none;
+  }
+
+  /* Icons say enough here; the level stays in the tooltip. */
+  .proficiency-level {
+    display: none;
   }
 
   .selector-dropdown {

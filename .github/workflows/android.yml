@@ -1,0 +1,38 @@
+name: Android app
+
+# Builds an installable debug APK of the store app (see MOBILE.md). Download
+# it from the run's artifacts and open it on an Android phone to test.
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+    paths: ['frontend/**', '.github/workflows/android.yml']
+  pull_request:
+    paths: ['frontend/**', '.github/workflows/android.yml']
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: npm ci
+      # Uses VITE_API_URL from frontend/.env.production.
+      - run: npm run app:sync
+      - run: ./gradlew assembleDebug --no-daemon
+        working-directory: frontend/android
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nativo-debug-apk
+          path: frontend/android/app/build/outputs/apk/debug/app-debug.apk

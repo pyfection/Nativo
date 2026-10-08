@@ -25,6 +25,7 @@ import contributeService, {
   TranslateWordTask,
   VoteTask,
 } from '../services/contributeService';
+import { OutboxConfig, pendingKeys, QueuedOffline } from '../services/outbox';
 import proposalService from '../services/proposalService';
 import wordLinkService from '../services/wordLinkService';
 import wordService, { TranslationLink } from '../services/wordService';
@@ -56,6 +57,29 @@ const BINARY_TYPES: ContributeTask['type'][] = [
   'review_addition',
 ];
 const isBinary = (task: ContributeTask): task is BinaryTask => BINARY_TYPES.includes(task.type);
+
+/** The word or title a card is about, to name it in the offline banner. */
+function cardSubject(task: ContributeTask): string {
+  switch (task.type) {
+    case 'define_word':
+    case 'confirm_spelling':
+      return task.token;
+    case 'record_audio':
+      return task.form;
+    case 'vote':
+      return task.proposal.lexeme_lemma ?? '';
+    case 'translate_text':
+      return task.title;
+    default:
+      return task.lemma;
+  }
+}
+
+// Cards answered offline wait in the outbox; don't deal them again.
+const notPending = (tasks: ContributeTask[]) => {
+  const pending = pendingKeys();
+  return tasks.filter((task) => !pending.has(task.key));
+};
 
 const isTyping = (target: EventTarget | null) =>
   target instanceof HTMLElement &&
@@ -128,7 +152,7 @@ export default function Contribute({ selectedLanguage, languages }: ContributePr
       .getTasks(selectedLanguage.id, [])
       .then((tasks) => {
         if (cancelled) return;
-        setQueue(tasks);
+        setQueue(notPending(tasks));
         setExhausted(tasks.length === 0);
       })
       .catch((err) => {
@@ -154,7 +178,7 @@ export default function Contribute({ selectedLanguage, languages }: ContributePr
         if (requestedFor !== languageId.current) return;
         setQueue((prev) => {
           const seen = new Set(prev.map((task) => task.key));
-          return [...prev, ...more.filter((task) => !seen.has(task.key))];
+          return [...prev, ...notPending(more).filter((task) => !seen.has(task.key))];
         });
         if (more.length === 0) setExhausted(true);
       })
@@ -191,18 +215,26 @@ export default function Contribute({ selectedLanguage, languages }: ContributePr
     drop(task);
   };
 
+  const outboxFor = (task: ContributeTask): OutboxConfig => ({
+    outbox: {
+      label: `${t(`contribute.kind_${task.type}`)}: ${cardSubject(task)}`,
+      key: task.key,
+    },
+  });
+
   const run = async <T,>(
     task: ContributeTask,
-    action: () => Promise<T>,
+    action: (config: OutboxConfig) => Promise<T>,
     message: string | ((result: T) => string),
   ) => {
     setBusy(true);
     setError('');
     try {
-      const result = await action();
+      const result = await action(outboxFor(task));
       complete(task, typeof message === 'function' ? message(result) : message);
     } catch (err: any) {
-      setError(err.response?.data?.detail || t('contribute.action_failed'));
+      if (err instanceof QueuedOffline) complete(task, t('offline.saved'));
+      else setError(err.response?.data?.detail || t('contribute.action_failed'));
     } finally {
       setBusy(false);
     }
@@ -213,28 +245,35 @@ export default function Contribute({ selectedLanguage, languages }: ContributePr
       case 'confirm_link':
         return run(
           task,
-          () =>
-            wordLinkService.update(task.context.text_id, task.link_id, {
-              status: yes ? TextWordLinkStatus.CONFIRMED : TextWordLinkStatus.REJECTED,
-            }),
+          (config) =>
+            wordLinkService.update(
+              task.context.text_id,
+              task.link_id,
+              { status: yes ? TextWordLinkStatus.CONFIRMED : TextWordLinkStatus.REJECTED },
+              config,
+            ),
           yes ? t('contribute.done_link_confirmed') : t('contribute.done_link_rejected'),
         );
       case 'review_word':
         return run(
           task,
-          () => (yes ? wordService.verify(task.lexeme_id) : wordService.reject(task.lexeme_id)),
+          (config) =>
+            yes
+              ? wordService.verify(task.lexeme_id, undefined, config)
+              : wordService.reject(task.lexeme_id, undefined, config),
           yes ? t('contribute.done_review_approved') : t('contribute.done_review_rejected'),
         );
       case 'vote':
         return run(
           task,
-          () => proposalService.vote(task.proposal.id, yes ? 'approve' : 'reject'),
+          (config) =>
+            proposalService.vote(task.proposal.id, yes ? 'approve' : 'reject', undefined, config),
           t('contribute.done_vote'),
         );
       case 'review_addition':
         return run(
           task,
-          () => proposalService.review(task.proposal_id, yes),
+          (config) => proposalService.review(task.proposal_id, yes, config),
           yes ? t('contribute.done_review_approved') : t('contribute.done_review_rejected'),
         );
     }
@@ -245,18 +284,18 @@ export default function Contribute({ selectedLanguage, languages }: ContributePr
   const define = (task: DefineWordTask, data: DefineWordAnswer) =>
     run(
       task,
-      () => contributeService.defineWord(selectedLanguage.id, data),
+      (config) => contributeService.defineWord(selectedLanguage.id, data, config),
       canEdit ? t('contribute.done_define_published') : t('contribute.done_define_suggested'),
     );
 
   const confirmSpelling = (task: ConfirmSpellingTask, data: SpellingAnswer) =>
-    run(task, () => contributeService.confirmSpelling(selectedLanguage.id, data), outcomeMessage);
+    run(task, (config) => contributeService.confirmSpelling(selectedLanguage.id, data, config), outcomeMessage);
 
   const translateWord = (task: TranslateWordTask, data: TranslateWordAnswer) =>
-    run(task, () => contributeService.translateWord(selectedLanguage.id, data), outcomeMessage);
+    run(task, (config) => contributeService.translateWord(selectedLanguage.id, data, config), outcomeMessage);
 
   const translateText = (task: TranslateTextTask, data: TranslateTextAnswer) =>
-    run(task, () => contributeService.translateText(selectedLanguage.id, data), outcomeMessage);
+    run(task, (config) => contributeService.translateText(selectedLanguage.id, data, config), outcomeMessage);
 
   // y / n answer the yes-no cards, s skips. Re-bound every render so the
   // handler sees the current card.
@@ -293,6 +332,7 @@ export default function Contribute({ selectedLanguage, languages }: ContributePr
         return (
           <RecordAudioCard
             task={task}
+            outbox={outboxFor(task).outbox!}
             onError={setError}
             onDone={() => complete(task, t('contribute.done_record_audio'))}
           />
@@ -593,11 +633,12 @@ function DefineWordCard({ task, glossLanguage, canEdit, busy, onSubmit }: Define
 
 interface RecordAudioCardProps {
   task: RecordAudioTask;
+  outbox: NonNullable<OutboxConfig['outbox']>;
   onError: (message: string) => void;
   onDone: () => void;
 }
 
-function RecordAudioCard({ task, onError, onDone }: RecordAudioCardProps) {
+function RecordAudioCard({ task, outbox, onError, onDone }: RecordAudioCardProps) {
   const { t } = useTranslation();
   const [recorded, setRecorded] = useState(false);
   // Stable: AudioRecorder re-fetches its list whenever this changes.
@@ -616,7 +657,14 @@ function RecordAudioCard({ task, onError, onDone }: RecordAudioCardProps) {
       {task.uses > 0 && (
         <p className="contribute-meta">{t('contribute.audio_uses', { count: task.uses })}</p>
       )}
-      <AudioRecorder wordFormId={task.word_form_id} canEdit onChange={handleChange} onError={onError} />
+      <AudioRecorder
+        wordFormId={task.word_form_id}
+        canEdit
+        outbox={outbox}
+        onChange={handleChange}
+        onQueued={() => setRecorded(true)}
+        onError={onError}
+      />
       {recorded && (
         <button type="button" className="btn btn-accent" onClick={onDone}>
           {t('contribute.next')}

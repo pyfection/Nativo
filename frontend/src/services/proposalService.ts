@@ -1,4 +1,5 @@
 import api from './api';
+import type { OutboxConfig } from './outbox';
 import { LexemeOrigin, LexemeRecommendation } from './wordService';
 
 // -----------------------------------------------------------------------------
@@ -77,19 +78,27 @@ const proposalService = {
     return response.data;
   },
 
-  async vote(proposalId: string, choice: VoteChoice, comment?: string): Promise<ChangeProposal> {
-    const response = await api.post<ChangeProposal>(`/api/v1/proposals/${proposalId}/votes`, {
-      choice,
-      ...(comment && { comment }),
-    });
+  async vote(
+    proposalId: string,
+    choice: VoteChoice,
+    comment?: string,
+    config?: OutboxConfig,
+  ): Promise<ChangeProposal> {
+    const response = await api.post<ChangeProposal>(
+      `/api/v1/proposals/${proposalId}/votes`,
+      { choice, ...(comment && { comment }) },
+      config,
+    );
     return response.data;
   },
 
   /** Settle a suggested addition (spelling variant, translation link). */
-  async review(proposalId: string, approve: boolean): Promise<ChangeProposal> {
-    const response = await api.post<ChangeProposal>(`/api/v1/proposals/${proposalId}/review`, {
-      approve,
-    });
+  async review(proposalId: string, approve: boolean, config?: OutboxConfig): Promise<ChangeProposal> {
+    const response = await api.post<ChangeProposal>(
+      `/api/v1/proposals/${proposalId}/review`,
+      { approve },
+      config,
+    );
     return response.data;
   },
 
