@@ -1,6 +1,6 @@
 # Privacy policy
 
-_Last updated: [DATE]_
+_Last updated: October 8, 2026_
 
 Nativo is a free, community-run archive for endangered languages. This policy
 explains what personal data the website and the Nativo apps for Android and
@@ -8,9 +8,9 @@ iOS handle, why, and what you can do about it.
 
 ## Who is responsible
 
-[OPERATOR NAME]\
-[POSTAL ADDRESS]\
-Email: [CONTACT EMAIL]
+Matthias Schreiber\
+Fram, Itapúa, Paraguay\
+Email: {{contact_email}}
 
 Write to this address for any question about your data or to use any of the
 rights below.
@@ -93,7 +93,7 @@ Your contributions stay in the archive under an anonymous name like
 "deleted-user-3f2a…".
 
 If you also want your **voice recordings** or other contributions removed,
-write to us at [CONTACT EMAIL] before or after deleting your account, and we
+write to us at {{contact_email}} before or after deleting your account, and we
 will remove them.
 
 ## Your rights
