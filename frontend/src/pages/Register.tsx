@@ -134,6 +134,10 @@ export default function Register() {
           <button type="submit" className="register-button" disabled={loading}>
             {loading ? t('auth.creating_account') : t('auth.create_account')}
           </button>
+          <p className="register-privacy">
+            {t('auth.privacy_notice')}{' '}
+            <Link to="/privacy">{t('footer.privacy')}</Link>
+          </p>
         </form>
 
         <div className="register-footer">

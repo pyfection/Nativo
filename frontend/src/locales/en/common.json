@@ -151,7 +151,8 @@
     "col_documents": "Documents"
   },
   "footer": {
-    "copyright": "© 2026 Nativo - Preserving Linguistic Heritage"
+    "copyright": "© 2026 Nativo - Preserving Linguistic Heritage",
+    "privacy": "Privacy policy"
   },
   "latest_text": {
     "heading": "Freshly preserved in {{language}}",
@@ -294,7 +295,8 @@
     "verify_failed": "This verification link is invalid or has expired.",
     "verify_prompt": "Your email address isn't confirmed yet. We can send the link again.",
     "verify_resend": "Resend verification email",
-    "verify_resent": "Verification email sent — check your inbox."
+    "verify_resent": "Verification email sent — check your inbox.",
+    "privacy_notice": "By creating an account you agree to how we handle your data, as described in the"
   },
   "join_modal": {
     "title": "Join {{language}}",
@@ -1225,6 +1227,7 @@
     "submit": "Delete my account",
     "deleting": "Deleting…",
     "failed": "Couldn't delete the account. Please try again.",
-    "done": "Your account has been deleted."
+    "done": "Your account has been deleted.",
+    "recordings_note": "To also have your voice recordings removed, write to us. The contact address is in the"
   }
 }

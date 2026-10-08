@@ -263,6 +263,9 @@ export default function Home({ selectedLanguage }: HomeProps) {
 
       <footer className="footer">
         <p>{t('footer.copyright')}</p>
+        <p>
+          <Link to="/privacy">{t('footer.privacy')}</Link>
+        </p>
       </footer>
     </div>
   );

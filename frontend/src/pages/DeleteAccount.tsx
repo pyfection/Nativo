@@ -1,6 +1,6 @@
 import { FormEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import { useAuth } from '../contexts/AuthContext';
 import authService from '../services/authService';
@@ -52,6 +52,10 @@ export default function DeleteAccount() {
 
       <h2>{t('delete_account.kept_heading')}</h2>
       <p>{t('delete_account.kept_body')}</p>
+      <p>
+        {t('delete_account.recordings_note')}{' '}
+        <Link to="/privacy">{t('footer.privacy')}</Link>
+      </p>
 
       <form className="delete-account-form" onSubmit={submit}>
         <label className="delete-account-field">

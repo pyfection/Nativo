@@ -151,7 +151,8 @@
     "col_documents": "Documentos"
   },
   "footer": {
-    "copyright": "© 2026 Nativo - Preservando el patrimonio lingüístico"
+    "copyright": "© 2026 Nativo - Preservando el patrimonio lingüístico",
+    "privacy": "Política de privacidad"
   },
   "latest_text": {
     "heading": "Recién preservado en {{language}}",
@@ -303,7 +304,8 @@
     "verify_failed": "Este enlace de verificación no es válido o ha caducado.",
     "verify_prompt": "Tu dirección de correo aún no está confirmada. Podemos reenviarte el enlace.",
     "verify_resend": "Reenviar correo de verificación",
-    "verify_resent": "Correo de verificación enviado: revisa tu bandeja."
+    "verify_resent": "Correo de verificación enviado: revisa tu bandeja.",
+    "privacy_notice": "Al crear una cuenta aceptas cómo tratamos tus datos, según se describe en la"
   },
   "join_modal": {
     "title": "Únete al {{language}}",
@@ -1234,6 +1236,7 @@
     "submit": "Eliminar mi cuenta",
     "deleting": "Eliminando…",
     "failed": "No se pudo eliminar la cuenta. Inténtalo de nuevo.",
-    "done": "Tu cuenta ha sido eliminada."
+    "done": "Tu cuenta ha sido eliminada.",
+    "recordings_note": "Si también quieres que se eliminen tus grabaciones de voz, escríbenos. La dirección de contacto está en la"
   }
 }

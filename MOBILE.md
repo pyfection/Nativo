@@ -71,8 +71,9 @@ npx @capacitor/assets generate --ios --android \
 
 ### Required by both stores before release
 
-- [ ] **Privacy policy URL.** Nativo stores accounts (email, username), recordings and
-      contributions, so a policy is required. It isn't written yet.
+- [ ] **Privacy policy URL**: `https://<your site>/privacy` (text in
+      `frontend/src/content/privacy.md`). Fill in the `[…]` placeholders and have
+      it checked before publishing.
 - [x] **Account deletion inside the app**: user menu → Delete account
       (`/account/delete`). Contributions stay, credited to `deleted-user-…`;
       login, memberships, learning progress and API tokens are removed. Play
