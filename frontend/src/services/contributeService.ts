@@ -114,6 +114,8 @@ export interface ReviewAdditionTask extends TaskBase {
   note: string | null;
   other_lemma: string | null;
   other_language_id: string | null;
+  /** Accepting also corrects the old spelling in the language's texts. */
+  fix_texts: boolean;
   creator_username: string | null;
 }
 
@@ -130,6 +132,8 @@ export type ContributeTask =
 
 export interface DefineWordAnswer {
   token?: string;
+  /** The standard spelling of `token` when the text misspells it. */
+  corrected?: string;
   lemma: string;
   part_of_speech?: string;
   gloss?: string;
@@ -139,6 +143,24 @@ export interface DefineWordAnswer {
 export interface DefineWordResult {
   lexeme_id: string;
   status: string;
+  outcome: ContributeResult['outcome'];
+}
+
+/** AI suggestion for a word card; null fields mean the AI wasn't sure. */
+export interface WordSuggestion {
+  lemma: string | null;
+  part_of_speech: string | null;
+  gloss: string | null;
+  /** How the word should be written, when the text breaks the standard. */
+  standard_spelling: string | null;
+  explanation: string | null;
+}
+
+export interface WordSuggestionQuery {
+  token: string;
+  text_id?: string;
+  snippet_id?: string;
+  gloss_language_id?: string;
 }
 
 export interface SpellingAnswer {
@@ -178,6 +200,14 @@ const contributeService = {
       params: { limit, exclude },
       // FastAPI reads repeated keys (exclude=a&exclude=b), not exclude[]=a.
       paramsSerializer: { indexes: null },
+    });
+    return response.data;
+  },
+
+  /** AI suggestion for a word card. Rejects (503) when AI isn't set up. */
+  async suggestWord(languageId: string, query: WordSuggestionQuery): Promise<WordSuggestion> {
+    const response = await api.get<WordSuggestion>(`/api/v1/contribute/${languageId}/suggest`, {
+      params: query,
     });
     return response.data;
   },

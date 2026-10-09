@@ -65,6 +65,18 @@ Notes:
 - `shared-cpu-1x` / 256 MB is enough for low traffic; bump if you see OOMs.
 - File uploads: the durable option is **object storage** (recommended). Run `fly storage create` — it provisions a Tigris bucket and sets `BUCKET_NAME`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_ENDPOINT_URL_S3` and `AWS_REGION` as app secrets; the backend switches to S3 automatically when `BUCKET_NAME` is set (reads are served via short-lived presigned redirects, the bucket stays private). Any pre-existing files on disk/volume: copy them over once with `uv run python backend/scripts/migrate_uploads_to_s3.py` (idempotent) from `fly ssh console`. Without a bucket the fallback is the Fly volume declared in `fly.toml` (`fly volumes create nativo_uploads --size 3 --region iad`) — works, but ties you to one machine; a plain disk without either is **ephemeral**.
 
+### AI suggestions (optional)
+
+Quick Contribute word cards can pre-fill meaning, part of speech and spelling fixes with Claude. The backend runs the `claude` CLI (installed in the `Dockerfile`) with a **Claude subscription OAuth token**, not an API key:
+
+```bash
+claude setup-token                      # on your machine; prints a long-lived token
+fly secrets set CLAUDE_CODE_OAUTH_TOKEN="sk-ant-oat01-..."
+# optional: AI_SUGGEST_MODEL (default "haiku"), AI_SUGGEST_TIMEOUT (seconds, default 60)
+```
+
+Without the secret, cards work as before (the suggest endpoint returns 503 and the UI stays silent). Each CLI call is a separate ~150–250 MB process, so give the VM at least `memory = '512mb'` in `fly.toml` before turning this on. Suggestions are stored per word (`ai_suggestions`), so each unknown word costs one call. For local dev, put the token in `backend/.env` and have `claude` on your `PATH`.
+
 ### CI deploy (optional)
 
 `gh secret set FLY_API_TOKEN -b "$(fly auth token)"` then add `.github/workflows/fly.yml`:

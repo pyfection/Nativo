@@ -16,6 +16,8 @@ there is no override.
 Additions from the suggester tier to existing entries (a spelling variant, a
 translation link — REVIEWED_TYPES) are factual rather than prescriptive, so
 they skip the vote: one reviewer with verify rights accepts or rejects them.
+A spelling variant proposed from a text card (`fix_texts`) also corrects the
+old spelling in the language's texts when accepted.
 """
 
 from __future__ import annotations
@@ -51,7 +53,7 @@ from app.models.word import (
 from app.schemas.proposal import ChangeProposal as ChangeProposalSchema
 from app.schemas.proposal import LexemeUsage, RecommendationProposalCreate, VoteCreate
 from app.schemas.proposal import ProposalVote as ProposalVoteSchema
-from app.services import lexeme_service
+from app.services import lexeme_service, spelling_service
 from app.services.auth_service import can_user_edit_language, can_user_verify_language
 
 
@@ -266,7 +268,8 @@ def _apply(db: Session, proposal: ChangeProposal) -> None:
             )
             .first()
         )
-        if exists is None and db.get(WordForm, word_form_id) is not None:
+        form = db.get(WordForm, word_form_id)
+        if exists is None and form is not None:
             db.add(
                 SpellingVariant(
                     word_form_id=word_form_id,
@@ -274,6 +277,14 @@ def _apply(db: Session, proposal: ChangeProposal) -> None:
                     note=payload.get("note"),
                     created_by_id=proposal.created_by_id,
                 )
+            )
+        if form is not None and payload.get("fix_texts"):
+            spelling_service.correct_texts(
+                db,
+                proposal.language_id,
+                payload["variant"],
+                form.form,
+                user_id=proposal.created_by_id,
             )
     elif proposal.proposal_type == ProposalType.ADD_TRANSLATION:
         other_id = UUID(payload["other_lexeme_id"])

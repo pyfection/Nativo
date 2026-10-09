@@ -40,7 +40,9 @@ class ProposalType(str, enum.Enum):
     SET_RECOMMENDATION = "set_recommendation"  # payload: {recommendation, note}
     # Suggester additions to existing published entries. Factual, not
     # prescriptive, so one reviewer (can_verify) settles them — no vote.
-    ADD_SPELLING_VARIANT = "add_spelling_variant"  # payload: {word_form_id, variant, note}
+    # payload: {word_form_id, variant, note, fix_texts?}; fix_texts also
+    # corrects the variant to the form's spelling in the language's texts.
+    ADD_SPELLING_VARIANT = "add_spelling_variant"
     ADD_TRANSLATION = "add_translation"  # payload: {other_lexeme_id}
 
 

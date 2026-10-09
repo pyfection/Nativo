@@ -4,6 +4,7 @@ Database models for the Nativo language-preservation platform.
 All models use UUID primary keys.
 """
 
+from app.models.ai_suggestion import AiSuggestion
 from app.models.api_token import ApiToken
 from app.models.audio import Audio
 from app.models.change_proposal import (
@@ -55,6 +56,7 @@ from app.models.word import (
 )
 
 __all__ = [
+    "AiSuggestion",
     "SourceSnippet",
     # Core models
     "User",

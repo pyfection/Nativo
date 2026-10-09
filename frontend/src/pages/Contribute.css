@@ -191,6 +191,60 @@
   flex-wrap: wrap;
 }
 
+/* ---------- AI suggestions + spelling fix ---------- */
+
+.contribute-ai-badge {
+  margin-left: 0.4rem;
+  padding: 0 0.4em;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  background: rgba(var(--tint-rgb), 0.08);
+  opacity: 0.85;
+}
+
+.contribute-ai-note {
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+.contribute-fix-open {
+  margin: -0.25rem 0 0.75rem;
+  font-size: 0.85rem;
+}
+
+.contribute-fix-open .contribute-ai-note {
+  margin: 0;
+}
+
+.contribute-fix {
+  margin: 0 0 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  background: rgba(var(--tint-rgb), 0.06);
+}
+
+.contribute-fix-form {
+  margin-bottom: 0.75rem;
+}
+
+.contribute-fix-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.contribute-link-btn {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 .contribute-record .audio-recorder {
   margin-bottom: 0.75rem;
 }
