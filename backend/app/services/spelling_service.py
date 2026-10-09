@@ -10,7 +10,9 @@ A SpellingVariant maps a non-standard spelling back to the WordForm whose
 
 Both are deliberately *suggest-only*: a variant string is not unique (homographs
 across lexemes), so resolution returns candidates and never rewrites content on
-its own. Confirming a correction is a separate, human-driven step.
+its own. Confirming a correction is a separate, human-driven step:
+`correct_texts` applies one confirmed fix ("gibd's" is now written "gibds")
+across a language's texts.
 """
 
 from __future__ import annotations
@@ -21,7 +23,8 @@ from uuid import UUID
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from app.models.text import Text
+from app.models.text import DocumentType, Text
+from app.models.text_word_link import TextWordLink
 from app.models.word import Lexeme, SpellingVariant, WordForm
 from app.schemas.word import (
     SpellingCandidate,
@@ -29,6 +32,7 @@ from app.schemas.word import (
     SpellingResolution,
     SpellingVariantCreate,
 )
+from app.services.document_service import suggest_links_for_text
 from app.utils.text_normalize import fold_for_match, iter_tokens
 
 # ---------------------------------------------------------------------------
@@ -212,3 +216,63 @@ def suggest_corrections_for_text(db: Session, text: Text) -> list[SpellingCorrec
             )
         )
     return corrections
+
+
+# ---------------------------------------------------------------------------
+# Applying a confirmed fix
+# ---------------------------------------------------------------------------
+
+
+def _match_case(original: str, new: str) -> str:
+    """Carry a sentence-initial capital (or all caps) over to the fix."""
+    if len(original) > 1 and original.isupper():
+        return new.upper()
+    if original[:1].isupper() and new[:1].islower():
+        return new[:1].upper() + new[1:]
+    return new
+
+
+def correct_texts(
+    db: Session, language_id: UUID, old: str, new: str, *, user_id: UUID | None = None
+) -> int:
+    """Rewrite every token spelled `old` as `new` in the language's texts
+    (not the writing standard, which quotes wrong spellings on purpose).
+    Word links keep pointing at the same words, and the changed texts get
+    fresh link suggestions. Returns how many texts changed. Does not commit.
+    """
+    target = fold_for_match(old)
+    if not target or target == fold_for_match(new):
+        return 0
+    changed = 0
+    texts = (
+        db.query(Text)
+        .filter(
+            Text.language_id == language_id, Text.document_type != DocumentType.WRITING_STANDARD
+        )
+        .all()
+    )
+    for text in texts:
+        content = text.content or ""
+        hits = [(s, e, tok) for tok, s, e in iter_tokens(content) if fold_for_match(tok) == target]
+        if not hits:
+            continue
+        pieces, last, shifts = [], 0, []
+        for start, end, token in hits:
+            replacement = _match_case(token, new)
+            pieces += [content[last:start], replacement]
+            last = end
+            shifts.append((end, len(replacement) - (end - start)))
+        pieces.append(content[last:])
+        text.content = "".join(pieces)
+
+        # A position moves by the growth of every replaced word ending at or
+        # before it (so a link on the word itself stretches with it).
+        def moved(pos: int) -> int:
+            return pos + sum(delta for end, delta in shifts if end <= pos)
+
+        for link in db.query(TextWordLink).filter(TextWordLink.text_id == text.id):
+            link.start_char, link.end_char = moved(link.start_char), moved(link.end_char)
+        db.flush()
+        suggest_links_for_text(db, text, creator_id=user_id)
+        changed += 1
+    return changed

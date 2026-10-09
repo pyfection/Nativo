@@ -36,6 +36,7 @@ unknown-token index if it isn't.
 
 from __future__ import annotations
 
+import re
 from collections import Counter
 from collections.abc import Iterable
 from itertools import zip_longest
@@ -72,6 +73,7 @@ from app.schemas.contribute import (
     ConfirmSpellingTask,
     ContributeResult,
     DefineWordAnswer,
+    DefineWordResult,
     DefineWordTask,
     RecordAudioTask,
     ReviewAdditionTask,
@@ -92,7 +94,7 @@ from app.schemas.word import (
     WordFormCreate,
     WordFormCreateNested,
 )
-from app.services import lexeme_service, proposal_service, source_service
+from app.services import lexeme_service, proposal_service, source_service, spelling_service
 from app.services.auth_service import (
     can_user_edit_language,
     can_user_verify_language,
@@ -474,6 +476,7 @@ def review_addition_tasks(
             task.lemma = form.form if form else task.lemma
             task.variant = payload.get("variant")
             task.note = payload.get("note")
+            task.fix_texts = bool(payload.get("fix_texts"))
         else:
             other = db.get(Lexeme, UUID(payload["other_lexeme_id"]))
             if other is None:
@@ -765,24 +768,104 @@ def _new_lexeme(
     )
 
 
-def define_word(db: Session, user: User, language_id: UUID, answer: DefineWordAnswer) -> Lexeme:
+def _add_glosses(
+    db: Session, lexeme: Lexeme, language_id: UUID, gloss: str, user_id: UUID, *, publish: bool
+) -> None:
+    """Link each comma-separated meaning as its own word in the gloss
+    language ("there is, there are" → two entries). Does not commit."""
+    meanings = {}
+    for meaning in re.split(r"[,;]", gloss):
+        meaning = " ".join(meaning.split())
+        if meaning:
+            meanings.setdefault(meaning.casefold(), meaning)
+    for meaning in meanings.values():
+        lexeme_service.add_gloss(db, lexeme, language_id, meaning, user_id, publish=publish)
+
+
+SPELLING_FIX_NOTE = "Older spelling"
+
+
+def _record_spelling_fix(
+    db: Session, user: User, language_id: UUID, form: WordForm, seen: str, *, can_edit: bool
+) -> str:
+    """`seen` is a misspelling of `form`: an editor records it as a variant
+    and corrects it in the texts now; anyone else proposes both for one
+    reviewer. Returns the outcome. Does not commit."""
+    if not can_edit:
+        proposal_service.propose_addition(
+            db,
+            language_id=language_id,
+            lexeme_id=form.lexeme_id,
+            proposal_type=ProposalType.ADD_SPELLING_VARIANT,
+            payload={
+                "word_form_id": str(form.id),
+                "variant": seen,
+                "note": SPELLING_FIX_NOTE,
+                "fix_texts": True,
+            },
+            author=user,
+        )
+        return "proposed"
+    recorded = db.query(SpellingVariant.id).filter(
+        SpellingVariant.word_form_id == form.id,
+        SpellingVariant.normalized == fold_for_match(seen),
+    )
+    if recorded.first() is None:
+        db.add(
+            SpellingVariant(
+                word_form_id=form.id, variant=seen, note=SPELLING_FIX_NOTE, created_by_id=user.id
+            )
+        )
+        db.flush()
+    spelling_service.correct_texts(db, language_id, seen, form.form, user_id=user.id)
+    return "published"
+
+
+def define_word(
+    db: Session, user: User, language_id: UUID, answer: DefineWordAnswer
+) -> DefineWordResult:
     """Add the word from a define_word card, with its gloss.
 
     Editors publish directly; anyone else's word (and a new gloss entry for
     it) lands pending review. When the citation form the user typed is
     already in the dictionary, an editor's answer adds the token seen in the
     text as another form of that entry instead of duplicating it.
+
+    With `corrected`, the text misspells the word: the corrected spelling is
+    the word, and the text's spelling becomes its spelling variant and is
+    corrected in the texts (see _record_spelling_fix). If the corrected
+    spelling is already in the dictionary, that fix is the whole answer.
     """
     _require_language(db, language_id)
 
     lemma = answer.lemma.strip()
     token = (answer.token or "").strip()
+    corrected = (answer.corrected or "").strip()
     gloss = (answer.gloss or "").strip()
+    seen = None
+    if corrected and fold_for_match(corrected) != fold_for_match(token):
+        if not token:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Say which spelling is being corrected",
+            )
+        seen, token = token, corrected
     if not lemma:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="The word is empty")
-    _check_gloss(db, language_id, gloss, answer.gloss_language_id)
 
     can_edit = can_user_edit_language(db, user.id, language_id)
+
+    if seen is not None:
+        known_form = _live_form(db, language_id, token)
+        if known_form is not None:
+            outcome = _record_spelling_fix(
+                db, user, language_id, known_form, seen, can_edit=can_edit
+            )
+            db.commit()
+            lexeme = known_form.lexeme
+            return DefineWordResult(lexeme_id=lexeme.id, status=lexeme.status, outcome=outcome)
+
+    _check_gloss(db, language_id, gloss, answer.gloss_language_id)
     new_form = token and fold_for_match(token) != fold_for_match(lemma)
 
     existing = _live_lexeme(db, language_id, lemma)
@@ -792,9 +875,14 @@ def define_word(db: Session, user: User, language_id: UUID, answer: DefineWordAn
                 status_code=status.HTTP_409_CONFLICT,
                 detail=f"“{existing.lemma}” is already in the dictionary",
             )
-        lexeme_service.create_word_form(db, WordFormCreate(lexeme_id=existing.id, form=token))
+        form = lexeme_service.create_word_form(
+            db, WordFormCreate(lexeme_id=existing.id, form=token)
+        )
+        if seen is not None:
+            _record_spelling_fix(db, user, language_id, form, seen, can_edit=can_edit)
+            db.commit()
         db.refresh(existing)
-        return existing
+        return DefineWordResult(lexeme_id=existing.id, status=existing.status)
 
     lexeme = lexeme_service.create_lexeme(
         db,
@@ -809,12 +897,17 @@ def define_word(db: Session, user: User, language_id: UUID, answer: DefineWordAn
         status=LexemeStatus.PUBLISHED if can_edit else LexemeStatus.PENDING_REVIEW,
     )
     if gloss:
-        lexeme_service.add_gloss(
-            db, lexeme, answer.gloss_language_id, gloss, user.id, publish=can_edit
-        )
-        db.commit()
-        db.refresh(lexeme)
-    return lexeme
+        _add_glosses(db, lexeme, answer.gloss_language_id, gloss, user.id, publish=can_edit)
+    if seen is not None:
+        form = next(f for f in lexeme.forms if fold_for_match(f.form) == fold_for_match(token))
+        _record_spelling_fix(db, user, language_id, form, seen, can_edit=can_edit)
+    db.commit()
+    db.refresh(lexeme)
+    return DefineWordResult(
+        lexeme_id=lexeme.id,
+        status=lexeme.status,
+        outcome="published" if can_edit else "suggested",
+    )
 
 
 def confirm_spelling(
@@ -897,9 +990,7 @@ def confirm_spelling(
             )
         )
     if gloss:
-        lexeme_service.add_gloss(
-            db, lexeme, answer.gloss_language_id, gloss, user.id, publish=can_edit
-        )
+        _add_glosses(db, lexeme, answer.gloss_language_id, gloss, user.id, publish=can_edit)
     db.commit()
     return ContributeResult(outcome="published" if can_edit else "suggested", lexeme_id=lexeme.id)
 

@@ -11,7 +11,11 @@ The contract under test:
   don't count.
 - Skipped keys sent back as `exclude` stay out of the deck.
 - Defining a word: editors publish it with its gloss; anyone else's lands
-  pending with a drafted gloss that approval publishes too.
+  pending with a drafted gloss that approval publishes too. Comma-separated
+  meanings become separate gloss words.
+- Fixing a misspelling on the card (`corrected`): the corrected spelling is
+  the word, the text's spelling becomes its variant, and the texts are
+  corrected — by an editor at once, by anyone else once a reviewer accepts.
 """
 
 import os
@@ -25,9 +29,11 @@ os.environ.setdefault("SECRET_KEY", "test-secret-key")
 
 sqlalchemy = pytest.importorskip("sqlalchemy")
 from app.api.v1.endpoints.contribute import define_word, get_tasks  # noqa: E402
+from app.api.v1.endpoints.proposals import review  # noqa: E402
 from app.api.v1.endpoints.words import verify_lexeme  # noqa: E402
 from app.database import Base  # noqa: E402
 from app.models.audio import Audio  # noqa: E402
+from app.models.change_proposal import ChangeProposal, ProposalStatus  # noqa: E402
 from app.models.document import Document  # noqa: E402
 from app.models.language import Language  # noqa: E402
 from app.models.text import DocumentType, Text, TextStatus  # noqa: E402
@@ -43,7 +49,7 @@ from app.models.word import (  # noqa: E402
     word_form_audio,
 )
 from app.schemas.contribute import DefineWordAnswer  # noqa: E402
-from app.schemas.proposal import RecommendationProposalCreate  # noqa: E402
+from app.schemas.proposal import AdditionReview, RecommendationProposalCreate  # noqa: E402
 from app.services import contribute_service, lexeme_service, proposal_service  # noqa: E402
 from fastapi import HTTPException  # noqa: E402
 from sqlalchemy import create_engine  # noqa: E402
@@ -397,3 +403,126 @@ async def test_gloss_must_be_in_another_language(db: Session):
             db=db,
         )
     assert exc.value.status_code == 400
+
+
+async def test_comma_separated_meanings_become_separate_glosses(db: Session):
+    lang = _language(db)
+    english = _language(db, "English")
+    editor = _member(db, lang, can_edit=True)
+
+    result = define_word(
+        lang.id,
+        DefineWordAnswer(
+            token="gibds",
+            lemma="gibds",
+            gloss="there is, there are; there is",
+            gloss_language_id=english.id,
+        ),
+        current_user=editor,
+        db=db,
+    )
+
+    glosses = lexeme_service._translation_partners(db, result.lexeme_id)
+    assert sorted(g.lemma for g in glosses) == ["there are", "there is"]
+
+
+# ---------------------------------------------------------------------------
+# Fixing a misspelling from the card
+# ---------------------------------------------------------------------------
+
+
+async def test_editor_fix_adds_word_with_variant_and_corrects_texts(db: Session):
+    lang = _language(db)
+    english = _language(db, "English")
+    editor = _member(db, lang, can_edit=True)
+    meara = _word(db, lang, editor, "Meara")
+    text = _text(db, lang, editor, "Gibd's des? Meara gibd's ned.")
+    link = _link(db, text, meara, "Meara", TextWordLinkStatus.CONFIRMED)
+    standard = _text(
+        db, lang, editor, "Not gibd's but gibds.", document_type=DocumentType.WRITING_STANDARD
+    )
+
+    result = define_word(
+        lang.id,
+        DefineWordAnswer(
+            token="gibd's",
+            corrected="gibds",
+            lemma="gibds",
+            gloss="there is",
+            gloss_language_id=english.id,
+        ),
+        current_user=editor,
+        db=db,
+    )
+
+    assert (result.status, result.outcome) == (LexemeStatus.PUBLISHED, "published")
+    lexeme = db.get(Lexeme, result.lexeme_id)
+    [form] = lexeme.forms
+    assert form.form == "gibds"
+    assert [v.variant for v in form.spelling_variants] == ["gibd's"]
+    db.refresh(text)
+    assert text.content == "Gibds des? Meara gibds ned."  # sentence capital kept
+    db.refresh(link)
+    assert text.content[link.start_char : link.end_char] == "Meara"  # links still line up
+    db.refresh(standard)
+    assert standard.content == "Not gibd's but gibds."  # the standard quotes it on purpose
+    assert "gibd's" not in [t.token for t in _deck(db, editor, lang) if t.type == "define_word"]
+
+
+async def test_suggester_fix_waits_for_one_reviewer(db: Session):
+    lang = _language(db)
+    reviewer = _member(db, lang, can_edit=True, can_verify=True)
+    suggester = _member(db, lang)
+    text = _text(db, lang, reviewer, "Meara gibd's ned.")
+
+    result = define_word(
+        lang.id,
+        DefineWordAnswer(token="gibd's", corrected="gibds", lemma="gem"),
+        current_user=suggester,
+        db=db,
+    )
+
+    assert (result.status, result.outcome) == (LexemeStatus.PENDING_REVIEW, "suggested")
+    lexeme = db.get(Lexeme, result.lexeme_id)
+    assert sorted(f.form for f in lexeme.forms) == ["gem", "gibds"]
+    db.refresh(text)
+    assert text.content == "Meara gibd's ned."  # nothing changes before review
+    assert db.query(SpellingVariant).count() == 0
+    assert "gibd's" not in [t.token for t in _deck(db, suggester, lang) if t.type == "define_word"]
+
+    [card] = [t for t in _deck(db, reviewer, lang) if t.type == "review_addition"]
+    assert (card.variant, card.lemma, card.fix_texts) == ("gibd's", "gibds", True)
+    await review(card.proposal_id, AdditionReview(approve=True), current_user=reviewer, db=db)
+
+    db.refresh(text)
+    assert text.content == "Meara gibds ned."
+    [variant] = db.query(SpellingVariant).all()
+    assert variant.variant == "gibd's"
+
+
+async def test_fix_to_a_known_word_needs_no_meaning(db: Session):
+    lang = _language(db)
+    editor = _member(db, lang, can_edit=True)
+    suggester = _member(db, lang)
+    gibds = _word(db, lang, editor, "gibds")
+    text = _text(db, lang, editor, "Meara gibd's ned.")
+
+    proposed = define_word(
+        lang.id,
+        DefineWordAnswer(token="gibd's", corrected="gibds", lemma="gibds"),
+        current_user=suggester,
+        db=db,
+    )
+    assert (proposed.lexeme_id, proposed.outcome) == (gibds.lexeme_id, "proposed")
+    assert db.query(ChangeProposal).one().status == ProposalStatus.OPEN
+
+    published = define_word(
+        lang.id,
+        DefineWordAnswer(token="gibd's", corrected="gibds", lemma="gibds"),
+        current_user=editor,
+        db=db,
+    )
+    assert (published.lexeme_id, published.outcome) == (gibds.lexeme_id, "published")
+    assert db.query(Lexeme).filter(Lexeme.language_id == lang.id).count() == 1
+    db.refresh(text)
+    assert text.content == "Meara gibds ned."

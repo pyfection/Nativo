@@ -24,6 +24,8 @@ import contributeService, {
   TranslateWordAnswer,
   TranslateWordTask,
   VoteTask,
+  WordSuggestion,
+  WordSuggestionQuery,
 } from '../services/contributeService';
 import { OutboxConfig, pendingKeys, QueuedOffline } from '../services/outbox';
 import proposalService from '../services/proposalService';
@@ -285,7 +287,10 @@ export default function Contribute({ selectedLanguage, languages }: ContributePr
     run(
       task,
       (config) => contributeService.defineWord(selectedLanguage.id, data, config),
-      canEdit ? t('contribute.done_define_published') : t('contribute.done_define_suggested'),
+      (result) =>
+        result.outcome === 'proposed'
+          ? t('contribute.done_proposed')
+          : t(`contribute.done_define_${result.outcome}`),
     );
 
   const confirmSpelling = (task: ConfirmSpellingTask, data: SpellingAnswer) =>
@@ -322,6 +327,7 @@ export default function Contribute({ selectedLanguage, languages }: ContributePr
         return (
           <DefineWordCard
             task={task}
+            languageId={selectedLanguage.id}
             glossLanguage={glossLanguage}
             canEdit={canEdit}
             busy={busy}
@@ -347,6 +353,7 @@ export default function Contribute({ selectedLanguage, languages }: ContributePr
         return (
           <ConfirmSpellingCard
             task={task}
+            languageId={selectedLanguage.id}
             glossLanguage={glossLanguage}
             busy={busy}
             onSubmit={(data) => void confirmSpelling(task, data)}
@@ -552,80 +559,261 @@ function Meanings({ translations }: { translations: TranslationLink[] }) {
   );
 }
 
+/** The AI's suggestion for a word card, or null while loading, when AI
+ *  suggestions aren't set up, or offline. Suggestions are optional, so
+ *  failures stay silent. */
+function useWordSuggestion(languageId: string, query: WordSuggestionQuery): WordSuggestion | null {
+  const [suggestion, setSuggestion] = useState<WordSuggestion | null>(null);
+  const { token, text_id, snippet_id, gloss_language_id } = query;
+  useEffect(() => {
+    let cancelled = false;
+    contributeService
+      .suggestWord(languageId, { token, text_id, snippet_id, gloss_language_id })
+      .then((result) => {
+        if (!cancelled) setSuggestion(result);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [languageId, token, text_id, snippet_id, gloss_language_id]);
+  return suggestion;
+}
+
+/** A field the AI pre-fills until the person edits it. `fromAi` marks a
+ *  value that is still the AI's, so the card can say so. */
+function useSuggestedField(initial: string, suggested: string | null | undefined) {
+  const [value, setValue] = useState(initial);
+  const [touched, setTouched] = useState(false);
+  useEffect(() => {
+    if (suggested && !touched) setValue(suggested);
+  }, [suggested, touched]);
+  return {
+    value,
+    fromAi: !!suggested && !touched && value === suggested,
+    set: (next: string) => {
+      setTouched(true);
+      setValue(next);
+    },
+    /** Change the value without counting as the person's edit. */
+    reset: setValue,
+  };
+}
+
+function AiBadge() {
+  const { t } = useTranslation();
+  return (
+    <span className="contribute-ai-badge" title={t('contribute.ai_title')}>
+      ✨ {t('contribute.ai_badge')}
+    </span>
+  );
+}
+
 /* ---------- Cards ---------- */
 
 interface DefineWordCardProps {
   task: DefineWordTask;
+  languageId: string;
   glossLanguage?: Language;
   canEdit: boolean;
   busy: boolean;
   onSubmit: (data: DefineWordAnswer) => void;
 }
 
-function DefineWordCard({ task, glossLanguage, canEdit, busy, onSubmit }: DefineWordCardProps) {
+function DefineWordCard({
+  task,
+  languageId,
+  glossLanguage,
+  canEdit,
+  busy,
+  onSubmit,
+}: DefineWordCardProps) {
   const { t } = useTranslation();
-  const [lemma, setLemma] = useState(task.token);
-  const [gloss, setGloss] = useState('');
-  const [pos, setPos] = useState('');
+  const suggestion = useWordSuggestion(languageId, {
+    token: task.token,
+    text_id: task.context.text_id,
+    gloss_language_id: glossLanguage?.id,
+  });
+  const lemma = useSuggestedField(task.token, suggestion?.lemma);
+  const gloss = useSuggestedField('', suggestion?.gloss);
+  const pos = useSuggestedField('', suggestion?.part_of_speech);
 
-  const ready = lemma.trim() && (!glossLanguage || gloss.trim());
+  // "Spelled wrong?": the text's spelling is outdated or non-standard.
+  const [fixDraft, setFixDraft] = useState<string | null>(null);
+  const [corrected, setCorrected] = useState('');
+  const [knownFix, setKnownFix] = useState(false); // corrected word already in the dictionary
+  const fixRequest = useRef('');
+  const word = corrected || task.token;
+
+  const applyFix = () => {
+    const value = (fixDraft ?? '').trim();
+    setFixDraft(null);
+    if (!value || value === task.token) return;
+    setCorrected(value);
+    if (lemma.value === task.token) lemma.reset(value);
+    setKnownFix(false);
+    fixRequest.current = value;
+    wordService
+      .resolveSpelling(languageId, value)
+      .then((result) => {
+        if (fixRequest.current === value) setKnownFix(result.already_standard);
+      })
+      .catch(() => undefined);
+  };
+
+  const undoFix = () => {
+    fixRequest.current = '';
+    if (lemma.value === corrected) lemma.reset(task.token);
+    setCorrected('');
+    setKnownFix(false);
+  };
+
+  const ready = knownFix || (lemma.value.trim() && (!glossLanguage || gloss.value.trim()));
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    if (!ready || busy) return;
+    if (!ready || busy || fixDraft !== null) return;
+    if (knownFix) {
+      onSubmit({ token: task.token, corrected, lemma: corrected });
+      return;
+    }
     onSubmit({
       token: task.token,
-      lemma: lemma.trim(),
-      part_of_speech: pos || undefined,
-      gloss: gloss.trim() || undefined,
-      gloss_language_id: gloss.trim() ? glossLanguage?.id : undefined,
+      corrected: corrected || undefined,
+      lemma: lemma.value.trim(),
+      part_of_speech: pos.value || undefined,
+      gloss: gloss.value.trim() || undefined,
+      gloss_language_id: gloss.value.trim() ? glossLanguage?.id : undefined,
     });
   };
 
   return (
     <form className="contribute-define" onSubmit={submit}>
-      <p className="contribute-question">
-        {t('contribute.define_question', { word: task.token })}
-      </p>
+      <p className="contribute-question">{t('contribute.define_question', { word })}</p>
       <Snippet context={task.context} />
+
+      {corrected ? (
+        <p className="contribute-fix">
+          {t('contribute.fix_summary', { from: task.token, to: corrected })}{' '}
+          {canEdit ? t('contribute.fix_editor_note') : t('contribute.fix_reviewer_note')}{' '}
+          <button type="button" className="contribute-link-btn" onClick={undoFix}>
+            {t('contribute.fix_undo')}
+          </button>
+        </p>
+      ) : fixDraft !== null ? (
+        <div className="contribute-fix-form">
+          <label className="contribute-field">
+            <span>{t('contribute.fix_label')}</span>
+            <input
+              autoFocus
+              value={fixDraft}
+              onChange={(e) => setFixDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  applyFix();
+                } else if (e.key === 'Escape') {
+                  setFixDraft(null);
+                }
+              }}
+            />
+          </label>
+          <p className="contribute-hint">{t('contribute.fix_hint')}</p>
+          <div className="contribute-fix-actions">
+            <button type="button" className="btn btn-accent" onClick={applyFix}>
+              {t('contribute.fix_apply')}
+            </button>
+            <button type="button" className="btn btn-ghost" onClick={() => setFixDraft(null)}>
+              {t('contribute.fix_cancel')}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <p className="contribute-fix-open">
+          {suggestion?.standard_spelling && (
+            <span className="contribute-ai-note">
+              ✨ {t('contribute.fix_ai_hint', { word: suggestion.standard_spelling })}{' '}
+              <button
+                type="button"
+                className="contribute-link-btn"
+                onClick={() => setFixDraft(suggestion.standard_spelling)}
+              >
+                {t('contribute.fix_ai_apply')}
+              </button>
+              {' · '}
+            </span>
+          )}
+          <button
+            type="button"
+            className="contribute-link-btn"
+            onClick={() => setFixDraft(task.token)}
+          >
+            {t('contribute.fix_open')}
+          </button>
+        </p>
+      )}
+
       {task.occurrences > 1 && (
         <p className="contribute-meta">
           {t('contribute.define_occurrences', { count: task.occurrences })}
         </p>
       )}
-      {glossLanguage && (
-        <label className="contribute-field">
-          <span>
-            {t('contribute.define_gloss_label', { language: languageDisplayName(glossLanguage) })}
-          </span>
-          <input
-            autoFocus
-            value={gloss}
-            onChange={(e) => setGloss(e.target.value)}
-            placeholder={t('contribute.define_gloss_placeholder')}
-          />
-        </label>
+
+      {knownFix ? (
+        <p className="contribute-hint">{t('contribute.fix_known', { word: corrected })}</p>
+      ) : (
+        <>
+          {suggestion?.explanation && (
+            <p className="contribute-ai-note">✨ {suggestion.explanation}</p>
+          )}
+          {glossLanguage && (
+            <label className="contribute-field">
+              <span>
+                {t('contribute.define_gloss_label', {
+                  language: languageDisplayName(glossLanguage),
+                })}
+                {gloss.fromAi && <AiBadge />}
+              </span>
+              <input
+                autoFocus={fixDraft === null}
+                value={gloss.value}
+                onChange={(e) => gloss.set(e.target.value)}
+                placeholder={t('contribute.define_gloss_placeholder')}
+              />
+            </label>
+          )}
+          <div className="contribute-field-row">
+            <label className="contribute-field">
+              <span>
+                {t('contribute.define_lemma_label')}
+                {lemma.fromAi && <AiBadge />}
+              </span>
+              <input value={lemma.value} onChange={(e) => lemma.set(e.target.value)} />
+            </label>
+            <label className="contribute-field">
+              <span>
+                {t('contribute.define_pos_label')}
+                {pos.fromAi && <AiBadge />}
+              </span>
+              <select value={pos.value} onChange={(e) => pos.set(e.target.value)}>
+                <option value="">{t('add_word.select_placeholder')}</option>
+                {PARTS_OF_SPEECH.map((value) => (
+                  <option key={value} value={value}>
+                    {t(`add_word.pos_${value}`)}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <p className="contribute-hint">{t('contribute.define_lemma_hint')}</p>
+        </>
       )}
-      <div className="contribute-field-row">
-        <label className="contribute-field">
-          <span>{t('contribute.define_lemma_label')}</span>
-          <input value={lemma} onChange={(e) => setLemma(e.target.value)} />
-        </label>
-        <label className="contribute-field">
-          <span>{t('contribute.define_pos_label')}</span>
-          <select value={pos} onChange={(e) => setPos(e.target.value)}>
-            <option value="">{t('add_word.select_placeholder')}</option>
-            {PARTS_OF_SPEECH.map((value) => (
-              <option key={value} value={value}>
-                {t(`add_word.pos_${value}`)}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-      <p className="contribute-hint">{t('contribute.define_lemma_hint')}</p>
-      <button type="submit" className="btn btn-accent" disabled={!ready || busy}>
-        {canEdit ? t('contribute.define_add') : t('contribute.define_suggest')}
+      <button type="submit" className="btn btn-accent" disabled={!ready || busy || fixDraft !== null}>
+        {knownFix
+          ? t('contribute.fix_save')
+          : canEdit
+            ? t('contribute.define_add')
+            : t('contribute.define_suggest')}
       </button>
     </form>
   );
@@ -745,15 +933,29 @@ function VoteCard({ task }: { task: VoteTask }) {
 
 interface ConfirmSpellingCardProps {
   task: ConfirmSpellingTask;
+  languageId: string;
   glossLanguage?: Language;
   busy: boolean;
   onSubmit: (data: SpellingAnswer) => void;
 }
 
-function ConfirmSpellingCard({ task, glossLanguage, busy, onSubmit }: ConfirmSpellingCardProps) {
+function ConfirmSpellingCard({
+  task,
+  languageId,
+  glossLanguage,
+  busy,
+  onSubmit,
+}: ConfirmSpellingCardProps) {
   const { t } = useTranslation();
-  const [standard, setStandard] = useState(task.token);
-  const [gloss, setGloss] = useState('');
+  const suggestion = useWordSuggestion(languageId, {
+    token: task.token,
+    snippet_id: task.source.snippet_id,
+    gloss_language_id: glossLanguage?.id,
+  });
+  const standardField = useSuggestedField(task.token, suggestion?.standard_spelling);
+  const glossField = useSuggestedField('', suggestion?.gloss);
+  const standard = standardField.value;
+  const gloss = glossField.value;
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -779,20 +981,25 @@ function ConfirmSpellingCard({ task, glossLanguage, busy, onSubmit }: ConfirmSpe
         </p>
       )}
       <label className="contribute-field">
-        <span>{t('contribute.spelling_standard_label')}</span>
-        <input autoFocus value={standard} onChange={(e) => setStandard(e.target.value)} />
+        <span>
+          {t('contribute.spelling_standard_label')}
+          {standardField.fromAi && <AiBadge />}
+        </span>
+        <input autoFocus value={standard} onChange={(e) => standardField.set(e.target.value)} />
       </label>
       <p className="contribute-hint">{t('contribute.spelling_hint')}</p>
+      {suggestion?.explanation && <p className="contribute-ai-note">✨ {suggestion.explanation}</p>}
       {glossLanguage && (
         <label className="contribute-field">
           <span>
             {t('contribute.spelling_gloss_label', {
               language: languageDisplayName(glossLanguage),
             })}
+            {glossField.fromAi && <AiBadge />}
           </span>
           <input
             value={gloss}
-            onChange={(e) => setGloss(e.target.value)}
+            onChange={(e) => glossField.set(e.target.value)}
             placeholder={t('contribute.define_gloss_placeholder')}
           />
         </label>
@@ -971,6 +1178,7 @@ function ReviewAdditionCard({ task, languages }: { task: ReviewAdditionTask; lan
               <LinkedNote note={task.note} />
             </p>
           )}
+          {task.fix_texts && <p className="contribute-meta">{t('contribute.review_fix_texts')}</p>}
         </>
       ) : (
         <>

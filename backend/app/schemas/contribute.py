@@ -143,6 +143,9 @@ class ReviewAdditionTask(_Task):
     note: str | None = None  # e.g. where the spelling was seen
     other_lemma: str | None = None  # add_translation: the word it translates
     other_language_id: UUID | None = None
+    # add_spelling_variant from a text card: accepting also corrects the
+    # old spelling in the language's texts.
+    fix_texts: bool = False
     creator_username: str | None = None
 
 
@@ -166,8 +169,15 @@ class DefineWordAnswer(BaseModel):
     # The word as seen in the text; kept as an extra form when the citation
     # form differs, so the linker can match it.
     token: str | None = Field(None, max_length=255)
+    # The standard spelling of `token` when the text misspells it (e.g. an
+    # outdated spelling). The text's spelling becomes a spelling variant and
+    # is corrected in the language's texts (by an editor now, otherwise once
+    # a reviewer accepts it).
+    corrected: str | None = Field(None, max_length=255)
     lemma: str = Field(..., min_length=1, max_length=255)
     part_of_speech: PartOfSpeech | None = None
+    # One or more meanings, comma-separated; each becomes a word in the
+    # gloss language linked as a translation.
     gloss: str | None = Field(None, max_length=255)
     gloss_language_id: UUID | None = None
 
@@ -175,6 +185,22 @@ class DefineWordAnswer(BaseModel):
 class DefineWordResult(BaseModel):
     lexeme_id: UUID
     status: LexemeStatus
+    # published / suggested (new entry pending review) / proposed (a
+    # spelling fix to an existing entry, waiting for a reviewer).
+    outcome: Literal["published", "suggested", "proposed"] = "published"
+
+
+class WordSuggestion(BaseModel):
+    """An AI suggestion for a word card. A person checks it before anything
+    is saved; empty fields mean the AI wasn't sure."""
+
+    lemma: str | None = None
+    part_of_speech: PartOfSpeech | None = None
+    gloss: str | None = None
+    # How the word should be written when the text breaks the writing
+    # standard (e.g. an outdated spelling); None when it looks right.
+    standard_spelling: str | None = None
+    explanation: str | None = None
 
 
 class SpellingAnswer(BaseModel):

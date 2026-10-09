@@ -26,6 +26,14 @@ class Settings(BaseSettings):
     # Zero-shot speech → IPA model for /transcribe/audio (needs `--extra asr`).
     PHONEME_MODEL: str = "facebook/wav2vec2-xlsr-53-espeak-cv-ft"
 
+    # AI suggestions on Quick Contribute cards (meaning, part of speech,
+    # spelling), made by the local `claude` CLI with a Claude subscription.
+    # Create the token with `claude setup-token`. Unset = no suggestions.
+    CLAUDE_CODE_OAUTH_TOKEN: str | None = None
+    CLAUDE_CLI_PATH: str = "claude"
+    AI_SUGGEST_MODEL: str = "haiku"
+    AI_SUGGEST_TIMEOUT: int = 60
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

@@ -12,6 +12,14 @@ COPY backend ./backend
 # Re-sync to install the project itself now that the source is present
 RUN uv sync --frozen --no-dev
 
+# Claude CLI for AI suggestions on Quick Contribute cards. Inert until the
+# CLAUDE_CODE_OAUTH_TOKEN secret is set (see DEPLOYMENT.md).
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl ca-certificates \
+    && curl -fsSL https://claude.ai/install.sh | bash -s stable \
+    && install -m 755 "$(readlink -f /root/.local/bin/claude)" /usr/local/bin/claude \
+    && rm -rf /root/.local /root/.claude /var/lib/apt/lists/*
+
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PATH="/app/.venv/bin:$PATH"

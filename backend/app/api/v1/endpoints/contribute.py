@@ -25,8 +25,9 @@ from app.schemas.contribute import (
     SpellingAnswer,
     TranslateTextAnswer,
     TranslateWordAnswer,
+    WordSuggestion,
 )
-from app.services import contribute_service
+from app.services import contribute_service, suggestion_service
 
 router = APIRouter()
 
@@ -50,6 +51,29 @@ def get_tasks(
     )
 
 
+@router.get("/{language_id}/suggest", response_model=WordSuggestion)
+def suggest_word(
+    language_id: UUID,
+    token: str = Query(..., min_length=1, max_length=255),
+    text_id: UUID | None = Query(None),
+    snippet_id: UUID | None = Query(None),
+    gloss_language_id: UUID | None = Query(None),
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+):
+    """AI suggestion (dictionary form, part of speech, meaning, standard
+    spelling) for a word card. The word must occur in the given published
+    text or outside snippet. 503 when AI suggestions aren't configured."""
+    return suggestion_service.suggest_word(
+        db,
+        language_id,
+        token,
+        text_id=text_id,
+        snippet_id=snippet_id,
+        gloss_language_id=gloss_language_id,
+    )
+
+
 @router.post(
     "/{language_id}/define",
     response_model=DefineWordResult,
@@ -62,9 +86,10 @@ def define_word(
     db: Session = Depends(get_db),
 ):
     """Add a word seen in a text, with its meaning. Editors publish it;
-    anyone else's lands in the review queue."""
-    lexeme = contribute_service.define_word(db, current_user, language_id, answer)
-    return DefineWordResult(lexeme_id=lexeme.id, status=lexeme.status)
+    anyone else's lands in the review queue. With `corrected`, the text's
+    spelling is recorded as a variant and fixed in the texts (editors) or
+    proposed for a reviewer."""
+    return contribute_service.define_word(db, current_user, language_id, answer)
 
 
 @router.post("/{language_id}/spelling", response_model=ContributeResult)
