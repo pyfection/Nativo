@@ -116,3 +116,13 @@
     font-size: 1.5rem;
   }
 }
+
+.register-privacy {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--cream-dim);
+}
+
+.register-privacy a {
+  color: var(--accent);
+}

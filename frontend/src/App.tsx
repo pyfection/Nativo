@@ -30,6 +30,7 @@ import Review from './pages/Review';
 import Contribute from './pages/Contribute';
 import ApiTokens from './pages/ApiTokens';
 import DeleteAccount from './pages/DeleteAccount';
+import Privacy from './pages/Privacy';
 import languageService, { LanguageResponse } from './services/languageService';
 import { API_URL } from './services/api';
 import { getThemeStyles } from './styles/theme';
@@ -428,6 +429,20 @@ function App() {
                     <DeleteAccount />
                   </AppLayout>
                 </ProtectedRoute>
+              }
+            />
+
+            {/* Privacy policy — public, linked from the app stores */}
+            <Route
+              path="/privacy"
+              element={
+                <AppLayout
+                  selectedLanguage={selectedLanguage!}
+                  onLanguageChange={setSelectedLanguage}
+                  languages={languages}
+                >
+                  <Privacy />
+                </AppLayout>
               }
             />
 

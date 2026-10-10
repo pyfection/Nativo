@@ -20,15 +20,8 @@ export default defineConfig({
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png'],
       workbox: {
         navigateFallbackDenylist: [/^\/(api|admin|mcp|uploads)(\/|$)/],
-        runtimeCaching: [
-          {
-            urlPattern: ({ url }) =>
-              url.origin === 'https://fonts.googleapis.com' ||
-              url.origin === 'https://fonts.gstatic.com',
-            handler: 'StaleWhileRevalidate',
-            options: { cacheName: 'google-fonts' },
-          },
-        ],
+        // Self-hosted fonts, so text renders right offline too.
+        globPatterns: ['**/*.{js,css,html,woff2}'],
       },
     }),
   ],

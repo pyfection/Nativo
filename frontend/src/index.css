@@ -55,8 +55,8 @@
   --background: var(--bg);
 
   /* Typography */
-  --font-serif: 'Fraunces', 'Georgia', 'Times New Roman', serif;
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
+  --font-serif: 'Fraunces Variable', 'Georgia', 'Times New Roman', serif;
+  --font-sans: 'Inter Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
     'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   --font-family: var(--font-sans); /* legacy alias */

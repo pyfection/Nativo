@@ -313,3 +313,11 @@
   font-size: 0.85rem;
   color: var(--sage);
 }
+
+.footer a {
+  color: var(--cream-dim);
+}
+
+.footer a:hover {
+  color: var(--accent);
+}
